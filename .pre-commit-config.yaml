@@ -1,0 +1,25 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+        types: [markdown]
+      - id: end-of-file-fixer
+        types: [markdown]
+      - id: check-merge-conflict
+        types: [markdown]
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.49.1
+    hooks:
+      - id: markdownlint
+        types: [markdown]
+
+  - repo: local
+    hooks:
+      - id: event-model-validation
+        name: validate event model
+        entry: npx --yes @milehimikey/em@1.8.1 validate budgeting.em
+        language: system
+        pass_filenames: false
+        files: ^budgeting\.em$
