@@ -1,5 +1,8 @@
+# Operating-system and editor files.
 .DS_Store
 Thumbs.db
 *.swp
 *.tmp
 
+# Spec Kit writes per-checkout allocation state here; it is not shared project state.
+.specify/feature.json

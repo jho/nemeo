@@ -44,3 +44,11 @@ The repository currently has documentation-oriented CI because application code 
 
 As implementation begins, add type-checking, tests, database migration checks, provider contract
 tests, security checks, and end-to-end checks through separate focused changes.
+
+## Spec-driven development
+
+Use GitHub Spec Kit for implementation planning. Event Model slices are the feature specifications
+and are connected to Spec Kit with the pinned `em-sdd-bridge@0.5.0`; see
+[`docs/sdd-workflow.md`](docs/sdd-workflow.md) and
+[`docs/slice-to-spec-mapping.md`](docs/slice-to-spec-mapping.md). Do not maintain a manually
+diverging `spec.md` beside a slice document.

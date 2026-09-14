@@ -30,7 +30,7 @@ These need product/design answers first. They are tracked as GitHub issues, not 
 
 | ADR | Decision | Status | Depends on |
 |---|---|---|---|
-| [#12](https://github.com/jho/nemeo/issues/12) | SDD workflow and artifact ownership | Open / High | — |
+| [#12](https://github.com/jho/nemeo/issues/12) | SDD workflow and artifact ownership | Accepted | — |
 | [#13](https://github.com/jho/nemeo/issues/13) | UI platform and rendering strategy | Open / High | Product issue #3 |
 | [#14](https://github.com/jho/nemeo/issues/14) | UI component library and design system | Open / Medium | #13, product issue #11 |
 | [#15](https://github.com/jho/nemeo/issues/15) | Information architecture and interaction model | Open / High | Product issues #2, #4 |
@@ -43,7 +43,7 @@ These need product/design answers first. They are tracked as GitHub issues, not 
 | [#22](https://github.com/jho/nemeo/issues/22) | AI decision boundary and model providers | Open / Medium | Product issues #7, #8 |
 | [#23](https://github.com/jho/nemeo/issues/23) | Hosting, environments, and operations | Open / High | #12, #17, product issue #9 |
 | [#24](https://github.com/jho/nemeo/issues/24) | Testing and architecture quality gates | Open / High | #12, #17, #20 |
-| [#25](https://github.com/jho/nemeo/issues/25) | Pull-request and CI workflow | Open / High | #12, #24 |
+| [#25](https://github.com/jho/nemeo/issues/25) | Pull-request and CI workflow | Accepted | #12, #24 |
 
 ADRs are created only after the corresponding architecture issue is resolved. The `adrs/`
 directory is reserved for accepted decision records.
@@ -52,15 +52,14 @@ directory is reserved for accepted decision records.
 
 1. Product constraints: first-run journey, pace semantics, mobile scope, and data-lifecycle promises.
 2. SDD artifact ownership and event-model slicing workflow.
-3. Pull-request and CI workflow.
-4. Hosting constraints: deployment model, regions, managed services, environments, security, and operational budget.
-5. UI platform and rendering strategy.
-6. Application topology and module/process boundaries.
-7. Persistence/event strategy and provider contract.
-8. Jobs, synchronization, identity, and authorization.
-9. UI design system and interaction details.
-10. MCP and AI boundaries.
-11. Testing and quality gates.
+3. Hosting constraints: deployment model, regions, managed services, environments, security, and operational budget.
+4. UI platform and rendering strategy.
+5. Application topology and module/process boundaries.
+6. Persistence/event strategy and provider contract.
+7. Jobs, synchronization, identity, and authorization.
+8. UI design system and interaction details.
+9. MCP and AI boundaries.
+10. Testing and quality gates.
 
 Hosting is intentionally early at the constraints level. Concrete vendor selection should follow
 the topology and persistence decisions rather than being deferred until the end.
