@@ -1,7 +1,7 @@
 # Nemeo Constitution
 
-**Version:** 1.0.0  
-**Ratified:** 2026-09-14  
+**Version:** 1.0.0
+**Ratified:** 2026-09-14
 **Last amended:** 2026-09-14
 
 ## Principles
