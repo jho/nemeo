@@ -441,11 +441,23 @@ client is not an MVP requirement.
 
 **Story:** As a user of a financial-data product, I want my data and access to be protected so that connecting accounts does not create unnecessary exposure.
 
+**Lifecycle direction (MVP):** Nemeo supports account deletion and provider disconnection without
+committing to product-specific retention durations yet. Account deletion revokes access and
+provider credentials and removes the user’s personal, financial, and derived data from active
+systems. Disconnecting a provider immediately revokes its credentials and prevents future
+scheduled synchronization while preserving already imported history and budget decisions.
+
+Exact retention periods, deletion schedules, backup handling, export formats, legal exceptions, and
+policy overrides are deferred until required by launch policy or legal review. Until then, any
+necessary exceptions are handled manually and access to retained data remains restricted.
+
 **Acceptance criteria:**
 - [ ] A user can access only their own accounts, transactions, budgets, reports, and provider connection details unless explicitly shared
 - [ ] Household and MCP access checks are enforced server-side for every read and write operation
 - [ ] Provider credentials, tokens, and connection secrets are encrypted and excluded from logs and ordinary API responses
 - [ ] Disconnecting a provider prevents future scheduled syncs while preserving already imported data according to the product’s retention policy
+- [ ] Account deletion revokes access and provider credentials and removes the user’s personal, financial, and derived data from active systems
+- [ ] A disconnected provider’s imported history and budget decisions remain available until the account is deleted or a later retention policy applies
 - [ ] Sensitive access and mutation events are recorded for audit and troubleshooting
 
 ## Release phases
