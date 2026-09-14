@@ -441,31 +441,23 @@ client is not an MVP requirement.
 
 **Story:** As a user of a financial-data product, I want my data and access to be protected so that connecting accounts does not create unnecessary exposure.
 
-**Lifecycle policy (MVP):** Nemeo defines one default policy; per-user or per-household policy
-overrides are non-MVP. Account deletion starts immediately after confirmation, revokes access and
-provider credentials, and completes removal of personal, financial, and derived data from active
-systems within 30 days. Backups are not restored for ordinary operations and age out within 35 days;
-if a backup must be restored for disaster recovery, the deletion job is re-applied before service is
-returned. A minimal, access-controlled record may be retained only where required for a legal hold,
-fraud or security investigation, or an active dispute, and must have a documented reason, owner,
-scope, and review/expiry date.
+**Lifecycle direction (MVP):** Nemeo supports account deletion and provider disconnection without
+committing to product-specific retention durations yet. Account deletion revokes access and
+provider credentials and removes the user’s personal, financial, and derived data from active
+systems. Disconnecting a provider immediately revokes its credentials and prevents future
+scheduled synchronization while preserving already imported history and budget decisions.
 
-Disconnecting a provider immediately revokes its credentials and prevents future scheduled syncs.
-Imported history and budget decisions remain available for 24 months after disconnection, then are
-deleted by the retention job unless the account is deleted sooner. Before deletion, the user can
-export their data in machine-readable JSON and tabular CSV formats. Export does not extend the
-retention period. Deletion and retention operations are auditable without retaining the deleted
-financial payload.
+Exact retention periods, deletion schedules, backup handling, export formats, legal exceptions, and
+policy overrides are deferred until required by launch policy or legal review. Until then, any
+necessary exceptions are handled manually and access to retained data remains restricted.
 
 **Acceptance criteria:**
 - [ ] A user can access only their own accounts, transactions, budgets, reports, and provider connection details unless explicitly shared
 - [ ] Household and MCP access checks are enforced server-side for every read and write operation
 - [ ] Provider credentials, tokens, and connection secrets are encrypted and excluded from logs and ordinary API responses
 - [ ] Disconnecting a provider prevents future scheduled syncs while preserving already imported data according to the product’s retention policy
-- [ ] Account deletion initiates immediately, completes active-system removal within 30 days, and expires ordinary backups within 35 days
-- [ ] A disconnected provider’s imported history and budget decisions are retained for 24 months, then deleted automatically unless the account is deleted sooner
-- [ ] A user can export their data as JSON and CSV before deletion or retention expiry
-- [ ] Legal holds, fraud/security investigations, and active disputes are the only MVP exceptions; each exception records its reason, owner, scope, and review/expiry date
+- [ ] Account deletion revokes access and provider credentials and removes the user’s personal, financial, and derived data from active systems
+- [ ] A disconnected provider’s imported history and budget decisions remain available until the account is deleted or a later retention policy applies
 - [ ] Sensitive access and mutation events are recorded for audit and troubleshooting
 
 ## Release phases
