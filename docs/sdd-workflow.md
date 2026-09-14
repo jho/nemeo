@@ -28,5 +28,9 @@ PRD → Event Model → ratified slice → bridge → spec.md → plan.md → ta
 The normal Spec Kit quality gates are clarification, checklist review, cross-artifact analysis, and
 post-implementation convergence. The Event Model gates are model validation and slice readiness.
 
+Accepted architecture choices are recorded in ADRs and summarized as enforceable constraints in
+`.specify/memory/constitution.md`. Plans and tasks must follow the constitution summary; consult the
+linked ADR when the rationale, alternatives, or consequences are needed.
+
 Feature work MUST use the bridge rather than manually creating a parallel `spec.md`. A feature PR
 MUST link its GitHub issue, identify affected artifacts, and include verification evidence.

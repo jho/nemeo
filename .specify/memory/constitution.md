@@ -36,6 +36,21 @@ An artifact moves to the next phase only after its required review and validatio
 Automation MUST validate Event Model syntax and slice readiness before allocating implementation
 work.
 
+## Accepted architecture constraints
+
+This section is the enforcement-facing summary of accepted architecture decisions. The ADRs contain
+the decision context, alternatives, rationale, and consequences; plans and tasks MUST comply with
+these constraints.
+
+- Event Model slices are the implementation boundary, and each ratified slice maps to one Spec Kit
+  feature, branch, and pull request. See [ADR 0002](../../docs/architecture/adrs/0002-spec-driven-development-workflow.md).
+- All changes are delivered through focused pull requests with Markdown, Event Model validation,
+  and whitespace checks as the current CI gates. See [ADR 0001](../../docs/architecture/adrs/0001-pull-request-and-ci-workflow.md).
+
+When a new architecture decision is accepted, its ADR MUST be linked here with the concise rule
+that Spec Kit needs to enforce. When an architecture decision is superseded, this section and the
+ADR index MUST be updated in the same reviewed change.
+
 ## Governance
 
 Amendments require a reviewed pull request linked to the relevant GitHub issue. The PRD, Event
