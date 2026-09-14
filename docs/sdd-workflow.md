@@ -32,5 +32,9 @@ Accepted architecture choices are recorded in ADRs and summarized as enforceable
 `.specify/memory/constitution.md`. Plans and tasks must follow the constitution summary; consult the
 linked ADR when the rationale, alternatives, or consequences are needed.
 
+For every accepted architecture issue, the ADR, constitution constraint, and decision-index status
+are updated together. Repository-level agent guidance in [`AGENTS.md`](../AGENTS.md) treats this as
+the acceptance checklist for architecture work.
+
 Feature work MUST use the bridge rather than manually creating a parallel `spec.md`. A feature PR
 MUST link its GitHub issue, identify affected artifacts, and include verification evidence.
