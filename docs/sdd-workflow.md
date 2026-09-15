@@ -28,6 +28,10 @@ PRD → Event Model → ratified slice → bridge → spec.md → plan.md → ta
 The normal Spec Kit quality gates are clarification, checklist review, cross-artifact analysis, and
 post-implementation convergence. The Event Model gates are model validation and slice readiness.
 
+Local integration tests and agentic development use the repository’s Docker Compose service
+contract. Cloud-specific deployment configuration is an adapter and must not become a prerequisite
+for feature implementation.
+
 Accepted architecture choices are recorded in ADRs and summarized as enforceable constraints in
 `.specify/memory/constitution.md`. Plans and tasks must follow the constitution summary; consult the
 linked ADR when the rationale, alternatives, or consequences are needed.
