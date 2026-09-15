@@ -41,7 +41,7 @@ These need product/design answers first. They are tracked as GitHub issues, not 
 | [#20](https://github.com/jho/nemeo/issues/20) | Identity, tenancy, and authorization | Open / High | Product issues #5, #9 |
 | [#21](https://github.com/jho/nemeo/issues/21) | MCP boundary and agent permissions | Open / High | Product issue #6, #20 |
 | [#22](https://github.com/jho/nemeo/issues/22) | AI decision boundary and model providers | Open / Medium | Product issues #7, #8 |
-| [#23](https://github.com/jho/nemeo/issues/23) | Hosting, environments, and operations | Open / High | #12, #17, product issue #9 |
+| [#23](https://github.com/jho/nemeo/issues/23) | Hosting, environments, and operations | Accepted model / Open operations | #12, #17, product issue #9 |
 | [#24](https://github.com/jho/nemeo/issues/24) | Testing and architecture quality gates | Open / High | #12, #17, #20 |
 | [#25](https://github.com/jho/nemeo/issues/25) | Pull-request and CI workflow | Accepted | #12, #24 |
 
