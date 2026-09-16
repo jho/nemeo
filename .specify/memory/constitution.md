@@ -1,6 +1,6 @@
 # Nemeo Constitution
 
-**Version:** 1.1.0
+**Version:** 1.3.0
 **Ratified:** 2026-09-14
 **Last amended:** 2026-09-16
 
@@ -58,6 +58,19 @@ these constraints.
   surface. Generated MCP tools MUST NOT bypass authorization, confirmation, or tenancy rules. See
   [ADR 0004](../../docs/architecture/adrs/0004-typespec-fastify-vertical-slice-backend.md) and the
   follow-up MCP decision in issue [#21](https://github.com/jho/nemeo/issues/21).
+- MVP uses a conventional modular monolith: one application package, one `nemeo` image, and one
+  application process composing web, API, MCP, worker, scheduler, and projection interfaces.
+  Modules and entry points MUST preserve future extraction seams, while internal integration uses
+  direct application capabilities rather than internal HTTP. See [ADR 0005](../../docs/architecture/adrs/0005-modular-monolith-topology.md).
+- Frontend and backend MAY ship in the same repository and deployment unit for slice velocity, but
+  the frontend MUST communicate through the generated API contract and MUST NOT depend on backend
+  internals or persistence structures. See [ADR 0005](../../docs/architecture/adrs/0005-modular-monolith-topology.md).
+- MVP build and test workflows MUST prefer standard Node.js tooling and npm scripts over custom
+  orchestration. See [ADR 0005](../../docs/architecture/adrs/0005-modular-monolith-topology.md).
+- Event Model bounded contexts MUST remain explicit logical modules even within the MVP monolith.
+  Cross-context code MUST use published commands, queries, events, translations, or composition;
+  it MUST NOT import another context's internals or access its persistence directly. See
+  [ADR 0005](../../docs/architecture/adrs/0005-modular-monolith-topology.md).
 
 When a new architecture decision is accepted, its ADR MUST be linked here with the concise rule
 that Spec Kit needs to enforce. When an architecture decision is superseded, this section and the
