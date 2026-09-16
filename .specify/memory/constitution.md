@@ -1,8 +1,8 @@
 # Nemeo Constitution
 
-**Version:** 1.0.0
+**Version:** 1.1.0
 **Ratified:** 2026-09-14
-**Last amended:** 2026-09-14
+**Last amended:** 2026-09-16
 
 ## Principles
 
@@ -48,6 +48,16 @@ these constraints.
   and whitespace checks as the current CI gates. See [ADR 0001](../../docs/architecture/adrs/0001-pull-request-and-ci-workflow.md).
 - MVP deployment and integration testing use Docker Compose as the cloud-agnostic service contract;
   cloud-specific deployment adapters are deferred. See [ADR 0003](../../docs/architecture/adrs/0003-compose-first-hosting-model.md).
+- MVP backend work uses Node.js 24 LTS with strict TypeScript and Fastify. API
+  contracts originate in TypeSpec and emit versioned OpenAPI artifacts; generated API artifacts do
+  not own business logic. See [ADR 0004](../../docs/architecture/adrs/0004-typespec-fastify-vertical-slice-backend.md).
+- Backend implementation is organized by Event Model-aligned vertical feature slices with distinct
+  command and query capabilities. Slices may use direct PostgreSQL CQRS or Emmett behind a
+  persistence boundary; event sourcing is not implied. See [ADR 0004](../../docs/architecture/adrs/0004-typespec-fastify-vertical-slice-backend.md).
+- MCP exposure is a curated capability surface derived from, but not equivalent to, the OpenAPI
+  surface. Generated MCP tools MUST NOT bypass authorization, confirmation, or tenancy rules. See
+  [ADR 0004](../../docs/architecture/adrs/0004-typespec-fastify-vertical-slice-backend.md) and the
+  follow-up MCP decision in issue [#21](https://github.com/jho/nemeo/issues/21).
 
 When a new architecture decision is accepted, its ADR MUST be linked here with the concise rule
 that Spec Kit needs to enforce. When an architecture decision is superseded, this section and the

@@ -44,6 +44,8 @@ These need product/design answers first. They are tracked as GitHub issues, not 
 | [#23](https://github.com/jho/nemeo/issues/23) | Hosting, environments, and operations | Accepted model / Open operations | #12, #17, product issue #9 |
 | [#24](https://github.com/jho/nemeo/issues/24) | Testing and architecture quality gates | Open / High | #12, #17, #20 |
 | [#25](https://github.com/jho/nemeo/issues/25) | Pull-request and CI workflow | Accepted | #12, #24 |
+| [#33](https://github.com/jho/nemeo/issues/33) / [ADR 0004](adrs/0004-typespec-fastify-vertical-slice-backend.md) | MVP backend platform, API-first contracts, and vertical slices | Accepted | #12, #23 |
+| [#34](https://github.com/jho/nemeo/issues/34) | API contract and rules follow-up | Open / High; platform direction established by ADR 0004 | #33 |
 
 ADRs are created only after the corresponding architecture issue is resolved. The `adrs/`
 directory is reserved for accepted decision records.
@@ -53,13 +55,14 @@ directory is reserved for accepted decision records.
 1. Product constraints: first-run journey, pace semantics, mobile scope, and data-lifecycle promises.
 2. SDD artifact ownership and event-model slicing workflow.
 3. Hosting constraints: deployment model, regions, managed services, environments, security, and operational budget.
-4. UI platform and rendering strategy.
-5. Application topology and module/process boundaries.
-6. Persistence/event strategy and provider contract.
-7. Jobs, synchronization, identity, and authorization.
-8. UI design system and interaction details.
-9. MCP and AI boundaries.
-10. Testing and quality gates.
+4. Backend platform, API contract direction, and vertical-slice organization.
+5. UI platform and rendering strategy.
+6. Application topology and module/process boundaries.
+7. Persistence/event strategy and provider contract.
+8. Jobs, synchronization, identity, and authorization.
+9. UI design system and interaction details.
+10. MCP and AI boundaries.
+11. Testing and quality gates.
 
 Hosting is intentionally early at the constraints level. Concrete vendor selection should follow
 the topology and persistence decisions rather than being deferred until the end.
