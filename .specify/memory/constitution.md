@@ -1,6 +1,6 @@
 # Nemeo Constitution
 
-**Version:** 1.3.0
+**Version:** 1.4.0
 **Ratified:** 2026-09-14
 **Last amended:** 2026-09-16
 
@@ -71,6 +71,11 @@ these constraints.
   Cross-context code MUST use published commands, queries, events, translations, or composition;
   it MUST NOT import another context's internals or access its persistence directly. See
   [ADR 0005](../../docs/architecture/adrs/0005-modular-monolith-topology.md).
+- Search and analytics MUST remain separate read capabilities. Search uses allowlisted,
+  resource-specific filters or query grammar and MUST NOT expose raw SQL. Analytics uses named
+  metrics over Reporting projections with explicit dimensions, units, and time semantics. Both MUST
+  be tenant/household scoped and permission checked, and neither may create an alternate command
+  path. See [ADR 0006](../../docs/architecture/adrs/0006-search-and-analytics-query-model.md).
 
 When a new architecture decision is accepted, its ADR MUST be linked here with the concise rule
 that Spec Kit needs to enforce. When an architecture decision is superseded, this section and the
