@@ -162,8 +162,18 @@ Errors use Problem Details with stable machine-readable extensions:
 
 ### Contract delivery and testing
 
-- TypeSpec compilation, OpenAPI validation, generated-client type checks, and API contract tests run
-  in CI once the application exists.
+- TypeSpec compilation, OpenAPI validation, generated-client type checks, and a breaking-change
+  comparison against the previous version run in CI.
+- Runtime contract checks are required because TypeSpec cannot prove that manually composed Fastify
+  routes implement the emitted contract. For each operation, a focused integration test MUST cover
+  route registration, representative valid input, response shape/status, and representative invalid
+  input or error behavior. These tests use the generated contract or validator; they do not duplicate
+  every TypeSpec field as hand-written assertions.
+- Additive versioned changes do not require a new API version, but new operations, fields, or enum
+  values require the affected contract and runtime tests to be updated. Breaking changes fail the
+  compatibility check or require a new major API version.
+- Consumer-driven contract testing across independently deployed clients is deferred until Nemeo
+  has external API consumers or independently released services.
 - Each API operation maps to an Event Model slice or an explicitly documented cross-slice query.
 - Frontend, MCP, and integration tests consume the contract or generated client types rather than
   importing backend implementation modules.
