@@ -1,0 +1,232 @@
+<div id="nemeo-dashboard-mockup" aria-label="Nemeo budget dashboard mockup">
+  <style>
+    #nemeo-dashboard-mockup {
+      --nemeo-ink: #20243a;
+      --nemeo-muted: #74778b;
+      --nemeo-paper: #f7f7fb;
+      --nemeo-surface: #ffffff;
+      --nemeo-line: #e1e3ee;
+      --nemeo-blue: #5b65ae;
+      --nemeo-blue-soft: #eceeff;
+      --nemeo-green: #347b68;
+      --nemeo-green-soft: #e4f3ee;
+      --nemeo-amber: #99611e;
+      --nemeo-amber-soft: #fff1d7;
+      --nemeo-coral: #bd594b;
+      --nemeo-coral-soft: #fbe7e3;
+      --nemeo-radius: 18px;
+      color: var(--nemeo-ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--nemeo-paper);
+      border: 1px solid var(--nemeo-line);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 22px 60px rgba(24, 33, 43, .12);
+      min-height: 680px;
+    }
+
+    #nemeo-dashboard-mockup * { box-sizing: border-box; }
+    #nemeo-dashboard-mockup button { font: inherit; }
+    .nemeo-shell { display: grid; grid-template-columns: 220px minmax(0, 1fr); min-height: 680px; }
+    .nemeo-nav { background: #27283d; color: #e2e4f0; padding: 25px 16px; display: flex; flex-direction: column; }
+    .nemeo-brand { display: flex; align-items: center; gap: 10px; color: white; font-weight: 750; letter-spacing: -.03em; font-size: 20px; padding: 0 10px 34px; }
+    .nemeo-bot { width: 28px; height: 28px; border-radius: 9px; background: #e0e3ff; position: relative; display: inline-block; box-shadow: 0 0 0 3px rgba(146, 153, 235, .12); }
+    .nemeo-bot::before, .nemeo-bot::after { content: ""; position: absolute; top: 10px; width: 4px; height: 4px; border-radius: 50%; background: #5b65ae; }
+    .nemeo-bot::before { left: 7px; } .nemeo-bot::after { right: 7px; }
+    .nemeo-nav-group { display: grid; gap: 5px; }
+    .nemeo-nav-button { border: 0; background: transparent; color: #b9bdd2; text-align: left; padding: 11px 12px; border-radius: 10px; cursor: pointer; font-size: 14px; }
+    .nemeo-nav-button[aria-current="page"] { background: #414363; color: white; }
+    .nemeo-nav-button:hover, .nemeo-nav-button:focus-visible { background: #383a59; color: white; outline: none; }
+    .nemeo-nav-footer { margin-top: auto; border-top: 1px solid #454762; padding: 18px 10px 0; color: #afb3c9; font-size: 12px; line-height: 1.5; }
+    .nemeo-main { padding: 30px clamp(20px, 4vw, 48px) 42px; overflow: hidden; }
+    .nemeo-header { display: flex; justify-content: flex-end; gap: 20px; align-items: center; margin-bottom: 16px; }
+    .nemeo-eyebrow { color: var(--nemeo-muted); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .nemeo-title { font-size: clamp(27px, 4vw, 38px); letter-spacing: -.05em; line-height: 1.05; margin: 7px 0 8px; }
+    .nemeo-subtitle { color: var(--nemeo-muted); margin: 0; font-size: 14px; }
+    .nemeo-month { display: flex; gap: 8px; align-items: center; border: 1px solid var(--nemeo-line); background: var(--nemeo-surface); border-radius: 10px; color: var(--nemeo-ink); padding: 9px 11px; cursor: pointer; font-size: 13px; }
+    .nemeo-month:hover, .nemeo-month:focus-visible { border-color: var(--nemeo-blue); outline: 3px solid rgba(45, 106, 120, .15); }
+    .nemeo-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(280px, .85fr); gap: 17px; align-items: start; }
+    .nemeo-panel { background: var(--nemeo-surface); border: 1px solid var(--nemeo-line); border-radius: var(--nemeo-radius); padding: 21px; }
+    .nemeo-panel-heading { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 19px; }
+    .nemeo-panel-title { margin: 0; font-size: 16px; letter-spacing: -.02em; }
+    .nemeo-panel-link { color: var(--nemeo-blue); font-size: 12px; font-weight: 700; text-decoration: none; }
+    .nemeo-panel-link:hover, .nemeo-panel-link:focus-visible { text-decoration: underline; }
+    .nemeo-status { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 22px; }
+    .nemeo-status h2 { margin: 0 0 5px; font-size: 25px; letter-spacing: -.04em; }
+    .nemeo-status p { margin: 0; color: var(--nemeo-muted); font-size: 13px; }
+    .nemeo-status-pill { background: var(--nemeo-green-soft); color: var(--nemeo-green); border-radius: 99px; padding: 8px 11px; font-size: 12px; font-weight: 750; white-space: nowrap; }
+    .nemeo-progress-track { height: 12px; border-radius: 99px; background: #e8edeb; overflow: hidden; position: relative; }
+    .nemeo-progress-actual { height: 100%; width: 68%; background: var(--nemeo-blue); border-radius: inherit; }
+    .nemeo-progress-marker { position: absolute; left: 70%; top: -3px; height: 18px; width: 2px; background: var(--nemeo-amber); }
+    .nemeo-progress-labels { display: flex; justify-content: space-between; color: var(--nemeo-muted); font-size: 12px; margin-top: 8px; }
+    .nemeo-stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
+    .nemeo-stat { border-top: 1px solid var(--nemeo-line); padding-top: 12px; }
+    .nemeo-stat-label { display: block; color: var(--nemeo-muted); font-size: 11px; margin-bottom: 4px; }
+    .nemeo-stat-value { font-weight: 750; font-size: 16px; }
+    .nemeo-chart { margin-top: 23px; }
+    .nemeo-chart svg { width: 100%; height: 124px; display: block; overflow: visible; }
+    .nemeo-chart-grid { stroke: #e9eeeb; stroke-width: 1; }
+    .nemeo-chart-expected { fill: none; stroke: #91aaa8; stroke-width: 2; stroke-dasharray: 5 5; }
+    .nemeo-chart-actual { fill: none; stroke: var(--nemeo-blue); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    .nemeo-chart-label { fill: var(--nemeo-muted); font-size: 10px; }
+    .nemeo-legend { display: flex; gap: 15px; color: var(--nemeo-muted); font-size: 11px; margin-top: 5px; }
+    .nemeo-legend span::before { content: ""; display: inline-block; width: 15px; border-top: 2px solid var(--nemeo-blue); vertical-align: middle; margin-right: 5px; }
+    .nemeo-legend span:last-child::before { border-top-color: #91aaa8; border-top-style: dashed; }
+    .nemeo-attention { grid-column: 1; }
+    .nemeo-cashflow-panel { grid-column: 2; grid-row: 1 / span 2; }
+    .nemeo-attention-intro { color: var(--nemeo-muted); font-size: 13px; margin: -10px 0 15px; }
+    .nemeo-warning-list { display: grid; gap: 8px; }
+    .nemeo-warning { width: 100%; display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; align-items: center; gap: 12px; border: 1px solid transparent; border-radius: 12px; padding: 12px 13px; background: #fffaf1; text-align: left; cursor: pointer; color: var(--nemeo-ink); }
+    .nemeo-warning:hover, .nemeo-warning:focus-visible, .nemeo-warning[data-selected="true"] { border-color: #ebd4a6; outline: none; background: #fff6e4; }
+    .nemeo-warning-dot { width: 9px; height: 9px; background: var(--nemeo-amber); border-radius: 50%; }
+    .nemeo-warning-name { display: block; font-weight: 750; font-size: 14px; }
+    .nemeo-warning-detail { display: block; color: var(--nemeo-muted); font-size: 12px; margin-top: 3px; }
+    .nemeo-warning-amount { color: var(--nemeo-amber); font-weight: 750; font-size: 13px; white-space: nowrap; }
+    .nemeo-detail { margin-top: 12px; padding: 16px; background: var(--nemeo-amber-soft); border-radius: 12px; display: none; }
+    .nemeo-detail[data-open="true"] { display: block; }
+    .nemeo-detail-heading { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+    .nemeo-detail h4 { margin: 0; font-size: 14px; }
+    .nemeo-detail p { margin: 8px 0 13px; color: #765327; font-size: 12px; line-height: 1.5; }
+    .nemeo-detail-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .nemeo-action { border: 0; border-radius: 9px; padding: 8px 11px; cursor: pointer; background: var(--nemeo-blue); color: white; font-size: 12px; font-weight: 700; }
+    .nemeo-action-secondary { background: rgba(255,255,255,.7); color: var(--nemeo-amber); border: 1px solid #e2c38d; }
+    .nemeo-action:hover, .nemeo-action:focus-visible { filter: brightness(.94); outline: 3px solid rgba(45, 106, 120, .16); }
+    .nemeo-cashflow { display: grid; gap: 15px; }
+    .nemeo-cashflow-row { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid var(--nemeo-line); padding-bottom: 11px; }
+    .nemeo-cashflow-row:last-child { border-bottom: 0; padding-bottom: 0; }
+    .nemeo-cashflow-label { color: var(--nemeo-muted); font-size: 12px; }
+    .nemeo-cashflow-value { font-size: 16px; font-weight: 750; }
+    .nemeo-support { color: var(--nemeo-muted); font-size: 12px; line-height: 1.55; margin: 18px 0 0; }
+    @media (max-width: 780px) {
+      #nemeo-dashboard-mockup { border-radius: 18px; }
+      .nemeo-shell { display: block; }
+      .nemeo-nav { padding: 15px 16px; }
+      .nemeo-brand { padding: 0 4px 14px; }
+      .nemeo-nav-group { display: flex; overflow-x: auto; gap: 5px; }
+      .nemeo-nav-button { white-space: nowrap; padding: 9px 10px; }
+      .nemeo-nav-footer { display: none; }
+      .nemeo-main { padding: 24px 16px 32px; }
+      .nemeo-header { margin-bottom: 14px; }
+      .nemeo-grid { grid-template-columns: 1fr; }
+      .nemeo-attention, .nemeo-cashflow-panel { grid-column: auto; grid-row: auto; }
+    }
+    @media (max-width: 460px) {
+      .nemeo-header { display: flex; }
+      .nemeo-month { margin-top: 0; }
+      .nemeo-status { align-items: flex-start; display: block; }
+      .nemeo-status-pill { display: inline-block; margin-top: 12px; }
+      .nemeo-stat-row { gap: 8px; }
+      .nemeo-stat-value { font-size: 14px; }
+    }
+  </style>
+
+  <div class="nemeo-shell">
+    <nav class="nemeo-nav" aria-label="Nemeo navigation">
+      <div class="nemeo-brand"><span class="nemeo-bot" aria-hidden="true"></span><span>Nemeo</span></div>
+      <div class="nemeo-nav-group">
+        <button class="nemeo-nav-button" aria-current="page" type="button">Dashboard</button>
+        <button class="nemeo-nav-button" type="button">Transactions</button>
+        <button class="nemeo-nav-button" type="button">Budget</button>
+        <button class="nemeo-nav-button" type="button">Connections</button>
+      </div>
+      <div class="nemeo-nav-footer">Your budget is quietly keeping watch.<br><strong>September 2026</strong></div>
+    </nav>
+
+    <main class="nemeo-main">
+      <header class="nemeo-header">
+        <button class="nemeo-month" type="button" aria-label="Selected budget period: September 2026">September 2026 <span aria-hidden="true">⌄</span></button>
+      </header>
+
+      <div class="nemeo-grid">
+        <section class="nemeo-panel" aria-labelledby="nemeo-progress-title">
+          <div class="nemeo-status">
+            <div>
+              <h2 id="nemeo-progress-title">You’re on pace</h2>
+              <p>Spending is a little below where it needs to be today.</p>
+            </div>
+            <span class="nemeo-status-pill">$100 under pace</span>
+          </div>
+          <div class="nemeo-progress-track" role="img" aria-label="Budget progress: 2,840 dollars spent of a 4,200 dollar target; expected spend is 2,940 dollars">
+            <div class="nemeo-progress-actual"></div><div class="nemeo-progress-marker" aria-hidden="true"></div>
+          </div>
+          <div class="nemeo-progress-labels"><span>$2,840 spent</span><span>$4,200 target</span></div>
+          <div class="nemeo-stat-row">
+            <div class="nemeo-stat"><span class="nemeo-stat-label">Expected today</span><span class="nemeo-stat-value">$2,940</span></div>
+            <div class="nemeo-stat"><span class="nemeo-stat-label">Days remaining</span><span class="nemeo-stat-value">12</span></div>
+            <div class="nemeo-stat"><span class="nemeo-stat-label">Projected total</span><span class="nemeo-stat-value">$4,050</span></div>
+          </div>
+          <div class="nemeo-chart" aria-label="Actual spending versus expected pace over September">
+            <svg viewBox="0 0 620 124" role="img" aria-labelledby="nemeo-chart-title">
+              <title id="nemeo-chart-title">Actual spending is tracking just below expected pace.</title>
+              <line class="nemeo-chart-grid" x1="15" y1="15" x2="605" y2="15"></line><line class="nemeo-chart-grid" x1="15" y1="57" x2="605" y2="57"></line><line class="nemeo-chart-grid" x1="15" y1="99" x2="605" y2="99"></line>
+              <polyline class="nemeo-chart-expected" points="15,99 110,84 205,70 300,57 395,43 490,28 605,15"></polyline>
+              <polyline class="nemeo-chart-actual" points="15,99 110,86 205,74 300,62 395,51 490,36 605,25"></polyline>
+              <text class="nemeo-chart-label" x="15" y="119">Sep 1</text><text class="nemeo-chart-label" x="280" y="119">Today</text><text class="nemeo-chart-label" x="570" y="119">Sep 30</text>
+            </svg>
+            <div class="nemeo-legend"><span>Actual spend</span><span>Expected pace</span></div>
+          </div>
+        </section>
+
+        <section class="nemeo-panel nemeo-attention" aria-labelledby="nemeo-attention-title">
+          <div class="nemeo-panel-heading"><h2 class="nemeo-panel-title" id="nemeo-attention-title">Worth a look</h2><a class="nemeo-panel-link" href="#nemeo-attention-title">See all review items</a></div>
+          <p class="nemeo-attention-intro">Two categories are ahead of pace. Nothing is urgent—these are just the places with the most room to adjust.</p>
+          <div class="nemeo-warning-list">
+            <button class="nemeo-warning" type="button" data-category="Dining" data-selected="false">
+              <span class="nemeo-warning-dot" aria-hidden="true"></span><span><span class="nemeo-warning-name">Dining out</span><span class="nemeo-warning-detail">$680 spent · expected $500 by today</span></span><span class="nemeo-warning-amount">+$180</span>
+            </button>
+            <button class="nemeo-warning" type="button" data-category="Shopping" data-selected="false">
+              <span class="nemeo-warning-dot" aria-hidden="true"></span><span><span class="nemeo-warning-name">Shopping</span><span class="nemeo-warning-detail">$420 spent · expected $330 by today</span></span><span class="nemeo-warning-amount">+$90</span>
+            </button>
+          </div>
+          <div class="nemeo-detail" data-open="false" aria-live="polite">
+            <div class="nemeo-detail-heading"><h4 class="nemeo-detail-title">Dining out is ahead of pace</h4><span class="nemeo-warning-amount">+$180</span></div>
+            <p class="nemeo-detail-copy">Three recent transactions explain most of the difference. Review them or open the category to decide whether the target still fits this month.</p>
+            <div class="nemeo-detail-actions"><button class="nemeo-action" type="button">Review transactions</button><button class="nemeo-action nemeo-action-secondary" type="button">Open category</button></div>
+          </div>
+        </section>
+
+        <aside class="nemeo-panel nemeo-cashflow-panel" aria-labelledby="nemeo-cashflow-title">
+          <div class="nemeo-panel-heading"><h2 class="nemeo-panel-title" id="nemeo-cashflow-title">This month</h2><a class="nemeo-panel-link" href="#nemeo-cashflow-title">View details</a></div>
+          <div class="nemeo-cashflow">
+            <div class="nemeo-cashflow-row"><span class="nemeo-cashflow-label">Money in</span><span class="nemeo-cashflow-value">$6,420</span></div>
+            <div class="nemeo-cashflow-row"><span class="nemeo-cashflow-label">Money out</span><span class="nemeo-cashflow-value">$2,840</span></div>
+            <div class="nemeo-cashflow-row"><span class="nemeo-cashflow-label">Net cashflow</span><span class="nemeo-cashflow-value" style="color: var(--nemeo-green)">+$3,580</span></div>
+          </div>
+          <p class="nemeo-support">Transfers and card payments are left out of these totals.</p>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const nemeoRoot = document.getElementById("nemeo-dashboard-mockup");
+    const nemeoDetail = nemeoRoot.querySelector(".nemeo-detail");
+    const nemeoDetailTitle = nemeoRoot.querySelector(".nemeo-detail-title");
+    const nemeoDetailCopy = nemeoRoot.querySelector(".nemeo-detail-copy");
+    const nemeoAmount = nemeoRoot.querySelector(".nemeo-detail .nemeo-warning-amount");
+    const nemeoWarnings = [...nemeoRoot.querySelectorAll(".nemeo-warning")];
+    const nemeoCopy = {
+      Dining: ["Dining out is ahead of pace", "+$180", "Three recent transactions explain most of the difference. Review them or open the category to decide whether the target still fits this month."],
+      Shopping: ["Shopping is ahead of pace", "+$90", "A few recent purchases put this category ahead of pace. Review the transactions or open the category to see the remaining target."]
+    };
+    function nemeoSelectWarning(button) {
+      const category = button.dataset.category;
+      const content = nemeoCopy[category];
+      nemeoWarnings.forEach((item) => item.dataset.selected = String(item === button));
+      nemeoDetailTitle.textContent = content[0];
+      nemeoAmount.textContent = content[1];
+      nemeoDetailCopy.textContent = content[2];
+      nemeoDetail.dataset.open = "true";
+    }
+    nemeoWarnings.forEach((button) => button.addEventListener("click", () => nemeoSelectWarning(button)));
+    if (globalThis.Tweak) {
+      const nemeoState = { emphasis: "calm" };
+      const nemeoHeader = nemeoRoot.querySelector(".nemeo-header");
+      const nemeoTweak = new Tweak({ container: nemeoHeader, onChange: () => {
+        nemeoRoot.dataset.emphasis = nemeoState.emphasis;
+        nemeoRoot.style.setProperty("--nemeo-amber", nemeoState.emphasis === "attention" ? "#bd594b" : "#99611e");
+      }});
+      nemeoTweak.addSelect(nemeoState, "emphasis", { label: "Attention treatment", options: [{ label: "Calm", value: "calm" }, { label: "Attention-first", value: "attention" }], reference: "dashboard.emphasis" });
+    }
+  </script>
+</div>
