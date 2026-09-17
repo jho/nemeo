@@ -46,7 +46,8 @@ These need product/design answers first. They are tracked as GitHub issues, not 
 | [#25](https://github.com/jho/nemeo/issues/25) | Pull-request and CI workflow | Accepted | #12, #24 |
 | [#33](https://github.com/jho/nemeo/issues/33) / [ADR 0004](adrs/0004-typespec-fastify-vertical-slice-backend.md) | MVP backend platform, API-first contracts, and vertical slices | Accepted | #12, #23 |
 | [#16](https://github.com/jho/nemeo/issues/16) / [ADR 0005](adrs/0005-modular-monolith-topology.md) | Initial modular-monolith application topology | Accepted; persistence details remain open | #33, #12, #23 |
-| [#34](https://github.com/jho/nemeo/issues/34) / [ADR 0007](adrs/0007-application-api-standards.md) | Application API standards and ergonomics; search/analytics in ADR 0006 | Accepted | #33, #16 |
+| [#34](https://github.com/jho/nemeo/issues/34) / [ADR 0006](adrs/0006-application-api-standards.md) | Application API standards and ergonomics | Accepted | #33, #16 |
+| [ADR 0007](adrs/0007-search-and-analytics-query-model.md) | Search and analytics query model follow-up | Accepted; depends on API standards | ADR 0006, #17 |
 
 ADRs are created only after the corresponding architecture issue is resolved. The `adrs/`
 directory is reserved for accepted decision records.

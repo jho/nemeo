@@ -1,10 +1,10 @@
-# ADR 0007: Application API Standards and Ergonomics
+# ADR 0006: Application API Standards and Ergonomics
 
 - Status: Accepted
 - Date: 2026-09-17
 - GitHub issue: [#34](https://github.com/jho/nemeo/issues/34)
 - Platform decision: [ADR 0004](0004-typespec-fastify-vertical-slice-backend.md)
-- Query-model decision: [ADR 0006](0006-search-and-analytics-query-model.md)
+- Query-model follow-up: [ADR 0007](0007-search-and-analytics-query-model.md)
 - Topology decision: [ADR 0005](0005-modular-monolith-topology.md)
 
 ## Context
@@ -15,7 +15,7 @@ resource-oriented API while still representing Event Model commands that are not
 
 The API must be TypeSpec-first, compatible with the modular monolith, safe for household-scoped
 financial data, and suitable for generated clients and contract testing. Search and analytics have
-distinct read models and are governed by ADR 0006.
+distinct read models and are governed by ADR 0007.
 
 ## Decision
 
@@ -136,7 +136,7 @@ Errors use Problem Details with stable machine-readable extensions:
 - Default ordering is newest-first by a stable timestamp plus opaque ID tie-breaker unless a slice
   documents a different business ordering.
 - Resource-specific filters and sorts are typed in TypeSpec and validated by the server.
-- Search uses the constrained model in ADR 0006. No endpoint accepts raw SQL or arbitrary expression
+- Search uses the constrained model in ADR 0007. No endpoint accepts raw SQL or arbitrary expression
   evaluation.
 
 ### Idempotency and concurrency
@@ -169,7 +169,7 @@ Errors use Problem Details with stable machine-readable extensions:
   importing backend implementation modules.
 - API documentation is generated from TypeSpec/OpenAPI and published with the versioned contract.
 
-Search and analytics remain separate read capabilities under ADR 0006. MCP exposure is curated under
+Search and analytics remain separate read capabilities under ADR 0007. MCP exposure is curated under
 ADR 0004 and issue [#21](https://github.com/jho/nemeo/issues/21); the existence of an API operation
 does not automatically make it an MCP tool.
 
