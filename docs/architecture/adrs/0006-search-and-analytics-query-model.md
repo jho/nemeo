@@ -83,4 +83,3 @@ language or metric API later without making either one a prerequisite for MVP.
 The Reporting context becomes an explicit owner of derived metrics. This creates projection and
 freshness concerns that belong in the persistence, jobs, and testing decisions, but it keeps those
 concerns out of command handlers and transport-specific code.
-
