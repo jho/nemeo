@@ -1,6 +1,6 @@
 # Nemeo Constitution
 
-**Version:** 1.4.0
+**Version:** 1.5.0
 **Ratified:** 2026-09-14
 **Last amended:** 2026-09-16
 
@@ -75,7 +75,12 @@ these constraints.
   resource-specific filters or query grammar and MUST NOT expose raw SQL. Analytics uses named
   metrics over Reporting projections with explicit dimensions, units, and time semantics. Both MUST
   be tenant/household scoped and permission checked, and neither may create an alternate command
-  path. See [ADR 0006](../../docs/architecture/adrs/0006-search-and-analytics-query-model.md).
+  path. See [ADR 0007](../../docs/architecture/adrs/0007-search-and-analytics-query-model.md).
+- The application API MUST be TypeSpec-first and emit versioned OpenAPI 3.1 artifacts. It MUST use
+  predictable resource URLs alongside explicit business command actions, JSON representations,
+  Problem Details errors, cursor pagination, bounded filters, explicit idempotency, and path-based
+  major versioning. API operations MUST map to slice capabilities and MUST NOT expose persistence
+  internals. See [ADR 0006](../../docs/architecture/adrs/0006-application-api-standards.md).
 
 When a new architecture decision is accepted, its ADR MUST be linked here with the concise rule
 that Spec Kit needs to enforce. When an architecture decision is superseded, this section and the
