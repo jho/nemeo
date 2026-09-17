@@ -41,15 +41,17 @@ distinct read models and are governed by ADR 0006.
   | Intent | Method | Example |
   |---|---|---|
   | Create a resource | `POST` collection | `POST /v1/budgets` |
-  | Replace a resource | `PUT` member | `PUT /v1/budgets/{budget_id}` |
-  | Partially update a resource | `PATCH` member | `PATCH /v1/budgets/{budget_id}` |
+  | Update a resource | `PATCH` member | `PATCH /v1/budgets/{budget_id}` |
   | Delete a resource | `DELETE` member | `DELETE /v1/budgets/{budget_id}` |
   | Retrieve a resource | `GET` member | `GET /v1/budgets/{budget_id}` |
   | List resources | `GET` collection | `GET /v1/budgets` |
 
-- `PUT` means the submitted representation is the complete replacement. `PATCH` means only the
-  submitted fields change. A slice MUST choose one deliberately; it MUST NOT use `POST` for CRUD
-  updates or deletes.
+- `PATCH` is the default and expected resource-update operation. It changes only the submitted
+  fields and maps naturally to command-oriented, concurrency-aware updates.
+- `PUT` is not part of the normal domain-resource API. It may be introduced only for a resource
+  whose semantics genuinely require complete replacement, such as a file or image, and the ADR or
+  feature specification MUST document why replacement is safe.
+- A slice MUST NOT use `POST` for CRUD updates or deletes.
 - Collections return a consistent envelope with `data`, `has_more`, and an opaque continuation
   cursor. Collection-specific summary fields may be added without changing the envelope.
 - CRUD operations use conventional REST semantics: `POST` creates a resource, `PATCH` or `PUT`
