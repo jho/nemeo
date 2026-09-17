@@ -36,8 +36,11 @@ distinct read models and are governed by ADR 0006.
 - Resource retrieval uses standard `GET` operations and returns resource representations directly.
 - Collections return a consistent envelope with `data`, cursor metadata, and any relevant summary
   information.
-- Event Model commands are represented by `POST` operations. Simple state changes may use resource
-  creation or update endpoints; meaningful business operations use explicit action paths such as
+- CRUD operations use conventional REST semantics: `POST` creates a resource, `PATCH` or `PUT`
+  updates a resource, and `DELETE` removes a resource. CRUD commands MUST NOT be represented as
+  action paths such as `POST /v1/budgets/{budget_id}/update` or
+  `POST /v1/budgets/{budget_id}/delete`.
+- Non-CRUD Event Model commands use `POST` operations with explicit action paths such as
   `POST /v1/budgets/{budget_id}/approve-targets`.
 - Command endpoints return the resulting resource or command outcome. Long-running work returns an
   accepted operation representation that can be queried, rather than hiding asynchronous behavior
@@ -151,4 +154,3 @@ and friendly to TypeSpec/OpenAPI generation.
 The tradeoff is that API design becomes a real contract: changing a schema, error code, pagination
 rule, or command semantics requires compatibility review and contract tests. Some details remain
 intentionally delegated to identity, jobs, persistence, and MCP decisions.
-
