@@ -301,7 +301,7 @@ client is not an MVP requirement.
 
 ### Basic reporting and dashboarding
 
-**Story:** As a budget owner, I want a simple current-month dashboard so that I can quickly understand cashflow, budget progress, and where money is going.
+**Story:** As a budget owner, I want a simple current-month dashboard so that I can quickly understand whether my budget is on pace and what needs my attention.
 
 **Product decision:** The dashboard is Nemeo’s primary home surface. It answers one question first:
 “How is my budget doing this month?” The current month’s overall progress and categories that are
@@ -309,13 +309,23 @@ off pace are immediately visible. Users drill down to category, transaction, or 
 only when they need more explanation or want to take action. The review queue is a follow-up
 workflow, not the primary home surface.
 
+**Reference prototype:** [`dashboard-mockup.html`](../../dashboard-mockup.html) illustrates the
+intended MVP hierarchy and interaction shape. It is a review aid, not a second source of product
+behavior; the PRD, Event Model, and API contracts remain authoritative.
+
+The prototype’s visual direction is quietly intelligent rather than futuristic: a soft
+indigo/graphite foundation, mint for healthy/on-pace states, and warm amber for ahead-of-pace
+warnings. The final Nemeo brand and robot language remain subject to product issue #11.
+
 **Acceptance criteria:**
 - [ ] The dashboard defaults to the current calendar month and clearly shows the reporting period
 - [ ] The dashboard leads with a concise overall budget status, including actual spend, target, expected spend for elapsed time, and current pace status
+- [ ] The dashboard header stays compact, showing the selected reporting period without a greeting or other content competing with the budget status
 - [ ] The dashboard shows a compact cashflow summary with cash inflows, cash outflows, and net cashflow for the current month
 - [ ] Transfers and credit-card payments are excluded from cashflow income and spending totals, while remaining available in transaction detail when relevant
 - [ ] Budget progress is shown as a line graph over the selected period with actual spending and target/expected pace
 - [ ] The dashboard prominently identifies categories that are ahead of pace, ordered by actionable impact, and links to the relevant budget or transactions
+- [ ] Specific pace warnings appear directly beneath the overall budget progress and before secondary cashflow detail
 - [ ] When no categories are ahead of pace, the dashboard clearly communicates that the budget is currently on track
 - [ ] The dashboard provides a path from each pace warning to the affected category, relevant transactions, and any applicable review action
 - [ ] Other review items are available from the dashboard without displacing the overall budget status or pace exceptions, prioritized by impact and confidence/attention required
