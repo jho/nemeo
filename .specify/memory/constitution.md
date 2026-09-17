@@ -1,6 +1,6 @@
 # Nemeo Constitution
 
-**Version:** 1.6.0
+**Version:** 1.7.0
 **Ratified:** 2026-09-14
 **Last amended:** 2026-09-16
 
@@ -87,6 +87,12 @@ these constraints.
   standalone launch, while offline data access, mutation queues, background sync, push delivery,
   and a separate native client remain out of MVP. See
   [ADR 0008](../../docs/architecture/adrs/0008-ui-platform-and-rendering-strategy.md).
+- Shared UI MUST use Nemeo-owned React components built on accessible Radix primitives and styled
+  through semantic CSS custom-property tokens with Tailwind CSS. Feature code MUST use the shared
+  components and semantic status variants rather than raw colors or third-party primitives. Pace,
+  review, error, and insufficient-history states MUST remain understandable without color alone;
+  final brand values and robot/AI styling follow product issue [#11](https://github.com/jho/nemeo/issues/11).
+  See [ADR 0009](../../docs/architecture/adrs/0009-ui-component-library-and-design-system.md).
 
 When a new architecture decision is accepted, its ADR MUST be linked here with the concise rule
 that Spec Kit needs to enforce. When an architecture decision is superseded, this section and the

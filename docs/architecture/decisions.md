@@ -32,7 +32,7 @@ These need product/design answers first. They are tracked as GitHub issues, not 
 |---|---|---|---|
 | [#12](https://github.com/jho/nemeo/issues/12) | SDD workflow and artifact ownership | Accepted | — |
 | [#13](https://github.com/jho/nemeo/issues/13) / [ADR 0008](adrs/0008-ui-platform-and-rendering-strategy.md) | UI platform and rendering strategy | Accepted | Product issue #3 |
-| [#14](https://github.com/jho/nemeo/issues/14) | UI component library and design system | Open / Medium | #13, product issue #11 |
+| [#14](https://github.com/jho/nemeo/issues/14) / [ADR 0009](adrs/0009-ui-component-library-and-design-system.md) | UI component library and design system | Accepted foundation; brand values follow product issue #11 | #13, product issue #11 |
 | [#15](https://github.com/jho/nemeo/issues/15) | Information architecture and interaction model | Open / High | Product issues #2, #4 |
 | [#16](https://github.com/jho/nemeo/issues/16) | Application topology | Open / High | #12, #23 |
 | [#17](https://github.com/jho/nemeo/issues/17) | Domain persistence and event strategy | Open / High | Event-model slice specs |
