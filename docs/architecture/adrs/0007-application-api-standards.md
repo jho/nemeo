@@ -46,16 +46,19 @@ distinct read models and are governed by ADR 0006.
   | Retrieve a resource | `GET` member | `GET /v1/budgets/{budget_id}` |
   | List resources | `GET` collection | `GET /v1/budgets` |
 
-- `PATCH` is the default and expected resource-update operation. It changes only the submitted
-  fields and maps naturally to command-oriented, concurrency-aware updates.
+- `PATCH` is a typed partial-update request: the body is a TypeSpec model whose optional fields
+  represent the fields the client chooses to change. It is not an RFC 6902 JSON Patch operation
+  list and it is not a full replacement document.
+- A typed `PATCH` request MUST contain at least one changeable field. Unknown fields are rejected.
+  Each resource defines the meaning of `null` for nullable fields; omission means “leave unchanged.”
 - `PUT` is not part of the normal domain-resource API. It may be introduced only for a resource
   whose semantics genuinely require complete replacement, such as a file or image, and the ADR or
   feature specification MUST document why replacement is safe.
 - A slice MUST NOT use `POST` for CRUD updates or deletes.
-- Collections return a consistent envelope with `data`, `has_more`, and an opaque continuation
+- Collections return a consistent envelope with `data`, `hasMore`, and an opaque continuation
   cursor. Collection-specific summary fields may be added without changing the envelope.
-- CRUD operations use conventional REST semantics: `POST` creates a resource, `PATCH` or `PUT`
-  updates a resource, and `DELETE` removes a resource. CRUD commands MUST NOT be represented as
+- CRUD operations use conventional REST semantics: `POST` creates a resource, `PATCH` updates a
+  resource, and `DELETE` removes a resource. CRUD commands MUST NOT be represented as
   action paths such as `POST /v1/budgets/{budget_id}/update` or
   `POST /v1/budgets/{budget_id}/delete`.
 - Non-CRUD Event Model commands use `POST` operations with explicit action paths such as
@@ -140,7 +143,7 @@ Errors use Problem Details with stable machine-readable extensions:
 
 - Every state-changing `POST` command accepts an `Idempotency-Key`.
 - Resource creation `POST` and non-CRUD action `POST` both accept an `Idempotency-Key`. `GET`,
-  `HEAD`, and `DELETE` do not use one. `PUT` and `PATCH` are made safe through resource version or
+  `HEAD`, and `DELETE` do not use one. `PATCH` is made safe through resource version or
   conditional-request semantics where concurrent edits matter.
 - An idempotency key is scoped to the authenticated principal, endpoint, and request parameters.
 - Repeating the same request returns the original outcome; reusing a key with different parameters is
