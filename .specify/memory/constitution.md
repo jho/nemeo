@@ -1,6 +1,6 @@
 # Nemeo Constitution
 
-**Version:** 1.5.0
+**Version:** 1.6.0
 **Ratified:** 2026-09-14
 **Last amended:** 2026-09-16
 
@@ -81,6 +81,12 @@ these constraints.
   Problem Details errors, cursor pagination, bounded filters, explicit idempotency, and path-based
   major versioning. API operations MUST map to slice capabilities and MUST NOT expose persistence
   internals. See [ADR 0006](../../docs/architecture/adrs/0006-application-api-standards.md).
+- The MVP client MUST be a responsive React/TypeScript SPA built with Vite and served as static
+  assets by the same Fastify application and `nemeo` image. It MUST consume the generated API
+  contract rather than backend internals. The client MUST provide installable PWA metadata with
+  standalone launch, while offline data access, mutation queues, background sync, push delivery,
+  and a separate native client remain out of MVP. See
+  [ADR 0008](../../docs/architecture/adrs/0008-ui-platform-and-rendering-strategy.md).
 
 When a new architecture decision is accepted, its ADR MUST be linked here with the concise rule
 that Spec Kit needs to enforce. When an architecture decision is superseded, this section and the
