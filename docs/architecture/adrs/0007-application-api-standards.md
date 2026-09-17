@@ -33,20 +33,54 @@ distinct read models and are governed by ADR 0006.
 
 - Resource URLs use plural, stable nouns: `/v1/transactions`, `/v1/budgets`, and
   `/v1/connections`.
+- URL path segments use lowercase kebab-case. Resource IDs are path parameters, not query
+  parameters, when addressing one resource.
 - Resource retrieval uses standard `GET` operations and returns resource representations directly.
-- Collections return a consistent envelope with `data`, cursor metadata, and any relevant summary
-  information.
+- CRUD operation selection is fixed:
+
+  | Intent | Method | Example |
+  |---|---|---|
+  | Create a resource | `POST` collection | `POST /v1/budgets` |
+  | Replace a resource | `PUT` member | `PUT /v1/budgets/{budget_id}` |
+  | Partially update a resource | `PATCH` member | `PATCH /v1/budgets/{budget_id}` |
+  | Delete a resource | `DELETE` member | `DELETE /v1/budgets/{budget_id}` |
+  | Retrieve a resource | `GET` member | `GET /v1/budgets/{budget_id}` |
+  | List resources | `GET` collection | `GET /v1/budgets` |
+
+- `PUT` means the submitted representation is the complete replacement. `PATCH` means only the
+  submitted fields change. A slice MUST choose one deliberately; it MUST NOT use `POST` for CRUD
+  updates or deletes.
+- Collections return a consistent envelope with `data`, `has_more`, and an opaque continuation
+  cursor. Collection-specific summary fields may be added without changing the envelope.
 - CRUD operations use conventional REST semantics: `POST` creates a resource, `PATCH` or `PUT`
   updates a resource, and `DELETE` removes a resource. CRUD commands MUST NOT be represented as
   action paths such as `POST /v1/budgets/{budget_id}/update` or
   `POST /v1/budgets/{budget_id}/delete`.
 - Non-CRUD Event Model commands use `POST` operations with explicit action paths such as
   `POST /v1/budgets/{budget_id}/approve-targets`.
-- Command endpoints return the resulting resource or command outcome. Long-running work returns an
-  accepted operation representation that can be queried, rather than hiding asynchronous behavior
-  behind a successful synchronous response.
+- Action names use lowercase kebab-case verbs and describe a business operation, not a persistence
+  operation: `approve-targets`, `confirm-category`, and `start-sync` are valid; `update`, `delete`,
+  and `save` are not.
+- Command endpoints return the resulting resource or a documented command outcome. Long-running work
+  returns `202 Accepted` and an operation representation with a status URL; it MUST NOT hide
+  asynchronous behavior behind a successful synchronous response.
 - Public APIs expose capabilities and representations, not internal events, aggregates, repositories,
   or database tables.
+
+### Request and response conventions
+
+- JSON property names use lower camel case (`budgetId`, `createdAt`, `hasMore`).
+- Request and response bodies use explicit TypeSpec models. A response model is not automatically
+  the same model as its persistence record or command input.
+- Single-resource success responses return the resource representation directly, not `{ "data": ... }`.
+- Create responses return `201 Created` and a `Location` header when a resource is created.
+- Successful retrieval and synchronous commands return `200 OK`.
+- Successful deletes return `204 No Content` unless the operation must return a documented outcome.
+- Empty collections return `{ "data": [], "hasMore": false, "nextCursor": null }` rather than
+  `404 Not Found`.
+- Dates and times use RFC 3339 strings in UTC unless a TypeSpec model explicitly represents a
+  calendar-local date. Monetary values use an explicit amount/currency model and never floating
+  point JSON numbers.
 
 ### Schemas and identifiers
 
@@ -79,15 +113,23 @@ Errors use Problem Details with stable machine-readable extensions:
 - `detail` is human-readable and must not be the only source of meaning.
 - `field` is included when an error maps to a request field.
 - `request_id` is returned on every response and used for support and observability.
-- Status codes distinguish validation, authentication, authorization, not-found, conflict,
-  dependency, rate-limit, and server failures consistently.
+- Status codes use these defaults: `400` malformed request, `401` unauthenticated, `403` not
+  authorized, `404` resource absent, `409` state/concurrency/idempotency conflict, `422` valid
+  request that violates a domain rule, `429` rate limited, `502`/`503` dependency unavailable, and
+  `500` unexpected server failure.
+- A handler MUST preserve the stable `code` when the same failure is returned through HTTP, MCP, or a
+  worker-facing adapter. Transport-specific status and serialization may differ.
 
 ### Pagination, filtering, and sorting
 
 - Cursor pagination is the default for collections and must use a stable explicit ordering.
-- Clients may request a bounded `limit`; the server owns maximum page sizes.
-- Collection responses expose a continuation cursor rather than requiring clients to construct
-  offsets.
+- Clients may request a bounded `limit` between 1 and 100; the server owns the maximum page size and
+  may return fewer items.
+- Collection responses use `hasMore` and `nextCursor`. Cursors are opaque and clients MUST NOT parse
+  or construct them.
+- Offset pagination is not used for user-facing collection APIs.
+- Default ordering is newest-first by a stable timestamp plus opaque ID tie-breaker unless a slice
+  documents a different business ordering.
 - Resource-specific filters and sorts are typed in TypeSpec and validated by the server.
 - Search uses the constrained model in ADR 0006. No endpoint accepts raw SQL or arbitrary expression
   evaluation.
@@ -95,9 +137,13 @@ Errors use Problem Details with stable machine-readable extensions:
 ### Idempotency and concurrency
 
 - Every state-changing `POST` command accepts an `Idempotency-Key`.
+- Resource creation `POST` and non-CRUD action `POST` both accept an `Idempotency-Key`. `GET`,
+  `HEAD`, and `DELETE` do not use one. `PUT` and `PATCH` are made safe through resource version or
+  conditional-request semantics where concurrent edits matter.
 - An idempotency key is scoped to the authenticated principal, endpoint, and request parameters.
 - Repeating the same request returns the original outcome; reusing a key with different parameters is
   a conflict.
+- The server returns the same status and response body for a replayed completed request.
 - Idempotency retention, retry behavior, and worker coordination are refined by issue [#19](https://github.com/jho/nemeo/issues/19).
 - Optimistic concurrency is exposed explicitly where a resource can be edited concurrently. Clients
   must not silently overwrite a newer version.
