@@ -1,6 +1,6 @@
 # Nemeo Constitution
 
-**Version:** 1.7.0
+**Version:** 1.8.0
 **Ratified:** 2026-09-14
 **Last amended:** 2026-09-16
 
@@ -93,6 +93,13 @@ these constraints.
   review, error, and insufficient-history states MUST remain understandable without color alone;
   final brand values and robot/AI styling follow product issue [#11](https://github.com/jho/nemeo/issues/11).
   See [ADR 0009](../../docs/architecture/adrs/0009-ui-component-library-and-design-system.md).
+- The MVP information architecture MUST be dashboard-first: Dashboard, Budget, Transactions, and
+  Connections are the primary capability areas; Review is a secondary, routable workflow. The
+  current-month budget status MUST precede pace warnings, and pace warnings MUST lead to contextual
+  category and transaction drill-downs. Responsive clients MUST preserve this hierarchy, status
+  meaning MUST not depend on color alone, and MVP review MUST remain sequential rather than inventing
+  bulk financial mutations. See
+  [ADR 0010](../../docs/architecture/adrs/0010-information-architecture-and-interaction-patterns.md).
 
 When a new architecture decision is accepted, its ADR MUST be linked here with the concise rule
 that Spec Kit needs to enforce. When an architecture decision is superseded, this section and the

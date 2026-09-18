@@ -309,6 +309,12 @@ off pace are immediately visible. Users drill down to category, transaction, or 
 only when they need more explanation or want to take action. The review queue is a follow-up
 workflow, not the primary home surface.
 
+The primary drill-down loop is **Dashboard → Budget/category → Transactions**. The Dashboard
+establishes the current pace, the Budget view explains the affected target or category, and the
+Transactions view provides the evidence to correct a categorization or understand why spending is
+different than expected. Connections, setup, household access, and agent workflows support this
+loop without competing with it as the main daily navigation.
+
 **Reference prototype:** [`dashboard-mockup.html`](../../dashboard-mockup.html) illustrates the
 intended MVP hierarchy and interaction shape. It is a review aid, not a second source of product
 behavior; the PRD, Event Model, and API contracts remain authoritative.
