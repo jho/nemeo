@@ -97,6 +97,27 @@
     .nemeo-cashflow-label { color: var(--nemeo-muted); font-size: 12px; }
     .nemeo-cashflow-value { font-size: 16px; font-weight: 750; }
     .nemeo-support { color: var(--nemeo-muted); font-size: 12px; line-height: 1.55; margin: 18px 0 0; }
+    .nemeo-screen[hidden] { display: none; }
+    .nemeo-route-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 18px; margin: 2px 0 18px; }
+    .nemeo-route-title { margin: 0; font-size: 26px; letter-spacing: -.04em; }
+    .nemeo-route-copy { margin: 6px 0 0; color: var(--nemeo-muted); font-size: 13px; }
+    .nemeo-route-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 17px; }
+    .nemeo-route-panel { background: var(--nemeo-surface); border: 1px solid var(--nemeo-line); border-radius: var(--nemeo-radius); padding: 21px; }
+    .nemeo-route-panel-wide { grid-column: 1 / -1; }
+    .nemeo-route-list { display: grid; gap: 8px; margin-top: 14px; }
+    .nemeo-route-row { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 13px; border: 1px solid var(--nemeo-line); border-radius: 12px; background: var(--nemeo-surface); }
+    .nemeo-route-row strong { display: block; font-size: 14px; }
+    .nemeo-route-row small { display: block; color: var(--nemeo-muted); margin-top: 3px; font-size: 12px; }
+    .nemeo-route-row button { border: 0; background: var(--nemeo-blue-soft); color: var(--nemeo-blue); padding: 8px 10px; border-radius: 9px; cursor: pointer; font-size: 12px; font-weight: 700; white-space: nowrap; }
+    .nemeo-route-row button:hover, .nemeo-route-row button:focus-visible { outline: 3px solid rgba(91, 101, 174, .18); }
+    .nemeo-context { background: var(--nemeo-blue-soft); color: var(--nemeo-blue); border-radius: 11px; padding: 12px 14px; margin-bottom: 14px; font-size: 13px; }
+    .nemeo-review-card { background: var(--nemeo-amber-soft); border-radius: 14px; padding: 20px; }
+    .nemeo-review-card h3 { margin: 0; font-size: 21px; letter-spacing: -.03em; }
+    .nemeo-review-card p { color: #765327; font-size: 13px; line-height: 1.5; margin: 9px 0 17px; }
+    .nemeo-review-meta { display: flex; flex-wrap: wrap; gap: 8px; color: var(--nemeo-amber); font-size: 12px; font-weight: 700; margin-bottom: 17px; }
+    .nemeo-review-controls { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+    .nemeo-review-count { color: var(--nemeo-muted); font-size: 12px; }
+    .nemeo-empty { color: var(--nemeo-muted); font-size: 13px; padding: 18px 0 2px; }
     @media (max-width: 780px) {
       #nemeo-dashboard-mockup { border-radius: 18px; }
       .nemeo-shell { display: block; }
@@ -108,6 +129,7 @@
       .nemeo-main { padding: 24px 16px 32px; }
       .nemeo-header { margin-bottom: 14px; }
       .nemeo-grid { grid-template-columns: 1fr; }
+      .nemeo-route-grid { grid-template-columns: 1fr; }
       .nemeo-attention, .nemeo-cashflow-panel { grid-column: auto; grid-row: auto; }
     }
     @media (max-width: 460px) {
@@ -124,10 +146,10 @@
     <nav class="nemeo-nav" aria-label="Nemeo navigation">
       <div class="nemeo-brand"><span class="nemeo-bot" aria-hidden="true"></span><span>Nemeo</span></div>
       <div class="nemeo-nav-group">
-        <button class="nemeo-nav-button" aria-current="page" type="button">Dashboard</button>
-        <button class="nemeo-nav-button" type="button">Transactions</button>
-        <button class="nemeo-nav-button" type="button">Budget</button>
-        <button class="nemeo-nav-button" type="button">Connections</button>
+        <button class="nemeo-nav-button" aria-current="page" data-route="dashboard" type="button">Dashboard</button>
+        <button class="nemeo-nav-button" data-route="transactions" type="button">Transactions</button>
+        <button class="nemeo-nav-button" data-route="budget" type="button">Budget</button>
+        <button class="nemeo-nav-button" data-route="connections" type="button">Connections</button>
       </div>
       <div class="nemeo-nav-footer">Your budget is quietly keeping watch.<br><strong>September 2026</strong></div>
     </nav>
@@ -137,7 +159,7 @@
         <button class="nemeo-month" type="button" aria-label="Selected budget period: September 2026">September 2026 <span aria-hidden="true">⌄</span></button>
       </header>
 
-      <div class="nemeo-grid">
+      <div class="nemeo-grid nemeo-screen" data-screen="dashboard">
         <section class="nemeo-panel" aria-labelledby="nemeo-progress-title">
           <div class="nemeo-status">
             <div>
@@ -168,7 +190,7 @@
         </section>
 
         <section class="nemeo-panel nemeo-attention" aria-labelledby="nemeo-attention-title">
-          <div class="nemeo-panel-heading"><h2 class="nemeo-panel-title" id="nemeo-attention-title">Worth a look</h2><a class="nemeo-panel-link" href="#nemeo-attention-title">See all review items</a></div>
+          <div class="nemeo-panel-heading"><h2 class="nemeo-panel-title" id="nemeo-attention-title">Worth a look</h2><a class="nemeo-panel-link" data-route="review" href="#nemeo-attention-title">See all review items</a></div>
           <p class="nemeo-attention-intro">Two categories are ahead of pace. Nothing is urgent—these are just the places with the most room to adjust.</p>
           <div class="nemeo-warning-list">
             <button class="nemeo-warning" type="button" data-category="Dining" data-selected="false">
@@ -181,7 +203,7 @@
           <div class="nemeo-detail" data-open="false" aria-live="polite">
             <div class="nemeo-detail-heading"><h4 class="nemeo-detail-title">Dining out is ahead of pace</h4><span class="nemeo-warning-amount">+$180</span></div>
             <p class="nemeo-detail-copy">Three recent transactions explain most of the difference. Review them or open the category to decide whether the target still fits this month.</p>
-            <div class="nemeo-detail-actions"><button class="nemeo-action" type="button">Review transactions</button><button class="nemeo-action nemeo-action-secondary" type="button">Open category</button></div>
+            <div class="nemeo-detail-actions"><button class="nemeo-action" data-route="transactions" type="button">Review transactions</button><button class="nemeo-action nemeo-action-secondary" data-route="budget" type="button">Open category</button></div>
           </div>
         </section>
 
@@ -195,6 +217,37 @@
           <p class="nemeo-support">Transfers and card payments are left out of these totals.</p>
         </aside>
       </div>
+
+      <section class="nemeo-screen" data-screen="budget" hidden aria-labelledby="nemeo-budget-title">
+        <div class="nemeo-route-header"><div><h1 class="nemeo-route-title" id="nemeo-budget-title">Budget</h1><p class="nemeo-route-copy">Targets and categories for September 2026.</p></div><button class="nemeo-action" data-route="dashboard" type="button">Back to dashboard</button></div>
+        <div class="nemeo-route-grid">
+          <section class="nemeo-route-panel nemeo-route-panel-wide"><h2 class="nemeo-panel-title">Categories</h2><div class="nemeo-route-list">
+            <div class="nemeo-route-row"><span><strong>Dining out</strong><small>$680 of $750 · ahead of pace by $180</small></span><button data-route="transactions" type="button">View activity</button></div>
+            <div class="nemeo-route-row"><span><strong>Shopping</strong><small>$420 of $600 · ahead of pace by $90</small></span><button data-route="transactions" type="button">View activity</button></div>
+            <div class="nemeo-route-row"><span><strong>Home</strong><small>$310 of $500 · on pace</small></span><button data-route="dashboard" type="button">View status</button></div>
+          </div></section>
+        </div>
+      </section>
+
+      <section class="nemeo-screen" data-screen="transactions" hidden aria-labelledby="nemeo-transactions-title">
+        <div class="nemeo-route-header"><div><h1 class="nemeo-route-title" id="nemeo-transactions-title">Transactions</h1><p class="nemeo-route-copy">Evidence behind your budget and pace status.</p></div><button class="nemeo-action" data-route="dashboard" type="button">Back to dashboard</button></div>
+        <div class="nemeo-context" data-transaction-context hidden>Opened from a pace warning: <strong>Dining out</strong> · September 2026</div>
+        <section class="nemeo-route-panel"><h2 class="nemeo-panel-title">Recent activity</h2><div class="nemeo-route-list">
+          <div class="nemeo-route-row"><span><strong>Neighborhood Bistro</strong><small>Dining out · Sep 16</small></span><strong>$86.40</strong></div>
+          <div class="nemeo-route-row"><span><strong>Corner Market</strong><small>Shopping · Sep 14</small></span><strong>$124.10</strong></div>
+          <div class="nemeo-route-row"><span><strong>Lunch Counter</strong><small>Dining out · Sep 12</small></span><strong>$42.80</strong></div>
+        </div></section>
+      </section>
+
+      <section class="nemeo-screen" data-screen="review" hidden aria-labelledby="nemeo-review-title">
+        <div class="nemeo-route-header"><div><h1 class="nemeo-route-title" id="nemeo-review-title">Review</h1><p class="nemeo-route-copy">A short, prioritized list of things worth your attention.</p></div><button class="nemeo-action" data-route="dashboard" type="button">Back to dashboard</button></div>
+        <section class="nemeo-route-panel"><div class="nemeo-review-card"><div class="nemeo-review-meta"><span data-review-type>Pace warning</span><span data-review-impact>Impact: high</span></div><h3 data-review-title>Dining out is ahead of pace</h3><p data-review-copy>Three recent transactions explain most of the difference. Review them or open the category to decide whether the target still fits this month.</p><div class="nemeo-review-controls"><span class="nemeo-review-count" data-review-count>1 of 3</span><div class="nemeo-detail-actions"><button class="nemeo-action nemeo-action-secondary" data-review-skip type="button">Skip for now</button><button class="nemeo-action" data-review-next type="button">Next item</button></div></div></div></section>
+      </section>
+
+      <section class="nemeo-screen" data-screen="connections" hidden aria-labelledby="nemeo-connections-title">
+        <div class="nemeo-route-header"><div><h1 class="nemeo-route-title" id="nemeo-connections-title">Connections</h1><p class="nemeo-route-copy">Account sync status and connection management.</p></div><button class="nemeo-action" data-route="dashboard" type="button">Back to dashboard</button></div>
+        <section class="nemeo-route-panel"><h2 class="nemeo-panel-title">Connected accounts</h2><div class="nemeo-route-list"><div class="nemeo-route-row"><span><strong>SimpleFIN · Household accounts</strong><small>Last synced 18 minutes ago · All accounts healthy</small></span><span class="nemeo-status-pill">Healthy</span></div></div><p class="nemeo-empty">Connection changes are kept separate from everyday budget review.</p></section>
+      </section>
     </main>
   </div>
 
@@ -212,6 +265,7 @@
     function nemeoSelectWarning(button) {
       const category = button.dataset.category;
       const content = nemeoCopy[category];
+      nemeoRoot.dataset.selectedCategory = category === "Dining" ? "Dining out" : category;
       nemeoWarnings.forEach((item) => item.dataset.selected = String(item === button));
       nemeoDetailTitle.textContent = content[0];
       nemeoAmount.textContent = content[1];
@@ -219,6 +273,54 @@
       nemeoDetail.dataset.open = "true";
     }
     nemeoWarnings.forEach((button) => button.addEventListener("click", () => nemeoSelectWarning(button)));
+    const nemeoScreens = [...nemeoRoot.querySelectorAll("[data-screen]")];
+    const nemeoNavButtons = [...nemeoRoot.querySelectorAll(".nemeo-nav-button")];
+    const nemeoTransactionContext = nemeoRoot.querySelector("[data-transaction-context]");
+    const nemeoReviewItems = [
+      ["Pace warning", "Impact: high", "Dining out is ahead of pace", "Three recent transactions explain most of the difference."],
+      ["Needs review", "Impact: medium", "Uncategorized transaction", "A $64.20 transaction at Corner Market needs a category before reporting is complete."],
+      ["Transfer check", "Impact: medium", "Possible credit-card payment", "Confirm whether this matched transfer should be excluded from spending totals."]
+    ];
+    let nemeoReviewIndex = 0;
+    function nemeoRenderReview() {
+      const item = nemeoReviewItems[nemeoReviewIndex];
+      nemeoRoot.querySelector("[data-review-type]").textContent = item[0];
+      nemeoRoot.querySelector("[data-review-impact]").textContent = item[1];
+      nemeoRoot.querySelector("[data-review-title]").textContent = item[2];
+      nemeoRoot.querySelector("[data-review-copy]").textContent = item[3];
+      nemeoRoot.querySelector("[data-review-count]").textContent = `${nemeoReviewIndex + 1} of ${nemeoReviewItems.length}`;
+    }
+    function nemeoShowScreen(route) {
+      nemeoScreens.forEach((screen) => { screen.hidden = screen.dataset.screen !== route; });
+      nemeoNavButtons.forEach((button) => {
+        if (button.dataset.route === route) button.setAttribute("aria-current", "page");
+        else button.removeAttribute("aria-current");
+      });
+      if (route === "transactions" && nemeoRoot.dataset.selectedCategory) {
+        nemeoTransactionContext.hidden = false;
+        nemeoTransactionContext.querySelector("strong").textContent = nemeoRoot.dataset.selectedCategory;
+      } else {
+        nemeoTransactionContext.hidden = true;
+      }
+      if (route === "review") nemeoRenderReview();
+      if (history.replaceState) history.replaceState(null, "", `#/${route}`);
+    }
+    nemeoRoot.querySelectorAll("[data-route]").forEach((element) => element.addEventListener("click", (event) => {
+      event.preventDefault();
+      nemeoShowScreen(element.dataset.route);
+    }));
+    nemeoRoot.querySelector("[data-review-next]").addEventListener("click", () => {
+      nemeoReviewIndex = (nemeoReviewIndex + 1) % nemeoReviewItems.length;
+      nemeoRenderReview();
+    });
+    nemeoRoot.querySelector("[data-review-skip]").addEventListener("click", () => {
+      nemeoReviewIndex = (nemeoReviewIndex + 1) % nemeoReviewItems.length;
+      nemeoRenderReview();
+    });
+    nemeoRoot.querySelectorAll(".nemeo-detail-actions [data-route]").forEach((button) => button.addEventListener("click", () => {
+      nemeoShowScreen(button.dataset.route);
+    }));
+    nemeoRenderReview();
     if (globalThis.Tweak) {
       const nemeoState = { emphasis: "calm" };
       const nemeoHeader = nemeoRoot.querySelector(".nemeo-header");
