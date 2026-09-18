@@ -47,9 +47,14 @@ surface and does not become a separate competing dashboard.
   may reduce density, collapse navigation, and simplify supporting content, but it MUST NOT create a
   second mobile information architecture.
 
-The initial route vocabulary is intentionally stable and capability-oriented:
+The initial **client-side UI route** vocabulary is intentionally stable and capability-oriented.
+These are browser navigation routes only; they are not API endpoints and do not prescribe API URL
+nesting. API paths remain governed by [ADR 0006](0006-application-api-standards.md): API resources
+and actions use the established top-level resource conventions rather than copying this UI
+hierarchy into sub-nested API paths.
 
 ```text
+/-- UI routes, not API routes --/
 /dashboard
 /budget
 /budget/categories/:categoryId
@@ -59,8 +64,9 @@ The initial route vocabulary is intentionally stable and capability-oriented:
 /connections
 ```
 
-Exact route parameters and API operation names remain implementation details, but new routes should
-follow the same resource and capability boundaries.
+Exact UI route parameters and API operation names remain implementation details. A UI route may
+reflect a navigation hierarchy for user comprehension; the corresponding API call MUST still use
+the API contract’s top-level resource or explicit action path.
 
 ## Dashboard hierarchy
 
