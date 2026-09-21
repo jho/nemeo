@@ -42,9 +42,10 @@ Nemeo's MVP backend platform is Node.js with TypeScript and Fastify.
   event sourcing.
 - API, worker, scheduled-command, and MCP entry points SHOULD reuse the same slice application
   capabilities rather than calling one another over HTTP inside the Compose deployment.
-- Emmett MAY be used behind a slice-level persistence boundary. Direct CQRS over PostgreSQL is also
-  valid for MVP slices. Adoption of Emmett, event sourcing, event-store schemas, projections, and
-  consistency choices remains the subject of [issue #17](https://github.com/jho/nemeo/issues/17).
+- Emmett MAY be used behind the aggregate-specific repository boundary defined by [ADR 0011](0011-domain-persistence-and-event-strategy.md).
+  Direct CQRS over PostgreSQL remains valid for relational contexts and replacement adapters, but
+  Transaction and Budget event-sourcing boundaries, event-store schemas, projections, and
+  consistency choices follow ADR 0011.
 
 ## Alternatives considered
 
