@@ -110,6 +110,29 @@
     .nemeo-route-row small { display: block; color: var(--nemeo-muted); margin-top: 3px; font-size: 12px; }
     .nemeo-route-row button { border: 0; background: var(--nemeo-blue-soft); color: var(--nemeo-blue); padding: 8px 10px; border-radius: 9px; cursor: pointer; font-size: 12px; font-weight: 700; white-space: nowrap; }
     .nemeo-route-row button:hover, .nemeo-route-row button:focus-visible { outline: 3px solid rgba(91, 101, 174, .18); }
+    .nemeo-transaction-list { display: grid; gap: 10px; margin-top: 14px; }
+    .nemeo-transaction-card { border: 1px solid var(--nemeo-line); border-radius: 13px; padding: 14px; background: var(--nemeo-surface); }
+    .nemeo-transaction-main { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; }
+    .nemeo-transaction-main strong { display: block; font-size: 14px; }
+    .nemeo-transaction-main small { display: block; color: var(--nemeo-muted); margin-top: 4px; font-size: 12px; }
+    .nemeo-transaction-amount { font-weight: 750; white-space: nowrap; }
+    .nemeo-transaction-meta { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; margin-top: 11px; }
+    .nemeo-confidence { color: var(--nemeo-muted); font-size: 11px; }
+    .nemeo-confidence-confirmed { color: #26734d; }
+    .nemeo-transaction-action { border: 0; background: var(--nemeo-blue-soft); color: var(--nemeo-blue); padding: 7px 9px; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: 700; }
+    .nemeo-inline-editor { background: #f7f7fc; border-radius: 10px; padding: 12px; margin-top: 12px; }
+    .nemeo-inline-editor[hidden] { display: none; }
+    .nemeo-inline-editor label { display: block; color: var(--nemeo-muted); font-size: 11px; font-weight: 700; margin-bottom: 6px; }
+    .nemeo-inline-editor select { border: 1px solid var(--nemeo-line); border-radius: 7px; padding: 7px; background: white; color: var(--nemeo-ink); }
+    .nemeo-rule-check { display: flex !important; gap: 7px; align-items: center; font-weight: 500 !important; margin-top: 10px; }
+    .nemeo-inline-editor .nemeo-action { margin-top: 10px; padding: 7px 9px; font-size: 11px; }
+    .nemeo-transfer-suggestion { margin-top: 12px; border-left: 3px solid var(--nemeo-blue); padding: 9px 0 9px 11px; color: var(--nemeo-muted); font-size: 12px; line-height: 1.45; }
+    .nemeo-transfer-suggestion strong { color: var(--nemeo-ink); }
+    .nemeo-transfer-actions { display: flex; gap: 7px; margin-top: 8px; }
+    .nemeo-transfer-actions button { border: 0; border-radius: 8px; padding: 7px 10px; cursor: pointer; font-size: 11px; font-weight: 700; }
+    .nemeo-transfer-yes { background: var(--nemeo-blue); color: white; }
+    .nemeo-transfer-no { background: #edf0f2; color: var(--nemeo-ink); }
+    .nemeo-toast { color: #26734d; font-size: 12px; margin: 14px 0 0; min-height: 18px; }
     .nemeo-context { background: var(--nemeo-blue-soft); color: var(--nemeo-blue); border-radius: 11px; padding: 12px 14px; margin-bottom: 14px; font-size: 13px; }
     .nemeo-review-card { background: var(--nemeo-amber-soft); border-radius: 14px; padding: 20px; }
     .nemeo-review-card h3 { margin: 0; font-size: 21px; letter-spacing: -.03em; }
@@ -232,11 +255,11 @@
       <section class="nemeo-screen" data-screen="transactions" hidden aria-labelledby="nemeo-transactions-title">
         <div class="nemeo-route-header"><div><h1 class="nemeo-route-title" id="nemeo-transactions-title">Transactions</h1><p class="nemeo-route-copy">Evidence behind your budget and pace status.</p></div><button class="nemeo-action" data-route="dashboard" type="button">Back to dashboard</button></div>
         <div class="nemeo-context" data-transaction-context hidden>Opened from a pace warning: <strong>Dining out</strong> · September 2026</div>
-        <section class="nemeo-route-panel"><h2 class="nemeo-panel-title">Recent activity</h2><div class="nemeo-route-list">
-          <div class="nemeo-route-row"><span><strong>Neighborhood Bistro</strong><small>Dining out · Sep 16</small></span><strong>$86.40</strong></div>
-          <div class="nemeo-route-row"><span><strong>Corner Market</strong><small>Shopping · Sep 14</small></span><strong>$124.10</strong></div>
-          <div class="nemeo-route-row"><span><strong>Lunch Counter</strong><small>Dining out · Sep 12</small></span><strong>$42.80</strong></div>
-        </div></section>
+        <section class="nemeo-route-panel"><h2 class="nemeo-panel-title">Recent activity</h2><p class="nemeo-route-copy">Most transactions are categorized automatically. Review only what looks uncertain.</p><div class="nemeo-transaction-list">
+          <article class="nemeo-transaction-card" data-transaction-card="bistro"><div class="nemeo-transaction-main"><span><strong>Neighborhood Bistro</strong><small>Sep 16 · Card ending 2042</small></span><span class="nemeo-transaction-amount">$86.40</span></div><div class="nemeo-transaction-meta"><span class="nemeo-status-pill">Dining out</span><span class="nemeo-confidence">AI categorized · high confidence</span></div></article>
+          <article class="nemeo-transaction-card" data-transaction-card="corner"><div class="nemeo-transaction-main"><span><strong>Corner Market</strong><small>Sep 14 · Card ending 2042</small></span><span class="nemeo-transaction-amount">$124.10</span></div><div class="nemeo-transaction-meta"><span class="nemeo-status-pill">Shopping</span><span class="nemeo-confidence">AI categorized · lower confidence</span><button class="nemeo-transaction-action" data-category-edit="corner" type="button">Change category</button></div><div class="nemeo-inline-editor" data-category-editor="corner" hidden><label for="nemeo-corner-category">Category</label><select id="nemeo-corner-category"><option>Shopping</option><option>Dining out</option><option>Home</option><option>Other</option></select><label class="nemeo-rule-check"><input type="checkbox" data-remember-category checked> Remember this change for future Corner Market transactions</label><button class="nemeo-action" data-category-save="corner" type="button">Save change</button></div></article>
+          <article class="nemeo-transaction-card" data-transaction-card="visa"><div class="nemeo-transaction-main"><span><strong>Visa payment</strong><small>Sep 13 · From Checking</small></span><span class="nemeo-transaction-amount">$420.00</span></div><div class="nemeo-transfer-suggestion" data-transfer-suggestion="visa"><strong>This looks like a transfer from Checking to Visa.</strong><br>Confirm it before it is excluded from spending and pace totals.<div class="nemeo-transfer-actions"><button class="nemeo-transfer-yes" data-transfer-action="confirm" data-transfer-id="visa" type="button">Yes, it is</button><button class="nemeo-transfer-no" data-transfer-action="reject" data-transfer-id="visa" type="button">No, it is not</button></div></div></article>
+        </div><p class="nemeo-toast" data-transaction-toast aria-live="polite"></p></section>
       </section>
 
       <section class="nemeo-screen" data-screen="review" hidden aria-labelledby="nemeo-review-title">
@@ -278,7 +301,7 @@
     const nemeoTransactionContext = nemeoRoot.querySelector("[data-transaction-context]");
     const nemeoReviewItems = [
       ["Pace warning", "Impact: high", "Dining out is ahead of pace", "Three recent transactions explain most of the difference."],
-      ["Needs review", "Impact: medium", "Uncategorized transaction", "A $64.20 transaction at Corner Market needs a category before reporting is complete."],
+      ["Optional review", "Impact: medium", "Lower-confidence category suggestion", "Corner Market is currently categorized as Shopping. Confirm or change it if that purchase looks unusual; your budget remains usable either way."],
       ["Transfer check", "Impact: medium", "Possible credit-card payment", "Confirm whether this matched transfer should be excluded from spending totals."]
     ];
     let nemeoReviewIndex = 0;
@@ -317,6 +340,26 @@
       nemeoReviewIndex = (nemeoReviewIndex + 1) % nemeoReviewItems.length;
       nemeoRenderReview();
     });
+    nemeoRoot.querySelectorAll("[data-category-edit]").forEach((button) => button.addEventListener("click", () => {
+      const editor = nemeoRoot.querySelector(`[data-category-editor="${button.dataset.categoryEdit}"]`);
+      if (editor) editor.hidden = false;
+    }));
+    nemeoRoot.querySelectorAll("[data-category-save]").forEach((button) => button.addEventListener("click", () => {
+      const category = nemeoRoot.querySelector(`#nemeo-${button.dataset.categorySave}-category`).value;
+      const card = nemeoRoot.querySelector(`[data-transaction-card="${button.dataset.categorySave}"]`);
+      card.querySelector(".nemeo-status-pill").textContent = category;
+      const confidence = card.querySelector(".nemeo-confidence");
+      confidence.textContent = nemeoRoot.querySelector("[data-remember-category]").checked ? "User confirmed · remembered for future" : "User confirmed";
+      confidence.classList.add("nemeo-confidence-confirmed");
+      card.querySelector("[data-category-editor]").hidden = true;
+      nemeoRoot.querySelector("[data-transaction-toast]").textContent = nemeoRoot.querySelector("[data-remember-category]").checked ? "Saved. Future Corner Market transactions will use this category." : "Saved for this transaction.";
+    }));
+    nemeoRoot.querySelectorAll("[data-transfer-action]").forEach((button) => button.addEventListener("click", () => {
+      const suggestion = nemeoRoot.querySelector(`[data-transfer-suggestion="${button.dataset.transferId}"]`);
+      const confirmed = button.dataset.transferAction === "confirm";
+      suggestion.innerHTML = confirmed ? "<strong>Marked as a transfer.</strong><br>Both sides stay in your transaction history and are excluded from spending and pace totals." : "<strong>Kept as spending.</strong><br>This payment remains in your budget totals.";
+      nemeoRoot.querySelector("[data-transaction-toast]").textContent = confirmed ? "Transfer confirmed." : "Kept as spending.";
+    }));
     nemeoRoot.querySelectorAll(".nemeo-detail-actions [data-route]").forEach((button) => button.addEventListener("click", () => {
       nemeoShowScreen(button.dataset.route);
     }));
