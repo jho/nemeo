@@ -1,8 +1,18 @@
 # Nemeo Constitution
 
-**Version:** 1.8.0
+<!--
+Sync Impact Report
+- Version change: 1.8.0 -> 1.9.0
+- Modified principles: Accepted architecture constraints expanded with ADR 0011 persistence rules
+- Added sections: selective event sourcing and aggregate repository boundary
+- Removed sections: none
+- Templates requiring updates: none; existing Constitution Check workflow remains applicable
+- Follow-up: detailed retention and deletion behavior remains governed by product issue #9
+-->
+
+**Version:** 1.9.0
 **Ratified:** 2026-09-14
-**Last amended:** 2026-09-16
+**Last amended:** 2026-09-21
 
 ## Principles
 
@@ -52,8 +62,16 @@ these constraints.
   contracts originate in TypeSpec and emit versioned OpenAPI artifacts; generated API artifacts do
   not own business logic. See [ADR 0004](../../docs/architecture/adrs/0004-typespec-fastify-vertical-slice-backend.md).
 - Backend implementation is organized by Event Model-aligned vertical feature slices with distinct
-  command and query capabilities. Slices may use direct PostgreSQL CQRS or Emmett behind a
-  persistence boundary; event sourcing is not implied. See [ADR 0004](../../docs/architecture/adrs/0004-typespec-fastify-vertical-slice-backend.md).
+  command and query capabilities. Application command handlers MUST depend on slice-owned,
+  aggregate-specific repository ports rather than Emmett, generic event-store APIs, projection
+  checkpoints, or database serialization. See [ADR 0004](../../docs/architecture/adrs/0004-typespec-fastify-vertical-slice-backend.md)
+  and [ADR 0011](../../docs/architecture/adrs/0011-domain-persistence-and-event-strategy.md).
+- Transaction and Budget domain history MUST be immutable, versioned, auditable, and replayable.
+  Their current state and query models MUST be derived through idempotent, rebuildable projections.
+  Identity, provider operations, sync workflows, household access, and reporting infrastructure
+  remain relational unless a later ADR changes that boundary. Emmett MAY implement the event-store
+  and projection capabilities behind the aggregate-specific repository boundary, but its command
+  handler and types MUST NOT leak into domain or application contracts. See [ADR 0011](../../docs/architecture/adrs/0011-domain-persistence-and-event-strategy.md).
 - MCP exposure is a curated capability surface derived from, but not equivalent to, the OpenAPI
   surface. Generated MCP tools MUST NOT bypass authorization, confirmation, or tenancy rules. See
   [ADR 0004](../../docs/architecture/adrs/0004-typespec-fastify-vertical-slice-backend.md) and the
