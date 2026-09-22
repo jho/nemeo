@@ -5,7 +5,7 @@ status: draft
 owner: "jho"
 stakeholders: []
 created: "2026-07-10"
-last-updated: "2026-09-21"
+last-updated: "2026-09-22"
 jira-epic: ""
 ---
 
@@ -451,12 +451,28 @@ they remain secondary content below the overall status and pace exceptions.
 
 **Story:** As an AI power user, I want an MCP server that exposes transaction data so that Claude or another agent can inspect my finances.
 
+**MVP deployment and agent policy:**
+
+- Nemeo supports both a local MCP connection for self-hosted or desktop-agent workflows and a hosted MCP endpoint for a future managed deployment. Both modes expose the same product capabilities and safety policy.
+- Every MCP request is bound to one authenticated Nemeo user and, where applicable, one household. A local connection is not a bypass around identity, household membership, or resource authorization.
+- Read and explain operations are available without per-request confirmation. They may include transactions, budgets, categories, targets, pace status, dashboard reports, review items, and connection/sync status within the caller’s authorized scope.
+- Suggestions are non-mutating by default. An agent may propose a categorization, transfer match, budget change, or rule and explain the evidence, but the proposal does not change user data until accepted.
+- Mutations require explicit user confirmation by default. This includes changing categories, confirming transfers, changing targets or rules, bulk or historical retagging, changing connections, and deleting data.
+- A user may explicitly authorize a narrowly scoped reusable rule or automation after reviewing its scope. The authorization must be visible, revocable, and unable to override user-confirmed assignments, transfer safeguards, household permissions, or deletion protections.
+- Every agent action is attributable and auditable. The audit record identifies the user/household, agent or MCP client, capability used, affected resource, requested change, confirmation state, outcome, and time. Users can inspect this history and failed or rejected actions do not appear as successful mutations.
+- Rate limits and dependency failures are presented as actionable status to the user or agent. Reads may be retried safely; mutations use idempotency and never report success when the outcome is unknown. Provider or authorization failures fail closed and do not partially apply an unconfirmed action.
+
 **Acceptance criteria:**
-- [ ] The MCP server can be configured locally or against a hosted endpoint
+- [ ] The MCP server supports both local and hosted deployment modes with the same user-facing safety policy
 - [ ] An external agent can read transaction data through the MCP surface
 - [ ] An external agent can read budgets, categories, targets, pace status, and dashboard report data through the MCP surface
-- [ ] Access is limited to the connected user’s data
-- [ ] Any agent action that changes transactions, categories, targets, rules, or connections is authorized, auditable, and subject to confirmation policy
+- [ ] Every request is limited to the connected user’s authorized household and resources
+- [ ] Read and explain operations do not require per-request confirmation
+- [ ] Suggestions do not mutate state until accepted
+- [ ] Mutations are explicitly confirmed by default, including category changes, transfer confirmation, budget/rule changes, connection changes, bulk retagging, and deletion
+- [ ] User-approved reusable rules are scoped, visible, revocable, and cannot bypass domain safeguards
+- [ ] Agent actions record actor, capability, target, confirmation state, outcome, and timestamp
+- [ ] Users and agents receive clear rate-limit, authorization, dependency, and unknown-outcome failures
 
 ### Family progress
 
@@ -594,7 +610,6 @@ These capabilities should be designed for, but can ship after the first usable p
 | # | Question | Owner | Due |
 |---|----------|-------|-----|
 | Q1 | What SimpleFIN connection flow and credential-handling approach should the MVP use? | jho | Before implementation |
-| Q2 | Should the first MCP deployment be local-only, hosted-only, or both? | jho | TBD |
 | Q3 | What level of read access should the family viewer have in v1? | jho | TBD |
 | Q5 | Which mobile platform should we prioritize first? | jho | TBD |
 | Q6 | What should the final product name be, and should the repository/docs be renamed with it? | jho | Before implementation |
