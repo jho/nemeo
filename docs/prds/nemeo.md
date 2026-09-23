@@ -5,7 +5,7 @@ status: draft
 owner: "jho"
 stakeholders: []
 created: "2026-07-10"
-last-updated: "2026-09-08"
+last-updated: "2026-09-21"
 jira-epic: ""
 ---
 
@@ -62,6 +62,36 @@ Nemeo uses tracking-based budgeting as the default workflow:
 - when actual spending exceeds expected pace plus the category tolerance, MVP presents an in-product warning with dismiss and snooze controls; mobile push and SMS channels are future extensions
 - users can adjust targets without moving money between envelopes
 - optional envelope-style allocation may be supported later, but it is not the primary MVP workflow
+
+### Categorization and transfer confidence policy
+
+Nemeo should make a best effort to categorize transactions automatically so that users receive a
+useful budget without reviewing every imported record. Confidence is an internal and user-visible
+explanation signal, not a reason to block the initial budget. The user should be able to correct a
+category directly from the transaction or review experience and choose **Remember this change** to
+create a reusable payee/category rule for future matching transactions. Applying the same rule to
+historical transactions requires an explicit additional action.
+
+- Eligible transactions receive the system's best category by default, including lower-confidence
+  assignments when a usable candidate exists.
+- A transaction with no usable category remains uncategorized and is surfaced as an exception; it
+  does not block setup or budget creation.
+- The product labels assignments as AI-categorized, rule-categorized, or user-confirmed and makes
+  the confidence/review state available in transaction detail and optional review queues.
+- User-confirmed assignments and user-approved rules are never silently overwritten by later AI
+  categorization.
+- A category correction immediately updates budget actuals and can create a reusable rule without
+  requiring the user to navigate a separate rule-management workflow.
+- Transfer matching is confirmation-first. Nemeo may suggest, “This looks like a transfer from
+  Account X to Account Y,” but a candidate is not treated as a transfer until the user confirms it
+  or an explicitly user-approved transfer rule matches.
+- Until a transfer candidate is confirmed, the underlying transactions retain their ordinary
+  income/spending treatment. This favors a visible false negative over silently hiding spending.
+- A confirmed transfer removes both sides from income, spending, category actuals, and pace
+  calculations while preserving the underlying transactions and match explanation.
+- Transfer corrections are reversible and retain their history. Historical retagging requires
+  explicit confirmation; model improvements may suggest changes but may not silently rewrite user
+  decisions.
 
 ## Goals
 
@@ -380,6 +410,8 @@ they remain secondary content below the overall status and pace exceptions.
 - [ ] Users and authorized agents can create, review, disable, and update transfer rules
 - [ ] Transfer rules can use account pair, transaction direction, normalized payee, amount, timing, and other supported signals
 - [ ] Historical transactions can be retagged as transfers when a new match or rule is confirmed
+- [ ] Transfer candidates are presented as suggestions with the matched source and destination accounts and require user confirmation unless an explicitly user-approved transfer rule matches
+- [ ] Unconfirmed transfer candidates retain ordinary income/spending treatment until confirmed
 - [ ] The system detects duplicate transfer records, preserves the canonical transfer, and provides a cleanup path for duplicates
 - [ ] Transfers are excluded from income totals, spending totals, category actuals, and budget pace calculations
 - [ ] Credit-card payments are not treated as income, spending, or new budget activity on either side of the payment
@@ -398,8 +430,9 @@ they remain secondary content below the overall status and pace exceptions.
 - [ ] Transfers and other non-spending transactions are excluded from spending actuals
 - [ ] AI assignments include a confidence or review state that is visible to the user
 - [ ] A user-confirmed category is not overwritten by scheduled AI categorization without explicit permission
-- [ ] A user can correct an AI assignment and optionally create a reusable payee or category rule
-- [ ] New transactions with low-confidence or unknown categories are surfaced in a review queue
+- [ ] A user can correct an AI assignment directly from transaction or review context and choose to remember the change as a reusable payee or category rule
+- [ ] Low-confidence assignments remain usable in the budget and are available in an optional prioritized review queue; transactions with no usable category remain visible as exceptions
+- [ ] A remembered category rule applies to future matching transactions by default and requires explicit action before retagging historical transactions
 
 ### Budget pace alerts
 
@@ -563,13 +596,11 @@ These capabilities should be designed for, but can ship after the first usable p
 | Q1 | What SimpleFIN connection flow and credential-handling approach should the MVP use? | jho | Before implementation |
 | Q2 | Should the first MCP deployment be local-only, hosted-only, or both? | jho | TBD |
 | Q3 | What level of read access should the family viewer have in v1? | jho | TBD |
-| Q4 | What default auto-categorization rules should the setup flow use? | jho | TBD |
 | Q5 | Which mobile platform should we prioritize first? | jho | TBD |
 | Q6 | What should the final product name be, and should the repository/docs be renamed with it? | jho | Before implementation |
 | Q7 | Should pace use only elapsed calendar time, or account for income timing and known recurring bills? | jho | Before alert implementation |
 | Q8 | Which in-product alert controls are required for MVP: dismiss, snooze, thresholds, or all three? | jho | Before alert implementation |
 | Q9 | Do existing envelope concepts/data need to be migrated, or can the product make a clean model transition? | jho | Before implementation |
-| Q10 | Which transfer matches can be auto-applied versus requiring user confirmation? | jho | Before implementation |
 | Q11 | Does monthly carryover apply to unused target, overspend variance, or both, and should it be opt-in per category? | jho | Before implementation |
 | Q12 | Which categories should be protected by default, if any? | jho | Before implementation |
 | Q13 | What default sync cadence should we use within the limits and guidance of SimpleFIN, and should users be able to customize it? | jho | Before implementation |
