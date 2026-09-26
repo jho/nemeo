@@ -5,7 +5,7 @@ status: draft
 owner: "jho"
 stakeholders: []
 created: "2026-07-10"
-last-updated: "2026-09-22"
+last-updated: "2026-09-26"
 jira-epic: ""
 ---
 
@@ -508,10 +508,30 @@ they remain secondary content below the overall status and pace exceptions.
 
 **Story:** As an AI power user, I want the system to help me analyze and optimize my budget so that I can improve my savings without doing the work manually.
 
+**AI assistance and autonomy policy:**
+
+- **Explain** means summarize or clarify existing data, such as why a category is ahead of pace, which transactions contributed, or how a report was calculated. Explanations are read-only, identify their relevant data and time period, and do not require confirmation.
+- **Suggest** means propose a change, intervention, category target, report, or next step. Suggestions show the expected impact and supporting evidence, remain non-mutating until accepted, and can be dismissed, snoozed, or regenerated.
+- **Classify** means organize imported data. Transaction categorization follows the automatic, confidence-aware policy in this PRD; transfer matches remain confirmation-first. User-confirmed assignments and remembered rules are protected from silent replacement.
+- **Execute** means change user or household state. Execution requires explicit confirmation by default, with the action, scope, affected records, and expected impact shown before it is applied. Bulk changes, historical retagging, connection changes, budget changes, and deletion require explicit action even when an agent has a reusable rule.
+- A user may authorize a narrowly scoped reusable rule or automation after reviewing what it can change. The authorization is visible and revocable, applies only to matching future operations, and cannot bypass permissions, transfer safeguards, user-confirmed assignments, or deletion protections.
+- AI confidence is an explanation and review signal, not a claim of certainty. The product uses clear language such as “suggested,” “likely,” and “needs a second look,” and shows the evidence or basis available for the result without implying a calibrated probability when one is not available.
+- AI output is not financial advice and does not independently open accounts, move money, apply for financial products, or make commitments outside Nemeo. Product language must distinguish observed facts, estimates, suggestions, and committed changes.
+- These rules apply consistently to in-product AI and external agents through MCP. The interface may differ, but the same authorization, confirmation, audit, and domain-invariant rules apply.
+
 **Acceptance criteria:**
+- [ ] AI capabilities are categorized as explain, suggest, classify, or execute in product language and documentation
+- [ ] Explain operations are read-only and identify the relevant data or period
+- [ ] Suggestions show expected impact and supporting evidence and can be dismissed, snoozed, or regenerated without mutating state
 - [ ] The system can propose category target changes or spending interventions
 - [ ] The system can identify recurring spending patterns from recent transactions
 - [ ] The system can generate or improve a report based on transaction and budget data
+- [ ] Categorization and transfer behavior follows the accepted confidence and confirmation policies
+- [ ] State-changing AI actions require explicit confirmation by default and clearly identify scope and impact
+- [ ] Reusable AI rules are scoped, visible, revocable, and unable to bypass permissions or domain safeguards
+- [ ] AI explanations expose available evidence and use uncertainty language without overstating confidence
+- [ ] AI-generated changes are reversible or dismissible where appropriate and never silently overwrite protected user decisions
+- [ ] Product language does not imply financial advice or autonomous financial-product actions
 - [ ] The analysis surface can be used by an external AI agent through MCP
 
 ### Security and data lifecycle
