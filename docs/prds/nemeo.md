@@ -482,14 +482,14 @@ they remain secondary content below the overall status and pace exceptions.
 - [ ] A viewer can open a simplified progress screen on mobile
 - [ ] The screen shows budget-period progress and recent transaction impact
 - [ ] The screen is understandable without requiring budget setup actions
-- [ ] A viewer can edit a transaction categorization on mobile
+- [ ] A viewer cannot change transactions, categories, budgets, connections, or household access
 
 ### Household edits
 
-**Story:** As a family member, I want to edit a transaction categorization so that the shared budget stays accurate.
+**Story:** As a household budget manager, I want to edit transaction categorization so that the shared budget stays accurate.
 
 **Acceptance criteria:**
-- [ ] A family member can change a transaction category
+- [ ] A household budget manager can change a transaction category
 - [ ] The change updates the associated category actuals and pace status
 - [ ] The update is visible to other household members
 
@@ -497,12 +497,22 @@ they remain secondary content below the overall status and pace exceptions.
 
 **Story:** As a budget owner, I want to share a budget with household members using clear roles so that collaboration does not expose more financial control than intended.
 
+**MVP role model:**
+
+- Nemeo has two product roles: **household budget manager** and **viewer**.
+- The manager is responsible for maintaining the household budget and can manage budgets, targets, transactions, categories, rules, connections, transfer confirmations, invitations, and access.
+- A viewer can read the dashboard, budgets, transactions, pace status, and reports, but cannot change financial data, connections, or household access.
+- The common household shape is one manager with one or more viewers. Additional managers use the same manager role; MVP does not introduce a separate co-manager role.
+- Roles are fixed bundles in MVP. Users cannot create custom roles or configure per-resource or per-field permissions.
+
 **Acceptance criteria:**
-- [ ] A budget owner can invite a household member and revoke the invitation or access
-- [ ] Each household member has an explicit role and permission set
-- [ ] Read-only members can view permitted progress and reports without changing budget configuration
-- [ ] Members with edit permission can change categories or transaction assignments only within their granted scope
-- [ ] Permission changes take effect for subsequent requests and are visible in an access history
+- [ ] A household budget manager can invite a household member and revoke the invitation or access
+- [ ] Each household member has exactly one explicit MVP role: household budget manager or viewer
+- [ ] Viewers can read permitted progress, budgets, transactions, pace status, and reports without changing state
+- [ ] Household budget managers can perform the MVP budget, transaction, connection, transfer, invitation, and access-management actions
+- [ ] Invitations have explicit pending, accepted, expired, and revoked states
+- [ ] Permission changes take effect for subsequent requests and are recorded in an access history
+- [ ] MVP does not expose custom roles, arbitrary policy configuration, or field-level sharing controls
 
 ### AI-assisted analysis
 
@@ -645,7 +655,6 @@ These capabilities should be designed for, but can ship after the first usable p
 | Q14 | What historical window should define the average comparison baseline? | jho | Before dashboard implementation |
 | Q15 | What confidence threshold should send an AI categorization to review instead of applying it automatically? | jho | Before categorization implementation |
 | Q16 | What is the retention and deletion policy for disconnected provider data, audit history, and user accounts? | jho | Before implementation |
-| Q17 | Which household roles and permissions are required for the first release? | jho | Before household implementation |
 | Q18 | What exact monthly price ceiling keeps the product only marginally more expensive than connectivity and AI costs while covering hosting and operations? | jho | Before pricing implementation |
 | Q19 | Can SimpleFIN offer sponsored, bundled, reseller, or developer pricing that avoids requiring each Nemeo user to maintain a separate Bridge subscription? | jho | Before committing to SimpleFIN as the only customer-facing connection path |
 | Q20 | Which provider should be the first bundled-cost alternative to SimpleFIN, and what minimum target-bank coverage is required? | jho | Before production pricing and launch |
