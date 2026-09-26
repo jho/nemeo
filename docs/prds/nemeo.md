@@ -46,6 +46,24 @@ YNAB is a useful contrast: Nemeo intentionally avoids making envelope allocation
 
 Nemeo must not make the long-term product economics or onboarding experience depend on a single financial-data provider. SimpleFIN is the initial integration because its read-only model and observed reliability are attractive, but its Bridge subscription is paid separately by each user. Unless a commercial arrangement permits Nemeo to sponsor or bundle that subscription, SimpleFIN can make users feel like they are paying for two products.
 
+The provisional pricing target is an all-in recurring cost of no more than **$4.50/month** or
+**$45/year** for a typical household using the SimpleFIN path. This assumes a Nemeo target price of
+$3/month or $30/year and current SimpleFIN planning assumptions of $1.50/month or $15/year; actual
+provider pricing must be revalidated before launch. Where a provider allows it, connectivity should
+be bundled inside the all-in price. SimpleFIN is an explicit exception until a commercial arrangement
+allows bundling or sponsorship. Nemeo should offer a deliberately longer introductory free trial than
+comparable budgeting products to reduce adoption friction, with the exact duration remaining
+provisional until operating-cost studies are complete.
+
+The pricing target is a break-even constraint at low operating scale, not a promise of a large margin.
+Before final pricing is ratified, an operating-cost study must validate provider, hosting, payment,
+support, and native automation costs per active household. Nemeo should not depend on financial-product
+cross-selling or silently subsidize a provider path that is predictably loss-making.
+
+The first production provider strategy requires strong US institution coverage. International coverage
+is optional for MVP and can be added when a provider meets the same reliability, privacy, economics,
+and migration requirements.
+
 The provider abstraction is therefore an early MVP foundation, not a post-MVP cleanup task. SimpleFIN remains the first adapter, while the provider contract must support adding a provider that Nemeo can pay for and bundle into one transparent subscription. Candidate follow-on providers include Akoya and other OAuth/API aggregators, subject to coverage, reliability, onboarding, commercial terms, and target-bank testing.
 
 ## Budget model: tracking-based by default
@@ -103,7 +121,7 @@ historical transactions requires an explicit additional action.
 | Fast signup | New user can reach authenticated onboarding | No baseline | Google sign-up/login completes in <= 2 minutes |
 | Actionable pacing | Users notice and understand an ahead-of-pace warning | Not available | >= 80% of test users correctly identify the affected category and action |
 | Low-maintenance use | Users can maintain an accurate budget without daily manual bookkeeping | Not available | >= 80% of pilot users report that the product requires little or no daily maintenance |
-| Affordable access | Total recurring price is close to the underlying financial-data-provider cost | Not available | Product price target is SimpleFIN cost plus a small, transparent premium; exact ceiling TBD |
+| Affordable access | Total recurring price is close to the underlying financial-data-provider cost | Not available | Provisional target is <= $4.50/month or $45/year all-in for the SimpleFIN path; final price follows an opex study |
 
 ## Users
 
@@ -296,6 +314,10 @@ client is not an MVP requirement.
 - [ ] SimpleFIN’s user-paid subscription requirement, if applicable, is disclosed before the user begins linking accounts
 - [ ] Provider replacement and migration preserve stable internal accounts and transaction identities where a safe match exists, and surface records requiring review
 - [ ] Provider evaluation captures target-bank coverage, history availability, refresh behavior, reauthorization frequency, data quality, rate limits, setup fees, minimums, and per-connection costs
+- [ ] The first production provider strategy provides strong US institution coverage; international coverage is optional for MVP
+- [ ] A provider replacement establishes an explicit cutover and opening-balance treatment, preserves unmatched history, deduplicates safe overlaps, and sends ambiguous account or transaction matches to review
+- [ ] The onboarding and pricing experience discloses provider identity, coverage, cost, whether connectivity is bundled, and any separate user-paid subscription before connection
+- [ ] The launch plan includes an extended introductory free trial, with its exact duration and final pricing held provisional pending an operating-cost study
 
 ### Budget setup
 
@@ -655,6 +677,6 @@ These capabilities should be designed for, but can ship after the first usable p
 | Q14 | What historical window should define the average comparison baseline? | jho | Before dashboard implementation |
 | Q15 | What confidence threshold should send an AI categorization to review instead of applying it automatically? | jho | Before categorization implementation |
 | Q16 | What is the retention and deletion policy for disconnected provider data, audit history, and user accounts? | jho | Before implementation |
-| Q18 | What exact monthly price ceiling keeps the product only marginally more expensive than connectivity and AI costs while covering hosting and operations? | jho | Before pricing implementation |
+| Q18 | What operating-cost profile and active-household assumptions validate the provisional $4.50/month or $45/year all-in target? | jho | Before final pricing and launch |
 | Q19 | Can SimpleFIN offer sponsored, bundled, reseller, or developer pricing that avoids requiring each Nemeo user to maintain a separate Bridge subscription? | jho | Before committing to SimpleFIN as the only customer-facing connection path |
 | Q20 | Which provider should be the first bundled-cost alternative to SimpleFIN, and what minimum target-bank coverage is required? | jho | Before production pricing and launch |
