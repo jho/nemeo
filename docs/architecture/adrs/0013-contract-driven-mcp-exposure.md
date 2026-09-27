@@ -46,6 +46,19 @@ endpoint as an agent tool.
 - Search and analytics tools remain explicitly allowlisted capabilities governed by ADR 0007; a
   generic query endpoint is not exposed as an unrestricted MCP tool.
 
+### Client setup
+
+- Hosted MCP setup SHOULD be an authorization flow: the user connects a client such as ChatGPT or
+  Claude, signs in with the existing identity provider, approves household access, and receives the
+  configured connection without copying raw credentials.
+- Local MCP setup SHOULD use a bootstrap command or equivalent client handoff that opens browser
+  authentication and writes the local client configuration. Users should not hand-edit generated tool
+  definitions or paste long-lived secrets into configuration files.
+- Local and hosted clients receive the same generated capability model, and the user’s manager/viewer
+  role and household scope are applied automatically after authentication.
+- Client-specific installation instructions may differ, but the product must not require users to
+  understand TypeSpec, OpenAPI, generated schemas, or individual tool selection.
+
 ## Alternatives considered
 
 ### Generic OpenAPI-to-MCP exposure
