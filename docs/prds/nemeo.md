@@ -34,6 +34,7 @@ Product principles:
 - **Tracking over envelopes:** compare real spending with targets and recommend adjustments without requiring users to assign every dollar to an envelope.
 - **Guidance over guilt:** explain whether the household is on track and offer practical next actions instead of treating every variance as failure.
 - **Useful AI, not a sales chatbot:** use AI to organize, explain, and recommend; do not use the product primarily to sell credit, investments, insurance, or other financial products.
+- **MCP-first AI:** native AI remains background automation for classification, budget setup, and maintenance. A conversational in-app interface is post-MVP and should be added only if product metrics justify it; if added, it should be a thin MCP-backed text surface rather than a separate agent architecture.
 - **Affordable by design:** keep the subscription close to the underlying financial-data-provider cost and make pricing transparent.
 
 ## Visual identity and interaction language
