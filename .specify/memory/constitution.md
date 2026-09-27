@@ -2,15 +2,15 @@
 
 <!--
 Sync Impact Report
-- Version change: 1.9.0 -> 1.10.0
-- Modified principles: Accepted architecture constraints expanded with ADR 0012 identity and authorization rules
+- Version change: 1.10.0 -> 1.10.1
+- Modified principles: ADR 0012 identity, authorization, and observability wording clarified for MVP
 - Added sections: external identity, household tenancy, fixed roles, sessions, provider secrets, and audit boundaries
 - Removed sections: none
 - Templates requiring updates: none; existing Constitution Check workflow remains applicable
 - Follow-up: detailed retention, deletion, export, and legal exceptions remain governed by product issue #9
 -->
 
-**Version:** 1.10.0
+**Version:** 1.10.1
 **Ratified:** 2026-09-14
 **Last amended:** 2026-09-27
 
@@ -133,10 +133,10 @@ these constraints.
   [ADR 0012](../../docs/architecture/adrs/0012-identity-tenancy-authorization-and-secrets.md).
 - Browser sessions MUST use revocable secure opaque sessions, and MCP credentials MUST be user- and
   household-scoped, revocable, expiring, and stored only as hashes or equivalent non-secret metadata.
-  Provider credentials MUST be encrypted at rest and excluded from logs, ordinary responses, audit
-  payloads, and MCP results. Domain mutation history MUST remain in the relevant event streams;
-  security-relevant access-control events MUST be recorded in redacted security records; ordinary
-  reads MUST NOT become durable audit events by default. See
+  Provider credentials MUST be encrypted at rest and excluded from logs, traces, ordinary responses,
+  and MCP results. Domain mutation history MUST remain in the relevant event streams; security-
+  relevant events MUST use redacted structured logs/traces rather than a separate security-audit
+  database; ordinary reads MUST NOT become durable audit events by default. See
   [ADR 0012](../../docs/architecture/adrs/0012-identity-tenancy-authorization-and-secrets.md).
 
 When a new architecture decision is accepted, its ADR MUST be linked here with the concise rule
