@@ -552,6 +552,8 @@ they remain secondary content below the overall status and pace exceptions.
 - The manager is responsible for maintaining the household budget and can manage budgets, targets, transactions, categories, rules, connections, transfer confirmations, invitations, and access.
 - A viewer can read the dashboard, budgets, transactions, pace status, and reports, but cannot change financial data, connections, or household access.
 - The common household shape is one manager with one or more viewers. Additional managers use the same manager role; MVP does not introduce a separate co-manager role.
+- A user belongs to exactly one household in MVP. Provider connections, accounts, transactions, budgets, categories, targets, rules, reports, and audit history are household-owned; the user profile and provider identities remain personal.
+- The root manager owns the household lifecycle. Deleting the root manager is a full household deletion; deleting a viewer removes that membership and access without deleting household data.
 - Roles are fixed bundles in MVP. Users cannot create custom roles or configure per-resource or per-field permissions.
 
 **Acceptance criteria:**
@@ -603,8 +605,10 @@ they remain secondary content below the overall status and pace exceptions.
 **Lifecycle direction (MVP):** Nemeo supports account deletion and provider disconnection without
 committing to product-specific retention durations yet. Account deletion revokes access and
 provider credentials and removes the user’s personal, financial, and derived data from active
-systems. Disconnecting a provider immediately revokes its credentials and prevents future
-scheduled synchronization while preserving already imported history and budget decisions.
+systems. For the root manager, account deletion is household deletion and includes household-owned
+provider connections and financial data. Deleting a viewer removes their membership and access while
+preserving household data. Disconnecting a provider immediately revokes its credentials and prevents
+future scheduled synchronization while preserving already imported history and budget decisions.
 
 Exact retention periods, deletion schedules, backup handling, export formats, legal exceptions, and
 policy overrides are deferred until required by launch policy or legal review. Until then, any

@@ -2,17 +2,17 @@
 
 <!--
 Sync Impact Report
-- Version change: 1.8.0 -> 1.9.0
-- Modified principles: Accepted architecture constraints expanded with ADR 0011 persistence rules
-- Added sections: selective event sourcing and aggregate repository boundary
+- Version change: 1.9.0 -> 1.10.0
+- Modified principles: Accepted architecture constraints expanded with ADR 0012 identity and authorization rules
+- Added sections: external identity, household tenancy, fixed roles, sessions, provider secrets, and audit boundaries
 - Removed sections: none
 - Templates requiring updates: none; existing Constitution Check workflow remains applicable
-- Follow-up: detailed retention and deletion behavior remains governed by product issue #9
+- Follow-up: detailed retention, deletion, export, and legal exceptions remain governed by product issue #9
 -->
 
-**Version:** 1.9.0
+**Version:** 1.10.0
 **Ratified:** 2026-09-14
-**Last amended:** 2026-09-21
+**Last amended:** 2026-09-27
 
 ## Principles
 
@@ -118,6 +118,24 @@ these constraints.
   meaning MUST not depend on color alone, and MVP review MUST remain sequential rather than inventing
   bulk financial mutations. See
   [ADR 0010](../../docs/architecture/adrs/0010-information-architecture-and-interaction-patterns.md).
+- Identity MUST use external OIDC providers with Google as the MVP provider and no Nemeo-managed
+  passwords. External provider subjects MUST map through a separate identity table to one Nemeo
+  profile; matching email addresses MUST NOT silently merge profiles or financial data. See
+  [ADR 0012](../../docs/architecture/adrs/0012-identity-tenancy-authorization-and-secrets.md).
+- A user MUST belong to exactly one household in MVP. Household financial resources MUST be scoped
+  to the household, and the household MUST have one root manager lifecycle. Deleting the root
+  manager invokes household deletion; deleting a viewer removes membership without deleting household
+  data. See [ADR 0012](../../docs/architecture/adrs/0012-identity-tenancy-authorization-and-secrets.md).
+- Authorization MUST use the fixed `manager` and `viewer` role bundles through explicit
+  `subject + action + resource + household scope` checks. HTTP, MCP, worker, and scheduled entry
+  points MUST resolve the same principal context, and MVP MUST NOT introduce a general-purpose FGA
+  engine or user-configurable policy language. See
+  [ADR 0012](../../docs/architecture/adrs/0012-identity-tenancy-authorization-and-secrets.md).
+- Browser sessions MUST use revocable secure opaque sessions, and MCP credentials MUST be user- and
+  household-scoped, revocable, expiring, and stored only as hashes or equivalent non-secret metadata.
+  Provider credentials MUST be encrypted at rest and excluded from logs, ordinary responses, audit
+  payloads, and MCP results. Sensitive reads and mutations MUST produce auditable events. See
+  [ADR 0012](../../docs/architecture/adrs/0012-identity-tenancy-authorization-and-secrets.md).
 
 When a new architecture decision is accepted, its ADR MUST be linked here with the concise rule
 that Spec Kit needs to enforce. When an architecture decision is superseded, this section and the

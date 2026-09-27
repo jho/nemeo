@@ -38,7 +38,7 @@ These need product/design answers first. They are tracked as GitHub issues, not 
 | [#17](https://github.com/jho/nemeo/issues/17) / [ADR 0011](adrs/0011-domain-persistence-and-event-strategy.md) | Domain persistence and event strategy | Accepted | Event-model slice specs |
 | [#18](https://github.com/jho/nemeo/issues/18) | Provider adapter contract | Open / High | Product issue #10 |
 | [#19](https://github.com/jho/nemeo/issues/19) | Jobs, scheduling, retries, and idempotency | Open / High | #17, #18 |
-| [#20](https://github.com/jho/nemeo/issues/20) | Identity, tenancy, and authorization | Open / High | Product issues #5, #9 |
+| [#20](https://github.com/jho/nemeo/issues/20) / [ADR 0012](adrs/0012-identity-tenancy-authorization-and-secrets.md) | Identity, tenancy, authorization, sessions, and secrets | Accepted | Product issues #5, #9, #50 |
 | [#21](https://github.com/jho/nemeo/issues/21) | MCP boundary and agent permissions | Open / High | Product issue #6, #20 |
 | [#22](https://github.com/jho/nemeo/issues/22) | AI decision boundary and model providers | Open / Medium | Product issues #7, #8 |
 | [#23](https://github.com/jho/nemeo/issues/23) | Hosting, environments, and operations | Accepted model / Open operations | #12, #17, product issue #9 |
