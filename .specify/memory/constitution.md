@@ -2,15 +2,15 @@
 
 <!--
 Sync Impact Report
-- Version change: 1.11.0 -> 1.12.0
-- Modified principles: provider integrations now use a versioned, capability-aware adapter contract
-- Added sections: provider-neutral ingestion, identity, sync, failure, and contract-test constraints
+- Version change: 1.12.0 -> 1.13.0
+- Modified principles: Event Model automations now map to coarse PostgreSQL jobs and projection-backed work views
+- Added sections: automation/job mapping, at-least-once execution, and future outbox seam
 - Removed sections: none
 - Templates requiring updates: none; existing Constitution Check workflow remains applicable
 - Follow-up: detailed retention, deletion, export, and legal exceptions remain governed by product issue #9
 -->
 
-**Version:** 1.12.0
+**Version:** 1.13.0
 **Ratified:** 2026-09-14
 **Last amended:** 2026-09-27
 
@@ -84,6 +84,13 @@ these constraints.
   of budget/reporting contracts. Scheduling, leases, retries, and backoff remain centralized rather
   than adapter-owned, and every adapter MUST pass the shared contract-test suite. See
   [ADR 0014](../../docs/architecture/adrs/0014-provider-adapter-contract.md).
+- Event Model automations MUST be triggered by the scheduler or committed application events, read
+  projection-backed work views, and invoke existing command capabilities for domain changes. MVP jobs
+  MUST be coarse automation runs stored through an application-owned PostgreSQL-backed queue, not
+  one task per record. Job execution MUST be at-least-once and idempotent, with leases, bounded
+  retries, rate-limit handling, checkpoints, and user/operator-visible status. Queue, scheduler,
+  event-publisher, and clock ports MUST keep infrastructure replaceable by a future outbox and
+  distributed queue. See [ADR 0015](../../docs/architecture/adrs/0015-postgres-automation-jobs-and-scheduling.md).
 - MVP uses a conventional modular monolith: one application package, one `nemeo` image, and one
   application process composing web, API, MCP, worker, scheduler, and projection interfaces.
   Modules and entry points MUST preserve future extraction seams, while internal integration uses
