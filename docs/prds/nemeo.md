@@ -5,7 +5,7 @@ status: draft
 owner: "jho"
 stakeholders: []
 created: "2026-07-10"
-last-updated: "2026-09-26"
+last-updated: "2026-09-27"
 jira-epic: ""
 ---
 
@@ -35,6 +35,40 @@ Product principles:
 - **Guidance over guilt:** explain whether the household is on track and offer practical next actions instead of treating every variance as failure.
 - **Useful AI, not a sales chatbot:** use AI to organize, explain, and recommend; do not use the product primarily to sell credit, investments, insurance, or other financial products.
 - **Affordable by design:** keep the subscription close to the underlying financial-data-provider cost and make pricing transparent.
+
+## Visual identity and interaction language
+
+Nemeo should feel calm, capable, approachable, and trustworthy. The visual direction should make a
+budgeting product feel memorable without trying to make financial management look flashy, gamified,
+or trendy. AI cues should suggest useful assistance and clarity, not autonomous control or financial
+authority.
+
+- The visual personality is warm, precise, restrained, and quietly optimistic. Use an approachable
+  palette, clear hierarchy, generous space, and small moments of character rather than a dense
+  futuristic interface.
+- The robot is a friendly guide and explainer. It may appear in onboarding, empty states, review
+  guidance, and explanations, but it is not the source of financial truth and does not replace
+  status text, evidence, controls, or permission messaging.
+- The robot should be lightly anthropomorphic and distinctive enough to support the Nemeo identity,
+  while avoiding a character that implies a human financial advisor, an autonomous decision-maker,
+  or a mascot that trivializes financial stress.
+- Warnings are factual and actionable rather than alarming or shame-oriented. Use language such as
+  “Dining out is ahead of pace” and “This looks like a transfer from Checking to Visa,” followed by
+  evidence and a clear next step.
+- Recommendations use optional, respectful language such as “You could review…” or “One option is…”
+  and distinguish observed facts, estimates, suggestions, and committed changes.
+- Uncertainty is visible and plain: “likely,” “suggested,” “needs a second look,” and “not enough
+  history.” Avoid false precision, anthropomorphic claims about what the AI knows, or language that
+  implies financial advice.
+- The canonical pace and data-status language remains “on pace,” “ahead of pace,” “needs review,”
+  “insufficient history,” “error,” and “info.” These meanings must remain understandable without the
+  robot, color, animation, or an AI-generated explanation.
+- Trust and accessibility take priority over personality. Status uses text and accessible icons in
+  addition to color, financial amounts remain legible and exact, motion supports reduced-motion
+  preferences, and the robot never carries a warning or permission boundary by itself.
+
+This brief is product direction for the owned design system. Component structure, tokens, primitive
+selection, and implementation mechanics remain governed by the design-system ADR.
 
 ## Competitive positioning
 
