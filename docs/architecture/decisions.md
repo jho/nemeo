@@ -36,7 +36,7 @@ These need product/design answers first. They are tracked as GitHub issues, not 
 | [#15](https://github.com/jho/nemeo/issues/15) / [ADR 0010](adrs/0010-information-architecture-and-interaction-patterns.md) | Information architecture and interaction model | Accepted | Product issues #2, #4; ADRs 0008, 0009 |
 | [#16](https://github.com/jho/nemeo/issues/16) | Application topology | Open / High | #12, #23 |
 | [#17](https://github.com/jho/nemeo/issues/17) / [ADR 0011](adrs/0011-domain-persistence-and-event-strategy.md) | Domain persistence and event strategy | Accepted | Event-model slice specs |
-| [#18](https://github.com/jho/nemeo/issues/18) | Provider adapter contract | Open / High | Product issue #10 |
+| [#18](https://github.com/jho/nemeo/issues/18) / [ADR 0014](adrs/0014-provider-adapter-contract.md) | Provider adapter contract | Accepted | Product issue #10, ADR 0011 |
 | [#19](https://github.com/jho/nemeo/issues/19) | Jobs, scheduling, retries, and idempotency | Open / High | #17, #18 |
 | [#20](https://github.com/jho/nemeo/issues/20) / [ADR 0012](adrs/0012-identity-tenancy-authorization-and-secrets.md) | Identity, tenancy, authorization, sessions, and secrets | Accepted | Product issues #5, #9, #50 |
 | [#21](https://github.com/jho/nemeo/issues/21) / [ADR 0013](adrs/0013-contract-driven-mcp-exposure.md) | Contract-driven MCP boundary and agent permissions | Accepted | Product issue #6, #20 |
