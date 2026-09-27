@@ -134,7 +134,9 @@ these constraints.
 - Browser sessions MUST use revocable secure opaque sessions, and MCP credentials MUST be user- and
   household-scoped, revocable, expiring, and stored only as hashes or equivalent non-secret metadata.
   Provider credentials MUST be encrypted at rest and excluded from logs, ordinary responses, audit
-  payloads, and MCP results. Sensitive reads and mutations MUST produce auditable events. See
+  payloads, and MCP results. Domain mutation history MUST remain in the relevant event streams;
+  security-relevant access-control events MUST be recorded in redacted security records; ordinary
+  reads MUST NOT become durable audit events by default. See
   [ADR 0012](../../docs/architecture/adrs/0012-identity-tenancy-authorization-and-secrets.md).
 
 When a new architecture decision is accepted, its ADR MUST be linked here with the concise rule

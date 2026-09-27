@@ -91,17 +91,25 @@ system or a full fine-grained authorization product.
 - Secret access is limited to the provider adapter and the workflows that require it. Authorization
   checks and audit context are established before secret retrieval.
 
-### Audit events
+### Domain history, security records, and operational logging
 
-- Sensitive reads and mutations are recorded as immutable audit events. Each event includes the
-  principal, household, entry surface (`web`, `api`, `mcp`, `worker`, or `scheduler`), action,
-  resource reference, outcome, timestamp, and correlation/idempotency reference when available.
-- Audit records MUST describe the action without copying provider secrets or unnecessary financial
-  payloads. Failed, denied, and confirmation-rejected actions are distinguishable from successful
-  mutations.
-- Access history used by the product’s household experience is a projection of the audit events;
-  retention, deletion, export, and legal exceptions follow product issue #9 rather than being
-  silently invented by this ADR.
+- Financial mutations that belong to the event-sourced Transaction or Budget domains retain their
+  immutable domain event history under ADR 0011. That history is the source for explainability and
+  replay; this ADR does not create a second generic audit stream for those mutations.
+- Security-relevant events receive a small redacted access/security record. Examples include
+  authentication success or failure, session creation or revocation, invitation and role changes,
+  membership revocation, account deletion initiation, provider credential changes, and denied
+  authorization attempts. Each record includes the principal when known, household, entry surface,
+  action, resource reference, outcome, timestamp, and correlation reference where available.
+- Ordinary reads of budgets, transactions, reports, or dashboard data MUST NOT become durable audit
+  events by default. They may produce redacted operational logs, metrics, and traces needed for
+  troubleshooting and abuse detection, subject to the observability and retention policy.
+- Security records and operational telemetry MUST NOT contain provider secrets or unnecessary
+  financial payloads. Failed, denied, and confirmation-rejected actions remain distinguishable from
+  successful mutations.
+- Access history shown in the household experience is limited to meaningful membership, role, and
+  access-control changes. Retention, deletion, export, and legal exceptions follow product issue
+  [#9](https://github.com/jho/nemeo/issues/9) rather than being invented by this ADR.
 
 ## Alternatives considered
 
