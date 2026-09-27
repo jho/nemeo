@@ -5,7 +5,7 @@ status: draft
 owner: "jho"
 stakeholders: []
 created: "2026-07-10"
-last-updated: "2026-09-26"
+last-updated: "2026-09-27"
 jira-epic: ""
 ---
 
@@ -34,7 +34,23 @@ Product principles:
 - **Tracking over envelopes:** compare real spending with targets and recommend adjustments without requiring users to assign every dollar to an envelope.
 - **Guidance over guilt:** explain whether the household is on track and offer practical next actions instead of treating every variance as failure.
 - **Useful AI, not a sales chatbot:** use AI to organize, explain, and recommend; do not use the product primarily to sell credit, investments, insurance, or other financial products.
+- **MCP-first AI:** native AI remains background automation for classification, budget setup, and maintenance. A conversational in-app interface is post-MVP and should be added only if product metrics justify it; if added, it should be a thin MCP-backed text surface rather than a separate agent architecture.
 - **Affordable by design:** keep the subscription close to the underlying financial-data-provider cost and make pricing transparent.
+
+## Visual identity and interaction language
+
+Nemeo should feel calm, capable, approachable, and trustworthy—not flashy or gamified. The robot is
+an optional brand mark, not an in-product conversational assistant; ChatGPT, Claude Desktop, and
+other agents are the primary conversational interfaces through MCP. The web app should focus on
+clear status, review, and correction workflows.
+
+- Use factual, respectful language: “ahead of pace,” “needs review,” and “insufficient history.”
+- Distinguish facts, estimates, suggestions, and committed changes; avoid implying financial advice.
+- Keep the robot lightly anthropomorphic and decorative; it must never carry financial meaning,
+  warnings, permissions, or trust on its own.
+- Preserve accessibility through text, icons, contrast, exact amounts, and reduced-motion support.
+
+Component and token implementation remains governed by the design-system ADR.
 
 ## Competitive positioning
 
