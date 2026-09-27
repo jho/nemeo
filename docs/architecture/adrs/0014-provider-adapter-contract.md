@@ -21,6 +21,19 @@ matches. The Event Model places provider translation at the Connections boundary
 records enter Accounts and Transactions. Scheduling and retry policy are intentionally a separate
 decision in issue #19.
 
+A quick comparison of likely providers confirms that the boundary must support more than one sync
+shape. SimpleFIN exposes a claimed access URL and a `/accounts` snapshot with optional date windows
+and pending records. Akoya exposes OAuth-style tokens plus separate account, balance, and
+transaction APIs with offset pagination. Plaid exposes a cursor-based change feed with added,
+modified, and removed records. These provider differences are evidence for the contract shape, not
+dependencies on any one vendor:
+
+- [SimpleFIN Protocol](https://www.simplefin.org/protocol.html)
+- [Akoya Transactions API](https://docs.akoya.com/reference/transactions)
+- [Akoya APIs Overview](https://docs.akoya.com/guides/api-overview)
+- [Plaid Transactions Sync](https://plaid.com/docs/transactions/sync-migration/)
+- [Plaid transaction states](https://plaid.com/docs/transactions/transactions-data/)
+
 ## Decision
 
 Nemeo will define an application-owned, versioned Provider Adapter Contract. Each provider adapter
@@ -30,6 +43,14 @@ and setup details do not cross the boundary.
 The MVP contract is `ProviderAdapter v1`. It is a capability contract rather than a mirror of any
 provider SDK. A provider declares which capabilities it supports, and unsupported operations return
 a typed `unsupported` result rather than being inferred from provider-specific behavior.
+
+The sync port MUST represent a normalized change set, not require one provider pagination strategy.
+Each request/result carries the connection and account scope, an optional opaque provider cursor,
+an optional start/end window, page continuation, a completeness flag, a provider watermark or
+observed-at timestamp, and arrays for added, modified, and explicitly removed records. The adapter
+may implement this with a cursor, offset/page, date window, or full snapshot. The ingestion workflow
+must consume every page before committing the corresponding change set and persist the provider
+continuation state only after successful application.
 
 ### Adapter capabilities
 
@@ -48,7 +69,7 @@ An adapter MUST cover these operations where the provider supports them:
 
 The adapter returns normalized provider-neutral records, including provider identifiers, timestamps,
 amounts, currency, account references, descriptions/merchant data, pending state, update/removal
-state, and provider sync metadata. The adapter may retain redacted provider metadata needed for
+state, related/predecessor provider record identifiers, and provider sync metadata. The adapter may retain redacted provider metadata needed for
 reconciliation or troubleshooting, but credentials, access URLs, tokens, and secrets never enter
 normalized records, domain events, ordinary responses, logs, or traces.
 
@@ -63,9 +84,12 @@ Provider connections, Nemeo accounts, and Nemeo transactions are separate concep
 
 The ingestion boundary MUST use provider-scoped identifiers and a provider-specific sync cursor or
 overlap window to make repeated pages and retries idempotent. A provider update changes the existing
-normalized record; a provider removal becomes an explicit removal/tombstone state and MUST NOT
-silently erase user history. Pending-to-posted transitions update the same logical record when the
-provider identity permits it.
+normalized record; an explicit provider removal becomes a removal/tombstone state and MUST NOT
+silently erase user history. Absence from a later snapshot MUST NOT be interpreted as removal unless
+the provider contract explicitly guarantees complete snapshots for the requested scope. Pending-to-
+posted transitions update the same logical record when the provider identity permits it; otherwise a
+new provider record MUST carry a related/predecessor identifier so the normalizer can preserve the
+relationship without assuming the two records are interchangeable.
 
 Provider replacement is an explicit workflow, not an adapter side effect. It preserves existing
 budget, category, transfer, and reporting history; safely matched accounts and transactions may be
@@ -101,6 +125,16 @@ The first SimpleFIN adapter is the reference implementation. Its access URL/setu
 window, overlap behavior, and provider-specific limits remain inside the adapter and its connection
 workflow. SimpleFIN-specific assumptions MUST NOT appear in budget or reporting contracts.
 
+The setup port MUST support both user handoff and server-side completion. A provider may require a
+user to paste or submit a one-time token which the adapter exchanges for a stored access credential,
+or may require an OAuth authorization redirect followed by token refresh and consent revocation.
+The port therefore returns setup instructions and a provider connection state rather than exposing
+a universal credential format. Token refresh, consent expiry, and reauthorization are represented
+as connection status/capability outcomes and are actionable by the connection workflow.
+
+Provider notifications are optional hints to start or prioritize a sync; they are never the source
+of transaction truth. A missed notification must be recoverable through scheduled or manual sync.
+
 ### Contract tests
 
 Nemeo will maintain one provider-neutral contract-test suite. Every adapter MUST pass the applicable
@@ -116,6 +150,11 @@ fixture-based cases for:
 The shared suite tests the adapter boundary without requiring a live provider. Provider-specific
 integration tests may exercise sandboxes or recorded fixtures separately. Contract tests verify
 translation behavior; they do not replace domain, projection, or end-to-end tests.
+
+The fixtures MUST include both of the following provider behaviors: a snapshot/window provider that
+does not emit removals, and a cursor/change-set provider that emits a pending removal plus a posted
+replacement. This prevents the contract tests from accidentally assuming that every provider has
+Plaid-like change tracking or SimpleFIN-like snapshots.
 
 ### Versioning
 
