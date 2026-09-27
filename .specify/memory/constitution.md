@@ -2,15 +2,15 @@
 
 <!--
 Sync Impact Report
-- Version change: 1.10.0 -> 1.10.1
-- Modified principles: ADR 0012 identity, authorization, and observability wording clarified for MVP
-- Added sections: external identity, household tenancy, fixed roles, sessions, provider secrets, and audit boundaries
+- Version change: 1.10.1 -> 1.11.0
+- Modified principles: MCP exposure is now contract-driven and explicitly opted in through TypeSpec metadata
+- Added sections: generated MCP definitions and adapters from the API contract
 - Removed sections: none
 - Templates requiring updates: none; existing Constitution Check workflow remains applicable
 - Follow-up: detailed retention, deletion, export, and legal exceptions remain governed by product issue #9
 -->
 
-**Version:** 1.10.1
+**Version:** 1.11.0
 **Ratified:** 2026-09-14
 **Last amended:** 2026-09-27
 
@@ -72,10 +72,11 @@ these constraints.
   remain relational unless a later ADR changes that boundary. Emmett MAY implement the event-store
   and projection capabilities behind the aggregate-specific repository boundary, but its command
   handler and types MUST NOT leak into domain or application contracts. See [ADR 0011](../../docs/architecture/adrs/0011-domain-persistence-and-event-strategy.md).
-- MCP exposure is a curated capability surface derived from, but not equivalent to, the OpenAPI
-  surface. Generated MCP tools MUST NOT bypass authorization, confirmation, or tenancy rules. See
-  [ADR 0004](../../docs/architecture/adrs/0004-typespec-fastify-vertical-slice-backend.md) and the
-  follow-up MCP decision in issue [#21](https://github.com/jho/nemeo/issues/21).
+- MCP exposure MUST be generated from explicitly opted-in TypeSpec MCP metadata alongside the
+  versioned OpenAPI contract. Generated tools MUST reuse shared slice capabilities and API schemas,
+  MUST NOT expose unannotated or unsafe operations automatically, and MUST NOT bypass authorization,
+  confirmation, or tenancy rules. See
+  [ADR 0013](../../docs/architecture/adrs/0013-contract-driven-mcp-exposure.md).
 - MVP uses a conventional modular monolith: one application package, one `nemeo` image, and one
   application process composing web, API, MCP, worker, scheduler, and projection interfaces.
   Modules and entry points MUST preserve future extraction seams, while internal integration uses

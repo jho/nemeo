@@ -39,7 +39,7 @@ These need product/design answers first. They are tracked as GitHub issues, not 
 | [#18](https://github.com/jho/nemeo/issues/18) | Provider adapter contract | Open / High | Product issue #10 |
 | [#19](https://github.com/jho/nemeo/issues/19) | Jobs, scheduling, retries, and idempotency | Open / High | #17, #18 |
 | [#20](https://github.com/jho/nemeo/issues/20) / [ADR 0012](adrs/0012-identity-tenancy-authorization-and-secrets.md) | Identity, tenancy, authorization, sessions, and secrets | Accepted | Product issues #5, #9, #50 |
-| [#21](https://github.com/jho/nemeo/issues/21) | MCP boundary and agent permissions | Open / High | Product issue #6, #20 |
+| [#21](https://github.com/jho/nemeo/issues/21) / [ADR 0013](adrs/0013-contract-driven-mcp-exposure.md) | Contract-driven MCP boundary and agent permissions | Accepted | Product issue #6, #20 |
 | [#22](https://github.com/jho/nemeo/issues/22) | AI decision boundary and model providers | Open / Medium | Product issues #7, #8 |
 | [#23](https://github.com/jho/nemeo/issues/23) | Hosting, environments, and operations | Accepted model / Open operations | #12, #17, product issue #9 |
 | [#24](https://github.com/jho/nemeo/issues/24) | Testing and architecture quality gates | Open / High | #12, #17, #20 |
