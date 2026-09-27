@@ -160,7 +160,7 @@ client is not an MVP requirement.
 - Calculate category and overall budget pace, including projected target variance
 - Show ahead-of-pace warnings in the product
 - Provide a basic current-month dashboard for cashflow, budget progress, and top spending destinations
-- Sign up and log in with Google; retain an extensible provider model for future auth providers
+- Sign up and log in with Google without creating a Nemeo-managed password; retain an extensible provider model for future auth providers
 - Provide an MCP server so AI agents can inspect budget and transaction data
 - Support a simple mobile family-viewer experience through the responsive installable web app
 - Support core budget portability / export later, after adoption
@@ -174,7 +174,7 @@ client is not an MVP requirement.
 - Deep budgeting automation beyond the first setup / read / review loop
 - Advanced analytics dashboards beyond the first reporting surface
 - Envelope allocation as the default budgeting model
-- Additional identity providers beyond Google in the first release
+- Apple Sign in, Microsoft, Facebook, and additional identity providers beyond Google in the first release
 - Paying for, sponsoring, or reselling SimpleFIN Bridge subscriptions without an explicit commercial agreement
 - Supporting multiple production financial-data providers in the first release; the abstraction is required, but SimpleFIN is the only required production adapter
 - Maintaining a separate native mobile client in the first release
@@ -243,11 +243,22 @@ client is not an MVP requirement.
 
 **Story:** As an AI power user, I want to create an account and connect my financial sources so that the product can ingest my transactions.
 
+**Passwordless authentication policy:**
+
+- Google is the only social identity provider required for MVP.
+- Nemeo does not create or manage a product password for MVP.
+- Apple Sign in is the next fast-follow provider because phone users are a primary target; Microsoft, Facebook, and other providers remain deferred until a later product decision.
+- Sign-up and sign-in use one understandable flow. A known provider identity signs into the existing Nemeo profile rather than creating a duplicate profile.
+- Provider identities remain separate from the Nemeo profile, household membership, and financial records. Adding another provider later requires explicit account-linking or merge behavior and never silently merges financial data.
+- If a provider is unavailable, revoked, or no longer linked, the user receives a recoverable path that does not imply a Nemeo password exists.
+
 **Acceptance criteria:**
-- [ ] A new user can create an account successfully
-- [ ] A new user can sign up and log in with Google
+- [ ] A new user can create an account successfully with Google without creating a Nemeo-managed password
+- [ ] Sign-up and sign-in use the same Google identity flow and resolve to one Nemeo profile
+- [ ] Apple Sign in is documented as the next fast-follow provider, not an MVP dependency
 - [ ] Provider identity is stored separately from the product profile so additional auth providers can be added later
-- [ ] Authentication failures and account-linking conflicts show a recoverable next step
+- [ ] Authentication failures, revoked/unavailable providers, and account-linking conflicts show a recoverable next step
+- [ ] The product never silently merges two Nemeo profiles or financial records when identities are linked
 - [ ] A new user can link SimpleFIN natively from the product without a separate manual import workflow
 - [ ] A linked SimpleFIN account can ingest transactions and balances
 - [ ] The user can see imported transactions after the sync completes
@@ -653,7 +664,7 @@ These capabilities should be designed for, but can ship after the first usable p
 | Follow-on provider evaluation | Dependency | TBD | Needed to determine whether Nemeo can bundle connectivity into one affordable subscription; evaluate Akoya and other OAuth/API providers against target-bank coverage and economics |
 | MCP server hosting | Dependency | TBD | Needed to expose data to agents reliably |
 | Authentication and authorization | Dependency | TBD | Must isolate each user’s financial data |
-| Google identity integration | Dependency | TBD | Needed for low-friction MVP signup/login; should leave room for additional providers |
+| Google identity integration | Dependency | TBD | Needed for low-friction passwordless MVP signup/login; Apple is the first fast-follow provider and identity mapping must remain extensible |
 | Transfer matching and normalization | Dependency | TBD | Needed to map account directions, transfer payees, rules, historical retagging, and duplicate cleanup |
 | Budget automation engine | Dependency | TBD | Needed for historical seeding, caps, protected categories, carryover, rebalancing, reset tools, and taxonomy maintenance |
 | Job scheduler and provider policy handling | Dependency | TBD | Needed for provider-compatible SimpleFIN sync, retries, rate limits, and scheduled AI categorization |
