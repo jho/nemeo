@@ -46,12 +46,15 @@ authority.
 - The visual personality is warm, precise, restrained, and quietly optimistic. Use an approachable
   palette, clear hierarchy, generous space, and small moments of character rather than a dense
   futuristic interface.
-- The robot is a friendly guide and explainer. It may appear in onboarding, empty states, review
-  guidance, and explanations, but it is not the source of financial truth and does not replace
-  status text, evidence, controls, or permission messaging.
+- The robot is a brand mark and optional visual identity element, not an in-product conversational
+  assistant. It may appear sparingly in onboarding, empty states, product chrome, or documentation,
+  but it should not narrate the user’s finances or become a mascot that interrupts the workflow.
+- The primary conversational AI experience is external: ChatGPT, Claude Desktop, and other agents
+  use the MCP server. The Nemeo web app should prioritize clear status, review, and correction
+  workflows rather than trying to imitate an AI chat experience.
 - The robot should be lightly anthropomorphic and distinctive enough to support the Nemeo identity,
   while avoiding a character that implies a human financial advisor, an autonomous decision-maker,
-  or a mascot that trivializes financial stress.
+  or a gimmicky financial companion.
 - Warnings are factual and actionable rather than alarming or shame-oriented. Use language such as
   “Dining out is ahead of pace” and “This looks like a transfer from Checking to Visa,” followed by
   evidence and a clear next step.
