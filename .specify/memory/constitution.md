@@ -2,15 +2,15 @@
 
 <!--
 Sync Impact Report
-- Version change: 1.10.1 -> 1.11.0
-- Modified principles: MCP exposure is now contract-driven and explicitly opted in through TypeSpec metadata
-- Added sections: generated MCP definitions and adapters from the API contract
+- Version change: 1.11.0 -> 1.12.0
+- Modified principles: provider integrations now use a versioned, capability-aware adapter contract
+- Added sections: provider-neutral ingestion, identity, sync, failure, and contract-test constraints
 - Removed sections: none
 - Templates requiring updates: none; existing Constitution Check workflow remains applicable
 - Follow-up: detailed retention, deletion, export, and legal exceptions remain governed by product issue #9
 -->
 
-**Version:** 1.11.0
+**Version:** 1.12.0
 **Ratified:** 2026-09-14
 **Last amended:** 2026-09-27
 
@@ -77,6 +77,13 @@ these constraints.
   MUST NOT expose unannotated or unsafe operations automatically, and MUST NOT bypass authorization,
   confirmation, or tenancy rules. See
   [ADR 0013](../../docs/architecture/adrs/0013-contract-driven-mcp-exposure.md).
+- Financial-data providers MUST implement the versioned, application-owned Provider Adapter Contract
+  through the Connections boundary. Adapters MUST translate into provider-neutral account,
+  transaction, balance, capability, and typed-failure models; preserve stable provider and Nemeo
+  identities; make repeated syncs idempotent; and keep credentials and provider-specific behavior out
+  of budget/reporting contracts. Scheduling, leases, retries, and backoff remain centralized rather
+  than adapter-owned, and every adapter MUST pass the shared contract-test suite. See
+  [ADR 0014](../../docs/architecture/adrs/0014-provider-adapter-contract.md).
 - MVP uses a conventional modular monolith: one application package, one `nemeo` image, and one
   application process composing web, API, MCP, worker, scheduler, and projection interfaces.
   Modules and entry points MUST preserve future extraction seams, while internal integration uses
