@@ -2,17 +2,17 @@
 
 <!--
 Sync Impact Report
-- Version change: 1.12.0 -> 1.13.0
-- Modified principles: Event Model automations now map to coarse PostgreSQL jobs and projection-backed work views
-- Added sections: automation/job mapping, at-least-once execution, and future outbox seam
+- Version change: 1.13.0 -> 1.14.0
+- Modified principles: Added bounded native AI automation and external-agent boundary
+- Added sections: task-specific AI provider ports, proposal validation/provenance, and MCP-first deep interaction boundary
 - Removed sections: none
 - Templates requiring updates: none; existing Constitution Check workflow remains applicable
 - Follow-up: detailed retention, deletion, export, and legal exceptions remain governed by product issue #9
 -->
 
-**Version:** 1.13.0
+**Version:** 1.14.0
 **Ratified:** 2026-09-14
-**Last amended:** 2026-09-27
+**Last amended:** 2026-10-01
 
 ## Principles
 
@@ -77,6 +77,15 @@ these constraints.
   MUST NOT expose unannotated or unsafe operations automatically, and MUST NOT bypass authorization,
   confirmation, or tenancy rules. See
   [ADR 0013](../../docs/architecture/adrs/0013-contract-driven-mcp-exposure.md).
+- Nemeo-managed AI MUST remain limited to explicit, bounded automation operations such as transaction
+  categorization, transfer suggestions, initial budget setup inference, and explicitly invoked
+  budget/pace recommendations. MVP uses a Nemeo-selected server-side provider behind task-specific,
+  Nemeo-owned ports; provider SDKs, generic completion types, and model-specific behavior MUST NOT
+  cross into domain or application contracts. Provider output MUST be schema-validated, provenance
+  tracked, and applied only through authorized domain commands. Deep questioning, explanation, and
+  broader user-directed interaction belong to external agents through the authorized MCP/API surface;
+  Nemeo MUST NOT require user-supplied model keys or add a general in-app chat for MVP. See
+  [ADR 0016](../../docs/architecture/adrs/0016-ai-decision-boundary-and-provider-abstraction.md).
 - Financial-data providers MUST implement the versioned, application-owned Provider Adapter Contract
   through the Connections boundary. Adapters MUST translate into provider-neutral account,
   transaction, balance, capability, and typed-failure models; preserve stable provider and Nemeo
