@@ -1,7 +1,7 @@
 # ADR 0016: Bounded Native AI Automation with an External-Agent Intelligence Boundary
 
 - Status: Accepted
-- Date: 2026-10-01
+- Date: 2026-10-02
 - GitHub issue: [#22](https://github.com/jho/nemeo/issues/22)
 - Product decisions: [#7](https://github.com/jho/nemeo/issues/7), [#8](https://github.com/jho/nemeo/issues/8)
 - Related architecture: [ADR 0011](0011-domain-persistence-and-event-strategy.md), [ADR 0013](0013-contract-driven-mcp-exposure.md), [ADR 0015](0015-postgres-automation-jobs-and-scheduling.md)
@@ -25,10 +25,11 @@ Nemeo will use two explicit AI planes.
 ### 1. Nemeo-managed automation plane
 
 MVP uses one Nemeo-selected, server-side, low-cost model provider behind a Nemeo-owned adapter.
-OpenRouter's free tier is the current candidate for early development and low-volume MVP use to
-keep operating costs low. This is a provisional deployment choice: availability, limits, terms,
-privacy behavior, and production suitability MUST be revalidated before launch and MUST NOT become
-part of the domain contract.
+OpenRouter's free tier is a candidate for development and controlled alpha use while Nemeo tests
+quality, cost, availability, and data handling. A free or cheap provider MAY become the production
+provider only after explicit testing and review of its model terms, commercial-use rights, privacy
+behavior, retention, limits, and operational suitability. This provider choice MUST NOT become part
+of the domain contract.
 The adapter is limited to bounded task capabilities:
 
 - transaction categorization;
@@ -103,12 +104,24 @@ The product policy remains authoritative for user-visible confidence behavior:
 
 ## Privacy, cost, and operations
 
-- The automation adapter sends only the minimum financial context required for its bounded task.
+- The automation adapter MUST send only the minimum non-PII context required for its bounded task.
+  The default transaction classification payload is limited to a normalized payee/merchant value,
+  amount, currency, and the non-sensitive category or policy context required for the operation.
+- AI requests MUST exclude names, email addresses, household identifiers, account numbers, provider
+  identifiers, credentials, raw provider payloads, free-form transaction descriptions when they may
+  contain PII, and unrelated transaction history. Payee values MUST be normalized or redacted when
+  they appear to contain personal information.
+- Production provider/model selection MUST use an explicit allowlist. Nemeo MUST NOT use a dynamic
+  free-model router in production when it cannot identify and verify the selected model and provider
+  terms for each request.
 - Provider credentials and SDK details remain in configuration/adapter infrastructure and never enter
   domain events or API contracts.
 - Provider selection MUST be configuration-driven so the initial OpenRouter candidate can be
   replaced by a direct OpenAI, Anthropic, Google, local, or other supported provider without
   changing domain or application contracts.
+- The production review MUST verify the selected model's commercial-use/license terms, upstream
+  provider data practices, retention/training behavior, rate limits, and failure/availability
+  characteristics. Free-tier availability alone is not a production suitability signal.
 - Automation runs through the existing job and scheduler boundaries, with bounded cost/rate limits,
   retries, and observable failures.
 - A provider outage or invalid response must not corrupt imported data, current domain state, or

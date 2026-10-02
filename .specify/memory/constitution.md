@@ -2,17 +2,17 @@
 
 <!--
 Sync Impact Report
-- Version change: 1.13.0 -> 1.14.0
-- Modified principles: Added bounded native AI automation and external-agent boundary
-- Added sections: task-specific AI provider ports, proposal validation/provenance, and MCP-first deep interaction boundary
+- Version change: 1.14.0 -> 1.15.0
+- Modified principles: Added AI provider qualification and strict model-input minimization
+- Added sections: production provider allowlisting and non-PII AI input contract
 - Removed sections: none
 - Templates requiring updates: none; existing Constitution Check workflow remains applicable
 - Follow-up: detailed retention, deletion, export, and legal exceptions remain governed by product issue #9
 -->
 
-**Version:** 1.14.0
+**Version:** 1.15.0
 **Ratified:** 2026-09-14
-**Last amended:** 2026-10-01
+**Last amended:** 2026-10-02
 
 ## Principles
 
@@ -82,12 +82,15 @@ these constraints.
   budget/pace recommendations. MVP uses a Nemeo-selected server-side provider behind task-specific,
   Nemeo-owned ports and a multi-provider SDK or wrapper; provider SDKs, generic completion types, and
   model-specific behavior MUST NOT cross into domain or application contracts. Provider selection
-  MUST remain configuration-driven; OpenRouter's free tier is only a provisional low-cost candidate
-  and is subject to privacy, terms, limits, and production-suitability review. Provider output MUST
-  be schema-validated, provenance tracked, and applied only through authorized domain commands. Deep
-  questioning, explanation, and broader user-directed interaction belong to external agents through
-  the authorized MCP/API surface; Nemeo MUST NOT require user-supplied model keys or add a general
-  in-app chat for MVP. See
+  MUST remain configuration-driven and production providers/models MUST be explicitly allowlisted and
+  tested for quality, cost, commercial-use rights, privacy, retention, limits, and availability;
+  OpenRouter's free tier is only a development/controlled-alpha candidate until that review passes.
+  AI requests MUST be minimized to normalized payee/merchant, amount, currency, and required
+  non-sensitive task context; they MUST exclude identity, account, provider, credential, raw-payload,
+  and avoidable PII fields. Provider output MUST be schema-validated, provenance tracked, and applied
+  only through authorized domain commands. Deep questioning, explanation, and broader user-directed
+  interaction belong to external agents through the authorized MCP/API surface; Nemeo MUST NOT
+  require user-supplied model keys or add a general in-app chat for MVP. See
   [ADR 0016](../../docs/architecture/adrs/0016-ai-decision-boundary-and-provider-abstraction.md).
 - Financial-data providers MUST implement the versioned, application-owned Provider Adapter Contract
   through the Connections boundary. Adapters MUST translate into provider-neutral account,
