@@ -25,6 +25,10 @@ Nemeo will use two explicit AI planes.
 ### 1. Nemeo-managed automation plane
 
 MVP uses one Nemeo-selected, server-side, low-cost model provider behind a Nemeo-owned adapter.
+OpenRouter's free tier is the current candidate for early development and low-volume MVP use to
+keep operating costs low. This is a provisional deployment choice: availability, limits, terms,
+privacy behavior, and production suitability MUST be revalidated before launch and MUST NOT become
+part of the domain contract.
 The adapter is limited to bounded task capabilities:
 
 - transaction categorization;
@@ -35,9 +39,12 @@ The adapter is limited to bounded task capabilities:
 The provider is configured by Nemeo operations. MVP does not require users to supply model API keys,
 and Nemeo does not expose a general chat or open-ended completion capability to product code.
 
-The provider SDK, request types, response types, and model-specific behavior MUST remain inside the
-infrastructure adapter. Application code depends on task-specific Nemeo-owned ports and structured
-proposal types, not a generic chat-completion API. For example:
+The implementation MUST use a maintained multi-provider SDK or wrapper behind the Nemeo-owned
+adapter, rather than calling OpenRouter's protocol directly from feature code. A library such as
+Vercel AI SDK may be evaluated for this role, but the exact library remains an implementation
+choice. The provider SDK, request types, response types, and model-specific behavior MUST remain
+inside the infrastructure adapter. Application code depends on task-specific Nemeo-owned ports and
+structured proposal types, not a generic chat-completion API. For example:
 
 ```text
 automation job or application workflow
@@ -99,6 +106,9 @@ The product policy remains authoritative for user-visible confidence behavior:
 - The automation adapter sends only the minimum financial context required for its bounded task.
 - Provider credentials and SDK details remain in configuration/adapter infrastructure and never enter
   domain events or API contracts.
+- Provider selection MUST be configuration-driven so the initial OpenRouter candidate can be
+  replaced by a direct OpenAI, Anthropic, Google, local, or other supported provider without
+  changing domain or application contracts.
 - Automation runs through the existing job and scheduler boundaries, with bounded cost/rate limits,
   retries, and observable failures.
 - A provider outage or invalid response must not corrupt imported data, current domain state, or
@@ -137,4 +147,3 @@ auditable, and testable regardless of provider output.
 The tradeoff is maintaining operation-specific schemas, provenance, provider evaluation, and review
 handling. The first implementation should keep the port narrow and add a new AI operation only when
 its product workflow, proposal schema, failure behavior, and domain command are explicit.
-

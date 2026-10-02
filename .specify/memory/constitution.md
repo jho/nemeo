@@ -80,11 +80,14 @@ these constraints.
 - Nemeo-managed AI MUST remain limited to explicit, bounded automation operations such as transaction
   categorization, transfer suggestions, initial budget setup inference, and explicitly invoked
   budget/pace recommendations. MVP uses a Nemeo-selected server-side provider behind task-specific,
-  Nemeo-owned ports; provider SDKs, generic completion types, and model-specific behavior MUST NOT
-  cross into domain or application contracts. Provider output MUST be schema-validated, provenance
-  tracked, and applied only through authorized domain commands. Deep questioning, explanation, and
-  broader user-directed interaction belong to external agents through the authorized MCP/API surface;
-  Nemeo MUST NOT require user-supplied model keys or add a general in-app chat for MVP. See
+  Nemeo-owned ports and a multi-provider SDK or wrapper; provider SDKs, generic completion types, and
+  model-specific behavior MUST NOT cross into domain or application contracts. Provider selection
+  MUST remain configuration-driven; OpenRouter's free tier is only a provisional low-cost candidate
+  and is subject to privacy, terms, limits, and production-suitability review. Provider output MUST
+  be schema-validated, provenance tracked, and applied only through authorized domain commands. Deep
+  questioning, explanation, and broader user-directed interaction belong to external agents through
+  the authorized MCP/API surface; Nemeo MUST NOT require user-supplied model keys or add a general
+  in-app chat for MVP. See
   [ADR 0016](../../docs/architecture/adrs/0016-ai-decision-boundary-and-provider-abstraction.md).
 - Financial-data providers MUST implement the versioned, application-owned Provider Adapter Contract
   through the Connections boundary. Adapters MUST translate into provider-neutral account,
