@@ -34,18 +34,17 @@ These need product/design answers first. They are tracked as GitHub issues, not 
 | [#13](https://github.com/jho/nemeo/issues/13) / [ADR 0008](adrs/0008-ui-platform-and-rendering-strategy.md) | UI platform and rendering strategy | Accepted | Product issue #3 |
 | [#14](https://github.com/jho/nemeo/issues/14) / [ADR 0009](adrs/0009-ui-component-library-and-design-system.md) | UI component library and design system | Accepted foundation; brand values follow product issue #11 | #13, product issue #11 |
 | [#15](https://github.com/jho/nemeo/issues/15) / [ADR 0010](adrs/0010-information-architecture-and-interaction-patterns.md) | Information architecture and interaction model | Accepted | Product issues #2, #4; ADRs 0008, 0009 |
-| [#16](https://github.com/jho/nemeo/issues/16) | Application topology | Open / High | #12, #23 |
+| [#16](https://github.com/jho/nemeo/issues/16) / [ADR 0005](adrs/0005-modular-monolith-topology.md) | Initial modular-monolith application topology | Accepted | #33, #12, #23 |
 | [#17](https://github.com/jho/nemeo/issues/17) / [ADR 0011](adrs/0011-domain-persistence-and-event-strategy.md) | Domain persistence and event strategy | Accepted | Event-model slice specs |
 | [#18](https://github.com/jho/nemeo/issues/18) / [ADR 0014](adrs/0014-provider-adapter-contract.md) | Provider adapter contract | Accepted | Product issue #10, ADR 0011 |
 | [#19](https://github.com/jho/nemeo/issues/19) / [ADR 0015](adrs/0015-postgres-automation-jobs-and-scheduling.md) | PostgreSQL automation jobs, scheduling, retries, and idempotency | Accepted | #17, #18 |
 | [#20](https://github.com/jho/nemeo/issues/20) / [ADR 0012](adrs/0012-identity-tenancy-authorization-and-secrets.md) | Identity, tenancy, authorization, sessions, and secrets | Accepted | Product issues #5, #9, #50 |
 | [#21](https://github.com/jho/nemeo/issues/21) / [ADR 0013](adrs/0013-contract-driven-mcp-exposure.md) | Contract-driven MCP boundary and agent permissions | Accepted | Product issue #6, #20 |
-| [#22](https://github.com/jho/nemeo/issues/22) | AI decision boundary and model providers | Open / Medium | Product issues #7, #8 |
+| [#22](https://github.com/jho/nemeo/issues/22) / [ADR 0016](adrs/0016-ai-decision-boundary-and-provider-abstraction.md) | AI decision boundary and model providers | Accepted | Product issues #7, #8; ADRs 0011, 0013, 0015 |
 | [#23](https://github.com/jho/nemeo/issues/23) | Hosting, environments, and operations | Accepted model / Open operations | #12, #17, product issue #9 |
 | [#24](https://github.com/jho/nemeo/issues/24) | Testing and architecture quality gates | Open / High | #12, #17, #20 |
 | [#25](https://github.com/jho/nemeo/issues/25) | Pull-request and CI workflow | Accepted | #12, #24 |
 | [#33](https://github.com/jho/nemeo/issues/33) / [ADR 0004](adrs/0004-typespec-fastify-vertical-slice-backend.md) | MVP backend platform, API-first contracts, and vertical slices | Accepted | #12, #23 |
-| [#16](https://github.com/jho/nemeo/issues/16) / [ADR 0005](adrs/0005-modular-monolith-topology.md) | Initial modular-monolith application topology | Accepted; persistence details remain open | #33, #12, #23 |
 | [#34](https://github.com/jho/nemeo/issues/34) / [ADR 0006](adrs/0006-application-api-standards.md) | Application API standards and ergonomics | Accepted | #33, #16 |
 | [ADR 0007](adrs/0007-search-and-analytics-query-model.md) | Search and analytics query model follow-up | Accepted; depends on API standards | ADR 0006, #17 |
 
