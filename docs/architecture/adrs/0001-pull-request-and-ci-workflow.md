@@ -31,9 +31,8 @@ This gives the documentation-first repository a reviewable workflow with low set
 not yet provide type-checking, application tests, migration checks, provider contract tests,
 security scanning, or end-to-end tests; those become required as implementation is introduced.
 
-The workflow currently uses pinned action and hook revisions where practical, while the pre-commit
-package installation and future application checks remain candidates for further reproducibility
-hardening.
+The workflow currently uses pinned action and hook revisions where practical. Application test and
+CI execution tiers are defined by the follow-up [ADR 0019](0019-ci-quality-gates-and-execution-tiers.md).
 
 ## Rejected alternatives
 

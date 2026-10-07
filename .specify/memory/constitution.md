@@ -2,17 +2,17 @@
 
 <!--
 Sync Impact Report
-- Version change: 1.14.0 -> 1.15.0
-- Modified principles: Added AI provider qualification and strict model-input minimization
-- Added sections: production provider allowlisting and non-PII AI input contract
+- Version change: 1.15.0 -> 1.18.0
+- Modified principles: Added integration-first test architecture, replay verification, and CI quality tiers
+- Added sections: Vitest/Compose/Playwright testing baseline, PostgreSQL-backed correctness gates, and PR/main CI execution rules
 - Removed sections: none
 - Templates requiring updates: none; existing Constitution Check workflow remains applicable
 - Follow-up: detailed retention, deletion, export, and legal exceptions remain governed by product issue #9
 -->
 
-**Version:** 1.15.0
+**Version:** 1.18.0
 **Ratified:** 2026-09-14
-**Last amended:** 2026-10-02
+**Last amended:** 2026-10-06
 
 ## Principles
 
@@ -148,6 +148,22 @@ these constraints.
   meaning MUST not depend on color alone, and MVP review MUST remain sequential rather than inventing
   bulk financial mutations. See
   [ADR 0010](../../docs/architecture/adrs/0010-information-architecture-and-interaction-patterns.md).
+- Testing MUST be integration-first: Vitest is the common TypeScript framework for pure,
+  application, and integration tests; PostgreSQL-backed integration tests are the primary confidence
+  layer; Playwright is reserved for critical browser journeys; and coverage is scenario- and
+  risk-based rather than a blanket percentage target. See
+  [ADR 0017](../../docs/architecture/adrs/0017-test-architecture-and-tooling.md).
+- Ratified Event Model scenarios MUST map to tests at the application capability boundary. PostgreSQL
+  integration tests MUST verify aggregate invariants, concurrency, event evolution, projection
+  rebuild/idempotency, and at-least-once job behavior. Event fixtures MAY support these tests but
+  MUST NOT become a second persistence implementation. See
+  [ADR 0018](../../docs/architecture/adrs/0018-domain-correctness-and-replay-verification.md).
+- CI MUST use separate quality, integration, and critical-path E2E gates on pull requests, with clean
+  Docker Compose state for integration jobs and no live provider credentials required. Broader replay,
+  E2E, provider, dependency, and security checks belong on main or scheduled runs. CI MUST use the
+  supported Node.js 24 runtime. See
+  [ADR 0019](../../docs/architecture/adrs/0019-ci-quality-gates-and-execution-tiers.md) and
+  [ADR 0001](../../docs/architecture/adrs/0001-pull-request-and-ci-workflow.md).
 - Identity MUST use external OIDC providers with Google as the MVP provider and no Nemeo-managed
   passwords. External provider subjects MUST map through a separate identity table to one Nemeo
   profile; matching email addresses MUST NOT silently merge profiles or financial data. See
