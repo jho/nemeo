@@ -54,4 +54,3 @@ The tests validate the persistence architecture Nemeo actually intends to operat
 failure modes that motivate selective event sourcing. The tradeoff is a need for fast database
 reset/fixture tooling and careful test isolation. In-memory tests remain useful, but only for pure
 logic where they add speed or precision without duplicating persistence confidence.
-

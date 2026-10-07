@@ -59,4 +59,3 @@ behavior, and clear ownership of test data.
   integration tests.
 - **Blanket coverage target:** rejected because it rewards line counts rather than meaningful
   behavioral confidence.
-

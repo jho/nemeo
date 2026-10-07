@@ -57,4 +57,3 @@ test-data isolation commands.
   external data would make the gate nondeterministic.
 - **Run every expensive suite on every PR:** rejected for MVP velocity; relevant integration tests
   remain mandatory while broad suites run on main or on a schedule.
-
