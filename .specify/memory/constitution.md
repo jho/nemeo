@@ -2,17 +2,17 @@
 
 <!--
 Sync Impact Report
-- Version change: 1.15.0 -> 1.18.0
-- Modified principles: Added integration-first test architecture, replay verification, and CI quality tiers
-- Added sections: Vitest/Compose/Playwright testing baseline, PostgreSQL-backed correctness gates, and PR/main CI execution rules
+- Version change: 1.18.0 -> 1.19.0
+- Modified principles: Added MVP environment isolation, promotion, and rollback constraints
+- Added sections: local/CI/preview/production environment topology and direct promotion policy
 - Removed sections: none
 - Templates requiring updates: none; existing Constitution Check workflow remains applicable
 - Follow-up: detailed retention, deletion, export, and legal exceptions remain governed by product issue #9
 -->
 
-**Version:** 1.18.0
+**Version:** 1.19.0
 **Ratified:** 2026-09-14
-**Last amended:** 2026-10-06
+**Last amended:** 2026-10-08
 
 ## Principles
 
@@ -58,6 +58,12 @@ these constraints.
   and whitespace checks as the current CI gates. See [ADR 0001](../../docs/architecture/adrs/0001-pull-request-and-ci-workflow.md).
 - MVP deployment and integration testing use Docker Compose as the cloud-agnostic service contract;
   cloud-specific deployment adapters are deferred. See [ADR 0003](../../docs/architecture/adrs/0003-compose-first-hosting-model.md).
+- MVP uses isolated local, CI, optional on-demand preview, and production environments. Dedicated
+  staging is deferred; a validated immutable artifact from `main` MAY be promoted directly to a
+  single Compose-capable production host. Environment credentials, databases, volumes, and
+  operational data MUST remain separate, and production configuration MUST be injected at runtime.
+  Migrations MUST be forward-compatible, and rollback MUST distinguish application-image rollback
+  from database restore. See [ADR 0020](../../docs/architecture/adrs/0020-mvp-environment-topology-and-promotion.md).
 - MVP backend work uses Node.js 24 LTS with strict TypeScript and Fastify. API
   contracts originate in TypeSpec and emit versioned OpenAPI artifacts; generated API artifacts do
   not own business logic. See [ADR 0004](../../docs/architecture/adrs/0004-typespec-fastify-vertical-slice-backend.md).
