@@ -2,15 +2,16 @@
 
 <!--
 Sync Impact Report
-- Version change: 1.18.0 -> 1.19.0
-- Modified principles: Added MVP environment isolation, promotion, and rollback constraints
-- Added sections: local/CI/preview/production environment topology and direct promotion policy
+- Version change: 1.19.0 -> 1.20.0
+- Modified principles: Added provider-neutral OpenTelemetry observability and redaction constraints
+- Added sections: automatic Node.js instrumentation, health/readiness, bounded operational signals,
+  and lightweight incident response
 - Removed sections: none
 - Templates requiring updates: none; existing Constitution Check workflow remains applicable
 - Follow-up: detailed retention, deletion, export, and legal exceptions remain governed by product issue #9
 -->
 
-**Version:** 1.19.0
+**Version:** 1.20.0
 **Ratified:** 2026-09-14
 **Last amended:** 2026-10-08
 
@@ -64,6 +65,14 @@ these constraints.
   operational data MUST remain separate, and production configuration MUST be injected at runtime.
   Migrations MUST be forward-compatible, and rollback MUST distinguish application-image rollback
   from database restore. See [ADR 0020](../../docs/architecture/adrs/0020-mvp-environment-topology-and-promotion.md).
+- MVP observability MUST initialize provider-neutral OpenTelemetry Node auto-instrumentation before
+  application modules load, including explicit Fastify instrumentation, with runtime-configurable
+  exporters and sampling. Structured logs, spans, metric attributes, and health signals MUST redact
+  credentials, raw provider data, financial values, and avoidable PII; operational labels MUST have
+  bounded cardinality. The minimum signals are application/worker logs, liveness/readiness,
+  request/runtime/database health, job and provider-sync outcomes, and projection lag where used.
+  Operational alerts MUST remain actionable and separate from user-facing financial notifications.
+  See [ADR 0021](../../docs/architecture/adrs/0021-mvp-observability-and-incident-response.md).
 - MVP backend work uses Node.js 24 LTS with strict TypeScript and Fastify. API
   contracts originate in TypeSpec and emit versioned OpenAPI artifacts; generated API artifacts do
   not own business logic. See [ADR 0004](../../docs/architecture/adrs/0004-typespec-fastify-vertical-slice-backend.md).
