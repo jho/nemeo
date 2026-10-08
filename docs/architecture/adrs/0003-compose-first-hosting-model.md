@@ -1,8 +1,9 @@
 # ADR 0003: Compose-First Hosting Model
 
-- Status: Accepted for MVP hosting model; operational details remain open
+- Status: Accepted for MVP hosting model
 - Date: 2026-09-15
 - GitHub issue: [#23](https://github.com/jho/nemeo/issues/23)
+- Follow-up environment decision: [ADR 0020](0020-mvp-environment-topology-and-promotion.md)
 
 ## Context
 
@@ -37,8 +38,9 @@ Azure is not an initial target. Kubernetes is explicitly deferred.
 This minimizes MVP hosting cost and keeps development, CI, and self-hosting aligned. Compose also
 gives integration tests and agents a repeatable multi-service environment. The tradeoff is that
 production operations initially remain the team’s responsibility, including updates, backups,
-secrets, monitoring, and scheduling. The exact environment promotion model, operational objectives,
-and managed-service choices remain open in issue #23.
+secrets, monitoring, and scheduling. The MVP environment and promotion model are defined in
+[ADR 0020](0020-mvp-environment-topology-and-promotion.md); host, backup, monitoring, and
+managed-service choices remain separate operational concerns.
 
 Compose files must not encode provider-specific assumptions. Persistent data must use explicit
 volumes or external services, and cloud deployment adapters may translate the same service contracts

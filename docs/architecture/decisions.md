@@ -41,10 +41,11 @@ These need product/design answers first. They are tracked as GitHub issues, not 
 | [#20](https://github.com/jho/nemeo/issues/20) / [ADR 0012](adrs/0012-identity-tenancy-authorization-and-secrets.md) | Identity, tenancy, authorization, sessions, and secrets | Accepted | Product issues #5, #9, #50 |
 | [#21](https://github.com/jho/nemeo/issues/21) / [ADR 0013](adrs/0013-contract-driven-mcp-exposure.md) | Contract-driven MCP boundary and agent permissions | Accepted | Product issue #6, #20 |
 | [#22](https://github.com/jho/nemeo/issues/22) / [ADR 0016](adrs/0016-ai-decision-boundary-and-provider-abstraction.md) | AI decision boundary and model providers | Accepted | Product issues #7, #8; ADRs 0011, 0013, 0015 |
-| [#23](https://github.com/jho/nemeo/issues/23) | Hosting, environments, and operations | Accepted model / Open operations | #12, #17, product issue #9 |
+| [#23](https://github.com/jho/nemeo/issues/23) | Compose-first hosting model | Accepted | #12, #17, product issue #9 |
 | [#24](https://github.com/jho/nemeo/issues/24) / [ADR 0017](adrs/0017-test-architecture-and-tooling.md) | Test architecture and lightweight tooling | Accepted | #12, #17, #20 |
 | [#24](https://github.com/jho/nemeo/issues/24) / [ADR 0018](adrs/0018-domain-correctness-and-replay-verification.md) | Domain correctness and replay verification | Accepted | ADRs 0011, 0015, 0017 |
 | [#24](https://github.com/jho/nemeo/issues/24) / [ADR 0019](adrs/0019-ci-quality-gates-and-execution-tiers.md) | CI quality gates and execution tiers | Accepted | ADRs 0001, 0017, 0018 |
+| [#30](https://github.com/jho/nemeo/issues/30) / [ADR 0020](adrs/0020-mvp-environment-topology-and-promotion.md) | MVP environment topology and promotion flow | Accepted | ADRs 0003, 0005, 0017, 0019 |
 | [#25](https://github.com/jho/nemeo/issues/25) | Pull-request and CI workflow | Accepted | #12, #24 |
 | [#33](https://github.com/jho/nemeo/issues/33) / [ADR 0004](adrs/0004-typespec-fastify-vertical-slice-backend.md) | MVP backend platform, API-first contracts, and vertical slices | Accepted | #12, #23 |
 | [#34](https://github.com/jho/nemeo/issues/34) / [ADR 0006](adrs/0006-application-api-standards.md) | Application API standards and ergonomics | Accepted | #33, #16 |
