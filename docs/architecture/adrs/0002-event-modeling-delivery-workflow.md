@@ -34,9 +34,8 @@ product intent → Event Model design → slice documents → implementation pla
 - `em` is the only required Event Modeling tool. Its validation, export, slice, review, ratify,
   mark-implemented, and conformance commands are the lifecycle interface.
 - GitHub parent issues and sub-issues represent a feature batch and its parallelizable slices.
-- Plans and task lists are implementation aids. They may be produced by Spec Kit or another agent,
-  but they must consume the slice document directly. There is no bridge-generated or separately
-  maintained `spec.md` source of truth.
+- Backlog items, implementation checklists, and verification tasks are implementation aids. They
+  must consume the slice document directly and must not become a second domain specification.
 - ADRs and the constitution govern accepted architecture; they do not replace the Event Model or
   PRD.
 
@@ -77,8 +76,8 @@ ratify the resulting Event Model changes through their own short-lived stack.
 
 ## Alternatives considered
 
-- **Keep `em-sdd-bridge`:** rejected because it added a second generated/linked specification layer
-  and made the bridge a required dependency for a workflow `em` can already support.
+- **Add a second specification bridge:** rejected because it would add another generated/linked
+  specification layer and make the bridge a required dependency for a workflow `em` already supports.
 - **Merge a design PR, then merge implementation PRs:** rejected because it creates two review and
   merge events for the same feature and leaves a partially delivered design on `main`.
 - **One independent branch and PR per slice from `main`:** retained for genuinely independent work,

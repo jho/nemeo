@@ -3,14 +3,14 @@
 <!--
 Sync Impact Report
 - Version change: 1.20.0 -> 1.21.0
-- Modified principles: Replaced bridge-based SDD with pure Event Modeling and stacked batch delivery
+- Modified principles: Established pure Event Modeling governance and stacked batch delivery
 - Added sections: direct `em` lifecycle, parent/sub-issue batch planning, and post-merge bookkeeping
 - Removed sections: none
 - Templates requiring updates: none; existing Constitution Check workflow remains applicable
 - Follow-up: detailed retention, deletion, export, and legal exceptions remain governed by product issue #9
 -->
 
-**Version:** 1.21.0
+**Version:** 2.0.0
 **Ratified:** 2026-09-14
 **Last amended:** 2026-10-15
 
@@ -32,14 +32,14 @@ represented there.
 
 Each Event Model slice has one implementation boundary and one slice PR. A feature batch MAY contain
 multiple dependent slices represented by a parent issue, sub-issues, and a short-lived stacked PR
-chain. The Event Model and linked slice document are authoritative; generated or linked `spec.md`
-files MUST NOT become a second source of truth.
+chain. The Event Model and linked slice document are authoritative; generated planning artifacts MUST
+NOT become a second source of truth.
 
 ### 4. Decisions are separated from delivery artifacts
 
 GitHub issues track unresolved product and architecture decisions. ADRs record accepted architecture
-decisions only. `plan.md` records feature-level technical design, and `tasks.md` records executable
-implementation work.
+decisions only. Slice documents record implementation-ready design, and issue/PR checklists record
+executable delivery work.
 
 ### 5. Evidence gates progression
 
@@ -51,26 +51,26 @@ MUST be mechanical bookkeeping rather than a second merge gate.
 ## Accepted architecture constraints
 
 This section is the enforcement-facing summary of accepted architecture decisions. The ADRs contain
-the decision context, alternatives, rationale, and consequences; plans and tasks MUST comply with
-these constraints.
+the decision context, alternatives, rationale, and consequences; Event Model design and delivery
+work MUST comply with these constraints.
 
 - The Event Model and linked slice documents are the authoritative domain design. `em` is the
-  required lifecycle tool; `em-sdd-bridge` and a parallel `spec.md` are not used. Plans and tasks
-  MAY be generated directly from slice documents. See [ADR 0002](../../docs/architecture/adrs/0002-spec-driven-development-workflow.md).
+  required lifecycle tool. Plans, backlogs, and tasks MAY be generated directly from reviewed
+  slice documents. See [ADR 0002](../architecture/adrs/0002-event-modeling-delivery-workflow.md).
 - Feature batches SHOULD use a parent issue with sub-issues. Dependent slice PRs SHOULD form a
   short-lived stack, with the design layer at the bottom and one merge for the complete batch. Each
   slice PR MUST name its model and slice key and serves as both implementation and review/ratification
   boundary. Post-merge `em` lifecycle commands MUST record ratification and implementation state.
 - All changes are delivered through focused pull requests with Markdown, Event Model validation,
-  and whitespace checks as the current CI gates. See [ADR 0001](../../docs/architecture/adrs/0001-pull-request-and-ci-workflow.md).
+  and whitespace checks as the current CI gates. See [ADR 0001](../architecture/adrs/0001-pull-request-and-ci-workflow.md).
 - MVP deployment and integration testing use Docker Compose as the cloud-agnostic service contract;
-  cloud-specific deployment adapters are deferred. See [ADR 0003](../../docs/architecture/adrs/0003-compose-first-hosting-model.md).
+  cloud-specific deployment adapters are deferred. See [ADR 0003](../architecture/adrs/0003-compose-first-hosting-model.md).
 - MVP uses isolated local, CI, optional on-demand preview, and production environments. Dedicated
   staging is deferred; a validated immutable artifact from `main` MAY be promoted directly to a
   single Compose-capable production host. Environment credentials, databases, volumes, and
   operational data MUST remain separate, and production configuration MUST be injected at runtime.
   Migrations MUST be forward-compatible, and rollback MUST distinguish application-image rollback
-  from database restore. See [ADR 0020](../../docs/architecture/adrs/0020-mvp-environment-topology-and-promotion.md).
+  from database restore. See [ADR 0020](../architecture/adrs/0020-mvp-environment-topology-and-promotion.md).
 - MVP observability MUST initialize provider-neutral OpenTelemetry Node auto-instrumentation before
   application modules load, including explicit Fastify instrumentation, with runtime-configurable
   exporters and sampling. Structured logs, spans, metric attributes, and health signals MUST redact
@@ -78,26 +78,26 @@ these constraints.
   bounded cardinality. The minimum signals are application/worker logs, liveness/readiness,
   request/runtime/database health, job and provider-sync outcomes, and projection lag where used.
   Operational alerts MUST remain actionable and separate from user-facing financial notifications.
-  See [ADR 0021](../../docs/architecture/adrs/0021-mvp-observability-and-incident-response.md).
+  See [ADR 0021](../architecture/adrs/0021-mvp-observability-and-incident-response.md).
 - MVP backend work uses Node.js 24 LTS with strict TypeScript and Fastify. API
   contracts originate in TypeSpec and emit versioned OpenAPI artifacts; generated API artifacts do
-  not own business logic. See [ADR 0004](../../docs/architecture/adrs/0004-typespec-fastify-vertical-slice-backend.md).
+  not own business logic. See [ADR 0004](../architecture/adrs/0004-typespec-fastify-vertical-slice-backend.md).
 - Backend implementation is organized by Event Model-aligned vertical feature slices with distinct
   command and query capabilities. Application command handlers MUST depend on slice-owned,
   aggregate-specific repository ports rather than Emmett, generic event-store APIs, projection
-  checkpoints, or database serialization. See [ADR 0004](../../docs/architecture/adrs/0004-typespec-fastify-vertical-slice-backend.md)
-  and [ADR 0011](../../docs/architecture/adrs/0011-domain-persistence-and-event-strategy.md).
+  checkpoints, or database serialization. See [ADR 0004](../architecture/adrs/0004-typespec-fastify-vertical-slice-backend.md)
+  and [ADR 0011](../architecture/adrs/0011-domain-persistence-and-event-strategy.md).
 - Transaction and Budget domain history MUST be immutable, versioned, auditable, and replayable.
   Their current state and query models MUST be derived through idempotent, rebuildable projections.
   Identity, provider operations, sync workflows, household access, and reporting infrastructure
   remain relational unless a later ADR changes that boundary. Emmett MAY implement the event-store
   and projection capabilities behind the aggregate-specific repository boundary, but its command
-  handler and types MUST NOT leak into domain or application contracts. See [ADR 0011](../../docs/architecture/adrs/0011-domain-persistence-and-event-strategy.md).
+  handler and types MUST NOT leak into domain or application contracts. See [ADR 0011](../architecture/adrs/0011-domain-persistence-and-event-strategy.md).
 - MCP exposure MUST be generated from explicitly opted-in TypeSpec MCP metadata alongside the
   versioned OpenAPI contract. Generated tools MUST reuse shared slice capabilities and API schemas,
   MUST NOT expose unannotated or unsafe operations automatically, and MUST NOT bypass authorization,
   confirmation, or tenancy rules. See
-  [ADR 0013](../../docs/architecture/adrs/0013-contract-driven-mcp-exposure.md).
+  [ADR 0013](../architecture/adrs/0013-contract-driven-mcp-exposure.md).
 - Nemeo-managed AI MUST remain limited to explicit, bounded automation operations such as transaction
   categorization, transfer suggestions, initial budget setup inference, and explicitly invoked
   budget/pace recommendations. MVP uses a Nemeo-selected server-side provider behind task-specific,
@@ -112,92 +112,92 @@ these constraints.
   only through authorized domain commands. Deep questioning, explanation, and broader user-directed
   interaction belong to external agents through the authorized MCP/API surface; Nemeo MUST NOT
   require user-supplied model keys or add a general in-app chat for MVP. See
-  [ADR 0016](../../docs/architecture/adrs/0016-ai-decision-boundary-and-provider-abstraction.md).
+  [ADR 0016](../architecture/adrs/0016-ai-decision-boundary-and-provider-abstraction.md).
 - Financial-data providers MUST implement the versioned, application-owned Provider Adapter Contract
   through the Connections boundary. Adapters MUST translate into provider-neutral account,
   transaction, balance, capability, and typed-failure models; preserve stable provider and Nemeo
   identities; make repeated syncs idempotent; and keep credentials and provider-specific behavior out
   of budget/reporting contracts. Scheduling, leases, retries, and backoff remain centralized rather
   than adapter-owned, and every adapter MUST pass the shared contract-test suite. See
-  [ADR 0014](../../docs/architecture/adrs/0014-provider-adapter-contract.md).
+  [ADR 0014](../architecture/adrs/0014-provider-adapter-contract.md).
 - Event Model automations MUST be triggered by the scheduler or committed application events, read
   projection-backed work views, and invoke existing command capabilities for domain changes. MVP jobs
   MUST be coarse automation runs stored through an application-owned PostgreSQL-backed queue, not
   one task per record. Job execution MUST be at-least-once and idempotent, with leases, bounded
   retries, rate-limit handling, checkpoints, and user/operator-visible status. Queue, scheduler,
   event-publisher, and clock ports MUST keep infrastructure replaceable by a future outbox and
-  distributed queue. See [ADR 0015](../../docs/architecture/adrs/0015-postgres-automation-jobs-and-scheduling.md).
+  distributed queue. See [ADR 0015](../architecture/adrs/0015-postgres-automation-jobs-and-scheduling.md).
 - MVP uses a conventional modular monolith: one application package, one `nemeo` image, and one
   application process composing web, API, MCP, worker, scheduler, and projection interfaces.
   Modules and entry points MUST preserve future extraction seams, while internal integration uses
-  direct application capabilities rather than internal HTTP. See [ADR 0005](../../docs/architecture/adrs/0005-modular-monolith-topology.md).
+  direct application capabilities rather than internal HTTP. See [ADR 0005](../architecture/adrs/0005-modular-monolith-topology.md).
 - Frontend and backend MAY ship in the same repository and deployment unit for slice velocity, but
   the frontend MUST communicate through the generated API contract and MUST NOT depend on backend
-  internals or persistence structures. See [ADR 0005](../../docs/architecture/adrs/0005-modular-monolith-topology.md).
+  internals or persistence structures. See [ADR 0005](../architecture/adrs/0005-modular-monolith-topology.md).
 - MVP build and test workflows MUST prefer standard Node.js tooling and npm scripts over custom
-  orchestration. See [ADR 0005](../../docs/architecture/adrs/0005-modular-monolith-topology.md).
+  orchestration. See [ADR 0005](../architecture/adrs/0005-modular-monolith-topology.md).
 - Event Model bounded contexts MUST remain explicit logical modules even within the MVP monolith.
   Cross-context code MUST use published commands, queries, events, translations, or composition;
   it MUST NOT import another context's internals or access its persistence directly. See
-  [ADR 0005](../../docs/architecture/adrs/0005-modular-monolith-topology.md).
+  [ADR 0005](../architecture/adrs/0005-modular-monolith-topology.md).
 - Search and analytics MUST remain separate read capabilities. Search uses allowlisted,
   resource-specific filters or query grammar and MUST NOT expose raw SQL. Analytics uses named
   metrics over Reporting projections with explicit dimensions, units, and time semantics. Both MUST
   be tenant/household scoped and permission checked, and neither may create an alternate command
-  path. See [ADR 0007](../../docs/architecture/adrs/0007-search-and-analytics-query-model.md).
+  path. See [ADR 0007](../architecture/adrs/0007-search-and-analytics-query-model.md).
 - The application API MUST be TypeSpec-first and emit versioned OpenAPI 3.1 artifacts. It MUST use
   predictable resource URLs alongside explicit business command actions, JSON representations,
   Problem Details errors, cursor pagination, bounded filters, explicit idempotency, and path-based
   major versioning. API operations MUST map to slice capabilities and MUST NOT expose persistence
-  internals. See [ADR 0006](../../docs/architecture/adrs/0006-application-api-standards.md).
+  internals. See [ADR 0006](../architecture/adrs/0006-application-api-standards.md).
 - The MVP client MUST be a responsive React/TypeScript SPA built with Vite and served as static
   assets by the same Fastify application and `nemeo` image. It MUST consume the generated API
   contract rather than backend internals. The client MUST provide installable PWA metadata with
   standalone launch, while offline data access, mutation queues, background sync, push delivery,
   and a separate native client remain out of MVP. See
-  [ADR 0008](../../docs/architecture/adrs/0008-ui-platform-and-rendering-strategy.md).
+  [ADR 0008](../architecture/adrs/0008-ui-platform-and-rendering-strategy.md).
 - Shared UI MUST use Nemeo-owned React components built on accessible Radix primitives and styled
   through semantic CSS custom-property tokens with Tailwind CSS. Feature code MUST use the shared
   components and semantic status variants rather than raw colors or third-party primitives. Pace,
   review, error, and insufficient-history states MUST remain understandable without color alone;
   final brand values and robot/AI styling follow product issue [#11](https://github.com/jho/nemeo/issues/11).
-  See [ADR 0009](../../docs/architecture/adrs/0009-ui-component-library-and-design-system.md).
+  See [ADR 0009](../architecture/adrs/0009-ui-component-library-and-design-system.md).
 - The MVP information architecture MUST be dashboard-first: Dashboard, Budget, Transactions, and
   Connections are the primary capability areas; Review is a secondary, routable workflow. The
   current-month budget status MUST precede pace warnings, and pace warnings MUST lead to contextual
   category and transaction drill-downs. Responsive clients MUST preserve this hierarchy, status
   meaning MUST not depend on color alone, and MVP review MUST remain sequential rather than inventing
   bulk financial mutations. See
-  [ADR 0010](../../docs/architecture/adrs/0010-information-architecture-and-interaction-patterns.md).
+  [ADR 0010](../architecture/adrs/0010-information-architecture-and-interaction-patterns.md).
 - Testing MUST be integration-first: Vitest is the common TypeScript framework for pure,
   application, and integration tests; PostgreSQL-backed integration tests are the primary confidence
   layer; Playwright is reserved for critical browser journeys; and coverage is scenario- and
   risk-based rather than a blanket percentage target. See
-  [ADR 0017](../../docs/architecture/adrs/0017-test-architecture-and-tooling.md).
+  [ADR 0017](../architecture/adrs/0017-test-architecture-and-tooling.md).
 - Ratified Event Model scenarios MUST map to tests at the application capability boundary. PostgreSQL
   integration tests MUST verify aggregate invariants, concurrency, event evolution, projection
   rebuild/idempotency, and at-least-once job behavior. Event fixtures MAY support these tests but
   MUST NOT become a second persistence implementation. See
-  [ADR 0018](../../docs/architecture/adrs/0018-domain-correctness-and-replay-verification.md).
+  [ADR 0018](../architecture/adrs/0018-domain-correctness-and-replay-verification.md).
 - CI MUST use separate quality, integration, and critical-path E2E gates on pull requests, with clean
   Docker Compose state for integration jobs and no live provider credentials required. Broader replay,
   E2E, provider, dependency, and security checks belong on main or scheduled runs. CI MUST use the
   supported Node.js 24 runtime. See
-  [ADR 0019](../../docs/architecture/adrs/0019-ci-quality-gates-and-execution-tiers.md) and
-  [ADR 0001](../../docs/architecture/adrs/0001-pull-request-and-ci-workflow.md).
+  [ADR 0019](../architecture/adrs/0019-ci-quality-gates-and-execution-tiers.md) and
+  [ADR 0001](../architecture/adrs/0001-pull-request-and-ci-workflow.md).
 - Identity MUST use external OIDC providers with Google as the MVP provider and no Nemeo-managed
   passwords. External provider subjects MUST map through a separate identity table to one Nemeo
   profile; matching email addresses MUST NOT silently merge profiles or financial data. See
-  [ADR 0012](../../docs/architecture/adrs/0012-identity-tenancy-authorization-and-secrets.md).
+  [ADR 0012](../architecture/adrs/0012-identity-tenancy-authorization-and-secrets.md).
 - A user MUST belong to exactly one household in MVP. Household financial resources MUST be scoped
   to the household, and the household MUST have one root manager lifecycle. Deleting the root
   manager invokes household deletion; deleting a viewer removes membership without deleting household
-  data. See [ADR 0012](../../docs/architecture/adrs/0012-identity-tenancy-authorization-and-secrets.md).
+  data. See [ADR 0012](../architecture/adrs/0012-identity-tenancy-authorization-and-secrets.md).
 - Authorization MUST use the fixed `manager` and `viewer` role bundles through explicit
   `subject + action + resource + household scope` checks. HTTP, MCP, worker, and scheduled entry
   points MUST resolve the same principal context, and MVP MUST NOT introduce a general-purpose FGA
   engine or user-configurable policy language. See
-  [ADR 0012](../../docs/architecture/adrs/0012-identity-tenancy-authorization-and-secrets.md).
+  [ADR 0012](../architecture/adrs/0012-identity-tenancy-authorization-and-secrets.md).
 - Browser sessions MUST use revocable secure opaque sessions, and MCP credentials MUST be user- and
   household-scoped, revocable, expiring, and stored only as hashes or equivalent non-secret metadata.
   Provider credentials MUST be encrypted at rest and excluded from logs, traces, ordinary responses,
@@ -218,6 +218,6 @@ Model, constitution, and ADRs MUST be updated together when an amendment changes
 or constraints. Version changes follow semantic versioning: MAJOR for incompatible governance
 changes, MINOR for new principles, and PATCH for clarifications.
 
-The constitution governs SDD artifacts but does not replace product or legal review. When tooling
-cannot represent a decision cleanly, the decision remains explicit in the appropriate source
-artifact and the workflow is amended through a PR.
+The constitution governs Event Model design and delivery artifacts but does not replace product or
+legal review. When `em` cannot represent a decision cleanly, the decision remains explicit in the
+appropriate source artifact and the workflow is amended through a PR.
