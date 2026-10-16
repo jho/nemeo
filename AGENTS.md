@@ -9,7 +9,7 @@ When working on an architecture decision issue:
 3. When the decision is accepted, update the ADR with the decision, rationale, alternatives, and
    consequences.
 4. In the same change, update `.specify/memory/constitution.md` with the concise normative constraint
-   that Spec Kit must enforce during planning and task generation.
+   that planning agents and implementation workflows must enforce.
 5. In the same change, update `docs/architecture/decisions.md` so the issue and ADR status are
    discoverable.
 6. Link the ADR from the constitution and link the issue from the ADR.
@@ -21,6 +21,9 @@ an open product decision as an architecture constraint.
 
 ## Feature implementation
 
-Start implementation from a ratified Event Model slice. Use `em-sdd-bridge` to connect the slice
-document to Spec Kit rather than creating a parallel hand-written `spec.md`. Follow
+Start from a reviewed Event Model slice in a short-lived feature batch. `em` is authoritative for
+the model and slice lifecycle; do not use `em-sdd-bridge` or create a parallel `spec.md`. Each
+implementation PR names its model and slice key and is both the implementation and ratification
+boundary for that slice. Dependent PRs may form a stack whose design layer is not merged separately;
+the complete batch merges once. Record post-merge lifecycle state with `em` commands and follow
 [`docs/sdd-workflow.md`](docs/sdd-workflow.md) for artifact ownership and phase gates.

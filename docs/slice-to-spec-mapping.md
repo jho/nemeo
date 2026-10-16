@@ -1,47 +1,65 @@
-# Event Model slice to Spec Kit mapping
+# Event Model slice to implementation mapping
 
-Nemeo uses `em-sdd-bridge@0.5.0` to make a ratified Event Model slice available to Spec Kit. The
-bridge is invoked with an explicitly pinned version:
-
-```bash
-npx em-sdd-bridge@0.5.0 <slice-key>
-```
-
-The bridge owns allocation and rendering. It MUST NOT be run with a slice that has not passed
-`em validate --slice-ready`.
+Nemeo treats the Event Model and linked slice documents as the domain specification. The `em` CLI
+is the required tool for validating and managing that specification. There is no bridge-generated
+or separately maintained `spec.md`.
 
 ## Source of truth
 
-The slice document is the feature specification. In the default bridge mode, `spec.md` is a
-rendered projection of that document. In `--symlink` mode, `spec.md` points directly to the slice
-document. Neither mode makes `spec.md` independently editable.
+The `.em` model owns the flow and structure. A linked `slices/<slice-key>.md` owns the slice's
+intent, command/event/view details, invariants, scenarios, alternate flows, and open questions.
+Plans and tasks are derived implementation notes; they must not redefine domain behavior.
 
-Slice documents live at `slices/<slice-key>.md` beside the Event Model and are bound to the model
-slice through the model's note path. A slice key is the slug used by the Event Model and bridge.
+## Mapping
 
-## Artifact mapping
-
-| Event Model slice section | Spec Kit use |
+| Event Model content | Implementation use |
 |---|---|
-| Intent | Feature goal and user value |
-| Command / Event / Read Model tables | Observable behavior and domain boundary |
-| Invariants | Required correctness constraints |
-| Scenarios | Acceptance scenarios |
-| Alternate & Error Flows | Edge cases and failure behavior |
-| Non-Functional Requirements | Quality, security, and operational constraints |
-| Open Questions | Clarification gate before planning |
+| Intent and actor | Feature value and capability boundary |
+| Command and input fields | Application command contract |
+| Event and immutable facts | Domain result and persistence contract |
+| View/read model | Query and projection responsibility |
+| Invariants | Domain correctness checks |
+| Scenarios and alternate flows | Acceptance and integration tests |
+| Translation or automation | Adapter, scheduling, and job behavior |
+| Open questions | Planning clarification gate |
 
 ## Workflow
 
-1. Refine the Event Model slice and its document.
-2. Run `em validate <model> --slice-ready <slice-key>` and resolve every failure.
-3. Run `npx em-sdd-bridge@0.5.0 <slice-key>` to allocate the numbered Spec Kit feature.
-4. Review the generated or linked `spec.md`; do not duplicate or rewrite slice requirements.
-5. Run the Spec Kit plan, tasks, analysis, and implementation phases.
-6. Review the implementation against the slice document, plan, and tasks in the PR.
-7. After the PR is merged, run `npx -p em-sdd-bridge@0.5.0 em-sdd-mark-implemented <slice-key> <pr-url>`.
+1. Update the `.em` model and linked slice documents on the design branch.
+2. Run the model and readiness checks before allocating implementation:
 
-The bridge's design-completeness, events-first, and slice-readiness gates are prerequisites for
-implementation. This repository currently declares `contractSource: none` because application
-source and generated contracts do not exist yet; that setting skips only TypeSpec checks and does
-not bypass the other bridge gates.
+   ```bash
+   em validate budgeting.em
+   em validate budgeting.em --slice-ready <slice-key> --json
+   ```
+
+3. Create a parent issue for the feature batch and sub-issues for slices or verification work.
+4. Derive a plan and tasks directly from each slice document. Spec Kit may be used for this step,
+   but it must not create a competing domain specification.
+5. Build dependent slices as a short-lived stacked PR chain. Each PR identifies the model and slice
+   key and includes the implementation and tests for that slice.
+6. Review and approve each slice PR as its ratification decision. Merge the complete stack once the
+   design, implementation, and verification layers are coherent together.
+7. Record the merged lifecycle state with `em`:
+
+   ```bash
+   em slice ratify --skip-review budgeting.em <slice-key>
+   em slice mark-implemented budgeting.em <slice-key> <pr-url>
+   em slice index budgeting.em
+   em conform-scope budgeting.em --repo .
+   ```
+
+These post-merge commands are bookkeeping, not a second ratification PR. Use the installed `em
+contract` output and `em <command> --help` when a lifecycle command's options vary by version.
+
+## Pull request metadata
+
+Every slice PR should include:
+
+```text
+Event Model: budgeting.em
+Slice: <slice-key>
+Batch: #<parent-issue>
+Depends on: <base branch or PR, if stacked>
+Verification: <tests and checks>
+```

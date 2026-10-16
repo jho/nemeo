@@ -2,18 +2,17 @@
 
 <!--
 Sync Impact Report
-- Version change: 1.19.0 -> 1.20.0
-- Modified principles: Added provider-neutral OpenTelemetry observability and redaction constraints
-- Added sections: automatic Node.js instrumentation, health/readiness, bounded operational signals,
-  and lightweight incident response
+- Version change: 1.20.0 -> 1.21.0
+- Modified principles: Replaced bridge-based SDD with pure Event Modeling and stacked batch delivery
+- Added sections: direct `em` lifecycle, parent/sub-issue batch planning, and post-merge bookkeeping
 - Removed sections: none
 - Templates requiring updates: none; existing Constitution Check workflow remains applicable
 - Follow-up: detailed retention, deletion, export, and legal exceptions remain governed by product issue #9
 -->
 
-**Version:** 1.20.0
+**Version:** 1.21.0
 **Ratified:** 2026-09-14
-**Last amended:** 2026-10-08
+**Last amended:** 2026-10-15
 
 ## Principles
 
@@ -29,11 +28,12 @@ The Event Model is authoritative for domain behavior, events, commands, views, t
 automations, and invariants. Work MUST begin from a ratified Event Model slice when the behavior is
 represented there.
 
-### 3. One slice is one implementation unit
+### 3. One slice is one implementation boundary
 
-Each ratified slice produces one Spec Kit feature, one implementation branch, and one pull request.
-The slice document is the feature specification; generated or linked `spec.md` files MUST NOT
-become a second source of truth.
+Each Event Model slice has one implementation boundary and one slice PR. A feature batch MAY contain
+multiple dependent slices represented by a parent issue, sub-issues, and a short-lived stacked PR
+chain. The Event Model and linked slice document are authoritative; generated or linked `spec.md`
+files MUST NOT become a second source of truth.
 
 ### 4. Decisions are separated from delivery artifacts
 
@@ -45,7 +45,8 @@ implementation work.
 
 An artifact moves to the next phase only after its required review and validation checks pass.
 Automation MUST validate Event Model syntax and slice readiness before allocating implementation
-work.
+work. Human approval of a slice PR is its ratification boundary; post-merge `em` lifecycle updates
+MUST be mechanical bookkeeping rather than a second merge gate.
 
 ## Accepted architecture constraints
 
@@ -53,8 +54,13 @@ This section is the enforcement-facing summary of accepted architecture decision
 the decision context, alternatives, rationale, and consequences; plans and tasks MUST comply with
 these constraints.
 
-- Event Model slices are the implementation boundary, and each ratified slice maps to one Spec Kit
-  feature, branch, and pull request. See [ADR 0002](../../docs/architecture/adrs/0002-spec-driven-development-workflow.md).
+- The Event Model and linked slice documents are the authoritative domain design. `em` is the
+  required lifecycle tool; `em-sdd-bridge` and a parallel `spec.md` are not used. Plans and tasks
+  MAY be generated directly from slice documents. See [ADR 0002](../../docs/architecture/adrs/0002-spec-driven-development-workflow.md).
+- Feature batches SHOULD use a parent issue with sub-issues. Dependent slice PRs SHOULD form a
+  short-lived stack, with the design layer at the bottom and one merge for the complete batch. Each
+  slice PR MUST name its model and slice key and serves as both implementation and review/ratification
+  boundary. Post-merge `em` lifecycle commands MUST record ratification and implementation state.
 - All changes are delivered through focused pull requests with Markdown, Event Model validation,
   and whitespace checks as the current CI gates. See [ADR 0001](../../docs/architecture/adrs/0001-pull-request-and-ci-workflow.md).
 - MVP deployment and integration testing use Docker Compose as the cloud-agnostic service contract;
@@ -201,8 +207,9 @@ these constraints.
   [ADR 0012](../../docs/architecture/adrs/0012-identity-tenancy-authorization-and-secrets.md).
 
 When a new architecture decision is accepted, its ADR MUST be linked here with the concise rule
-that Spec Kit needs to enforce. When an architecture decision is superseded, this section and the
-ADR index MUST be updated in the same reviewed change.
+that planning and implementation agents need to enforce. When an accepted decision is amended, the
+existing ADR MUST be updated in place and this section and the ADR index MUST be updated in the same
+reviewed change; use Git history for prior versions rather than creating superseded ADR copies.
 
 ## Governance
 
