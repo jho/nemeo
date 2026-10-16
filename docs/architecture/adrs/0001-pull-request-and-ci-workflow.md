@@ -19,7 +19,7 @@ issues are resolved before accepted ADRs are written. Event Model changes are va
 The initial CI workflow runs:
 
 - pre-commit Markdown hygiene and linting;
-- Event Model validation for `budgeting.em`;
+- Event Model validation for `docs/event-model/budgeting.em`;
 - Git whitespace checks.
 
 The pull-request template requires the author to identify product, Event Model, architecture,

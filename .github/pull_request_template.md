@@ -17,7 +17,7 @@
 ## Verification
 
 - [ ] `pre-commit run --all-files`
-- [ ] `em validate budgeting.em`
+- [ ] `em validate docs/event-model/budgeting.em`
 - [ ] Relevant tests or checks run
 - [ ] Documentation updated
 - [ ] Screenshots or rendered artifacts updated when applicable

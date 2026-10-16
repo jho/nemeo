@@ -1,14 +1,15 @@
 # Event Model slice to implementation mapping
 
-Nemeo treats the Event Model and linked slice documents as the domain specification. The `em` CLI
-is the required tool for validating and managing that specification. There is no bridge-generated
-or separately maintained `spec.md`.
+Nemeo treats the Event Model and linked slice documents as the domain specification. `em` 1.13.0
+is the required tool for validating and managing that specification. Planning artifacts are derived
+from slices and are not a competing domain specification.
 
 ## Source of truth
 
 The `.em` model owns the flow and structure. A linked `slices/<slice-key>.md` owns the slice's
 intent, command/event/view details, invariants, scenarios, alternate flows, and open questions.
-Plans and tasks are derived implementation notes; they must not redefine domain behavior.
+Backlog items, implementation checklists, and verification tasks are derived implementation notes;
+they must not redefine domain behavior.
 
 ## Mapping
 
@@ -29,13 +30,13 @@ Plans and tasks are derived implementation notes; they must not redefine domain 
 2. Run the model and readiness checks before allocating implementation:
 
    ```bash
-   em validate budgeting.em
-   em validate budgeting.em --slice-ready <slice-key> --json
+   em validate docs/event-model/budgeting.em
+   em validate docs/event-model/budgeting.em --slice-ready <slice-key> --json
    ```
 
 3. Create a parent issue for the feature batch and sub-issues for slices or verification work.
-4. Derive a plan and tasks directly from each slice document. Spec Kit may be used for this step,
-   but it must not create a competing domain specification.
+4. Derive backlog items, implementation checklists, and verification tasks directly from each slice
+   document.
 5. Build dependent slices as a short-lived stacked PR chain. Each PR identifies the model and slice
    key and includes the implementation and tests for that slice.
 6. Review and approve each slice PR as its ratification decision. Merge the complete stack once the
@@ -43,10 +44,10 @@ Plans and tasks are derived implementation notes; they must not redefine domain 
 7. Record the merged lifecycle state with `em`:
 
    ```bash
-   em slice ratify --skip-review budgeting.em <slice-key>
-   em slice mark-implemented budgeting.em <slice-key> <pr-url>
-   em slice index budgeting.em
-   em conform-scope budgeting.em --repo .
+   em slice ratify --skip-review docs/event-model/budgeting.em <slice-key>
+   em slice mark-implemented docs/event-model/budgeting.em <slice-key> <pr-url>
+   em slice index docs/event-model/budgeting.em
+   em conform-scope docs/event-model/budgeting.em --repo .
    ```
 
 These post-merge commands are bookkeeping, not a second ratification PR. Use the installed `em
@@ -57,7 +58,7 @@ contract` output and `em <command> --help` when a lifecycle command's options va
 Every slice PR should include:
 
 ```text
-Event Model: budgeting.em
+Event Model: docs/event-model/budgeting.em
 Slice: <slice-key>
 Batch: #<parent-issue>
 Depends on: <base branch or PR, if stacked>

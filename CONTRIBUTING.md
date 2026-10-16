@@ -45,15 +45,12 @@ The repository currently has documentation-oriented CI because application code 
 As implementation begins, add type-checking, tests, database migration checks, provider contract
 tests, security checks, and end-to-end checks through separate focused changes.
 
-## Spec-driven development
+## Event-modeled development
 
 Use the Event Model and `em` for domain design and lifecycle management. Event Model slices are the
-feature specifications; planning tools such as Spec Kit may derive plans and tasks directly from
-them, but no bridge or parallel `spec.md` is maintained. Feature batches use a parent issue,
-sub-issues, and short-lived stacked PRs when slices depend on one another. The design layer is not
-merged separately, and each slice PR is both the implementation and review/ratification boundary.
-See
-[`docs/sdd-workflow.md`](docs/sdd-workflow.md) and
-[`docs/slice-to-spec-mapping.md`](docs/slice-to-spec-mapping.md). Do not maintain a manually
-diverging `spec.md` beside a slice document. After the complete stack merges, record the slice state
-with the `em` lifecycle commands.
+feature specifications and the direct inputs to planning and implementation. Feature batches use a
+parent issue, sub-issues, and short-lived stacked PRs when slices depend on one another. The design
+layer is not merged separately, and each slice PR is both the implementation and review/ratification
+boundary. See [`docs/event-modeling/workflow.md`](docs/event-modeling/workflow.md) and
+[`docs/event-modeling/slice-to-backlog.md`](docs/event-modeling/slice-to-backlog.md). After the
+complete stack merges, record the slice state with the `em` lifecycle commands.
