@@ -13,13 +13,13 @@ outside the spine and are recorded in the PRD.
 ## Live view
 
 ```bash
-em watch budgeting.em -o budgeting.svg
+em watch docs/event-model/budgeting.em -o docs/event-model/budgeting.svg
 ```
 
 Static render:
 
 ```bash
-em render budgeting.em -o budgeting.svg
+em render docs/event-model/budgeting.em -o docs/event-model/budgeting.svg
 ```
 
 ## Patterns legend
@@ -31,9 +31,9 @@ em render budgeting.em -o budgeting.svg
 
 ## Artifacts
 
-- [`budgeting.em`](budgeting.em): model source
-- [`budgeting.svg`](budgeting.svg): rendered diagram
-- [`.event-modeling.md`](.event-modeling.md): resumable modeling state and open questions
+- [`budgeting.em`](docs/event-model/budgeting.em): model source
+- [`budgeting.svg`](docs/event-model/budgeting.svg): rendered diagram
+- [`.event-modeling.md`](docs/event-model/.event-modeling.md): resumable modeling state and open questions
 - [`docs/prds/nemeo.md`](docs/prds/nemeo.md): source PRD
 - [`docs/architecture/decisions.md`](docs/architecture/decisions.md): architecture decision backlog
 - [`docs/architecture/adrs/`](docs/architecture/adrs/): accepted architecture decision records
