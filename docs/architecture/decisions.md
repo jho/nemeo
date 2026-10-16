@@ -30,7 +30,7 @@ These need product/design answers first. They are tracked as GitHub issues, not 
 
 | ADR | Decision | Status | Depends on |
 |---|---|---|---|
-| [#12](https://github.com/jho/nemeo/issues/12) | SDD workflow and artifact ownership | Accepted | — |
+| [#61](https://github.com/jho/nemeo/issues/61) / [ADR 0002](adrs/0002-spec-driven-development-workflow.md) | Pure Event Modeling SDLC and stacked batch delivery (updated in place from #12) | Accepted | — |
 | [#13](https://github.com/jho/nemeo/issues/13) / [ADR 0008](adrs/0008-ui-platform-and-rendering-strategy.md) | UI platform and rendering strategy | Accepted | Product issue #3 |
 | [#14](https://github.com/jho/nemeo/issues/14) / [ADR 0009](adrs/0009-ui-component-library-and-design-system.md) | UI component library and design system | Accepted foundation; brand values follow product issue #11 | #13, product issue #11 |
 | [#15](https://github.com/jho/nemeo/issues/15) / [ADR 0010](adrs/0010-information-architecture-and-interaction-patterns.md) | Information architecture and interaction model | Accepted | Product issues #2, #4; ADRs 0008, 0009 |

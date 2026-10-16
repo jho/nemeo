@@ -47,8 +47,13 @@ tests, security checks, and end-to-end checks through separate focused changes.
 
 ## Spec-driven development
 
-Use GitHub Spec Kit for implementation planning. Event Model slices are the feature specifications
-and are connected to Spec Kit with the pinned `em-sdd-bridge@0.5.0`; see
+Use the Event Model and `em` for domain design and lifecycle management. Event Model slices are the
+feature specifications; planning tools such as Spec Kit may derive plans and tasks directly from
+them, but no bridge or parallel `spec.md` is maintained. Feature batches use a parent issue,
+sub-issues, and short-lived stacked PRs when slices depend on one another. The design layer is not
+merged separately, and each slice PR is both the implementation and review/ratification boundary.
+See
 [`docs/sdd-workflow.md`](docs/sdd-workflow.md) and
 [`docs/slice-to-spec-mapping.md`](docs/slice-to-spec-mapping.md). Do not maintain a manually
-diverging `spec.md` beside a slice document.
+diverging `spec.md` beside a slice document. After the complete stack merges, record the slice state
+with the `em` lifecycle commands.
