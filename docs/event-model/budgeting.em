@@ -18,20 +18,20 @@ context MCP
 
 # MVP happy path: sign up, connect, import, prepare, review, and understand pace.
 
-slice "Sign Up with Google" {
-  ui Google Sign-in Screen @User
-  command Sign Up with Google note "slices/sign-up-with-google.md"
+slice "Sign Up" {
+  ui Authentication Screen @User
+  command Sign Up note "slices/sign-up.md"
   event User Account Created @UserProfile
 }
 
-slice "Authenticate with Google" {
-  ui Google Sign-in Screen @User
-  command Authenticate with Google note "slices/authenticate-with-google.md"
+slice "Authenticate" {
+  ui Authentication Screen @User
+  command Authenticate note "slices/authenticate.md"
   event User Authenticated @Identity
 }
 
 slice "Start Household Setup" {
-  view Household Setup Status from "User Account Created", "User Authenticated"
+  view Household Setup Status from "User Account Created", "User Authenticated" note "slices/start-household-setup.md"
   ui Household Setup Screen @User
 }
 

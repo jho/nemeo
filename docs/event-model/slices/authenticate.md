@@ -5,26 +5,33 @@ swimlane: User → Identity
 status: draft
 version: 1
 ---
-# Slice: Authenticate with Google
+# Slice: Authenticate
 
-![Diagram](./authenticate-with-google.svg)
+![Diagram](./authenticate.svg)
 
 ## Intent
 
-Authenticate a user whose Google provider subject is already linked to a Nemeo profile. This is the
-alternative path from the same **Continue with Google** screen used for signup; it is not a second
-step after signup.
+Authenticate a user whose external provider subject is already linked to a Nemeo profile. Google is
+the only enabled provider for MVP. This is the alternative path from the same authentication screen
+used for signup; it is not a second step after signup.
+
+## UI / interaction design
+
+- Screen: [Authentication](../../design/wireframes/authentication.html)
+- MVP copy: **Continue with Google**.
+- The screen does not ask the user to choose sign-up versus sign-in; the provider result determines
+  which command is processed.
 
 ## Trigger and actor
 
-The user selects **Continue with Google** and completes Google's OIDC flow. Nemeo receives a
-validated provider result through the Google identity adapter.
+The user selects the configured provider action and completes its OIDC flow. For MVP that action is
+**Continue with Google**. Nemeo receives a validated provider result through the identity adapter.
 
 ## Domain behavior
 
 ### Command
 
-`Authenticate with Google` accepts a normalized, validated Google identity result. Provider tokens,
+`Authenticate` accepts a normalized, validated provider identity result. Provider tokens,
 authorization codes, client secrets, and raw provider payloads remain in the identity adapter.
 
 The command resolves an existing identity by the stable `(provider, providerSubject)` pair. It does
@@ -55,7 +62,7 @@ payload.
 ### Existing Google identity is authenticated
 
 Given a valid verified Google identity whose `(provider, providerSubject)` pair is linked
-When the user selects **Continue with Google**
+When the user completes **Continue with Google**
 Then Nemeo records `User Authenticated`
 And Nemeo establishes a new revocable secure browser session
 And the user proceeds to the appropriate household experience
@@ -63,7 +70,7 @@ And the user proceeds to the appropriate household experience
 ### Unknown Google subject does not create an account
 
 Given a valid Google identity whose subject is not linked
-When the user reaches the authentication path
+When the user completes the authentication path
 Then Nemeo does not create a profile
 And the user is directed to the signup path
 And no authenticated session is established by this slice
@@ -78,7 +85,7 @@ And the user receives guidance to use the already-linked Google identity
 
 ### Invalid, cancelled, or failed provider flow
 
-Given Google cannot complete or validate the OIDC flow
+Given the configured provider cannot complete or validate the OIDC flow
 When the authentication callback is handled
 Then no `User Authenticated` event is recorded
 And no browser session is established
@@ -117,7 +124,7 @@ None for MVP.
 
 ## Verification notes
 
-- Use provider contract fixtures; never use real Google credentials in automated tests.
+- Use provider contract fixtures; never use real provider credentials in automated tests.
 - Cover existing identity, unknown subject, email collision, invalid/cancelled callbacks, replay,
   event-write failure, and session-issuance failure.
 - PostgreSQL-backed integration tests should verify exact-subject lookup, idempotency, and absence of

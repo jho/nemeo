@@ -5,28 +5,35 @@ swimlane: User → UserProfile
 status: draft
 version: 1
 ---
-# Slice: Sign Up with Google
+# Slice: Sign Up
 
-![Diagram](./sign-up-with-google.svg)
+![Diagram](./sign-up.svg)
 
 ## Intent
 
-Create a Nemeo profile for a first-time Google identity without creating or managing a Nemeo
-password. A successful signup returns an authenticated browser session and continues directly to
-household setup; the user does not repeat authentication.
+Create a Nemeo profile for a first-time external identity without creating or managing a Nemeo
+password. Google is the only enabled provider for MVP. A successful signup returns an authenticated
+browser session and continues directly to household setup; the user does not repeat authentication.
 
-Returning users take the alternative `Authenticate with Google` slice.
+Returning users take the alternative `Authenticate` slice.
+
+## UI / interaction design
+
+- Screen: [Authentication](../../design/wireframes/authentication.html)
+- MVP copy: **Continue with Google**.
+- The screen does not ask the user to choose sign-up versus sign-in; the provider result determines
+  which command is processed.
 
 ## Trigger and actor
 
-The user selects **Continue with Google** and completes Google's OIDC flow. Nemeo receives a
-validated provider result through the Google identity adapter.
+The user selects the configured provider action and completes its OIDC flow. For MVP that action is
+**Continue with Google**. Nemeo receives a validated provider result through the identity adapter.
 
 ## Domain behavior
 
 ### Command
 
-`Sign Up with Google` accepts a normalized, validated Google identity result. Provider tokens,
+`Sign Up` accepts a normalized, validated provider identity result. Provider tokens,
 authorization codes, client secrets, and raw provider payloads remain in the identity adapter and
 must not cross into the domain command or event payload.
 
@@ -59,7 +66,7 @@ authorization code, raw provider payload, or session secret.
 ### First-time Google identity creates a profile
 
 Given a valid verified Google identity whose `(provider, providerSubject)` pair is not linked
-When the user selects **Continue with Google**
+When the user completes **Continue with Google**
 Then Nemeo creates one profile and records `User Account Created`
 And Nemeo establishes a revocable secure browser session
 And the user proceeds directly to household setup
@@ -76,11 +83,11 @@ And the user is directed through the existing authentication path
 Given an unlinked Google subject whose email matches an existing profile
 When the user attempts signup
 Then Nemeo does not create a profile or merge financial data
-And the user is directed to authenticate with the already-linked Google identity
+And the user is directed to complete the existing authentication path
 
 ### Invalid, cancelled, or failed provider flow
 
-Given Google cannot complete or validate the OIDC flow
+Given the configured provider cannot complete or validate the OIDC flow
 When the signup callback is handled
 Then no profile or session is created
 And the user receives a recoverable error
@@ -118,7 +125,7 @@ None for MVP.
 
 ## Verification notes
 
-- Use provider contract fixtures; never use real Google credentials in automated tests.
+- Use provider contract fixtures; never use real provider credentials in automated tests.
 - Cover first-time signup, duplicate subject, email collision, invalid/cancelled callbacks, replay,
   event-write failure, and session-issuance failure.
 - PostgreSQL-backed integration tests should verify uniqueness, idempotency, and absence of secrets
