@@ -1,5 +1,10 @@
 # Nemeo MVP Event Model
 
+## Development
+
+See [`docs/development.md`](docs/development.md) for the Node.js workspace layout, local commands,
+TypeSpec/OpenAPI workflow, and test tiers.
+
 This event model describes the PRD’s MVP happy path from account creation and SimpleFIN linking
 through provider-neutral ingestion, categorization, transfer handling, tracking-budget setup,
 pace reporting, household collaboration, and authorized MCP access. Post-MVP capabilities remain
