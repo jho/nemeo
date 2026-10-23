@@ -22,10 +22,39 @@ npm run dev              # Fastify development server
 npm run dev:web          # Vite development server
 npm run validate         # Typecheck, contracts, lint, formatting, and unit tests
 npm run build            # API, web, and TypeSpec/OpenAPI builds
-npm run test:integration # PostgreSQL-backed test tier placeholder until Compose lands
+npm run test:integration # PostgreSQL-backed test tier
 npm run test:e2e         # Playwright critical-path tier placeholder
+npm run db:migrate       # Apply local database migrations
+npm run db:reset         # Reset local database only with explicit confirmation
 npm start                # Run the compiled application
 ```
+
+## Compose
+
+Compose is the local application-plus-PostgreSQL contract:
+
+```bash
+cp .env.example .env       # edit with local-only values; never commit .env
+docker compose up --build
+docker compose exec app npm run db:migrate
+```
+
+The application is available at `http://localhost:3000`. `/health` is the liveness endpoint and
+`/ready` verifies the PostgreSQL connection. To run the disposable CI-shaped environment:
+
+```bash
+docker compose -f compose.yaml -f compose.ci.yaml up --build --abort-on-container-exit
+```
+
+Local database reset is deliberately guarded:
+
+```bash
+DB_RESET_CONFIRM=local npm run db:reset
+```
+
+PostgreSQL credentials are supplied through the untracked `.env` file, the CI environment, or the
+deployment environment. They are never stored in `compose.yaml`, the Docker image, or committed
+source files.
 
 TypeSpec is the API source of truth. The generated OpenAPI contract is written to
 `contracts/generated/openapi.yaml`; do not hand-edit it. `npm run contracts:check` regenerates the
