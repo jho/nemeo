@@ -2,7 +2,9 @@
 schemaVersion: 1
 pattern: state-view
 swimlane: User → Household
-status: draft
+status: ready-to-implement
+ratifiedBy: jho (backlog export)
+ratifiedOn: 2026-10-23
 version: 1
 ---
 # Slice: Start Household Setup

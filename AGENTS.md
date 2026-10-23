@@ -21,13 +21,14 @@ an open product decision as an architecture constraint.
 
 ## Feature implementation
 
-Start from a reviewed Event Model slice in a short-lived feature batch. `em` is authoritative for
-the model and slice lifecycle; do not use `em-sdd-bridge` or create a parallel `spec.md`. Each
-implementation PR names its model and slice key and is both the implementation and ratification
-boundary for that slice. Dependent PRs may form a stack whose design layer is not merged separately;
-the complete batch merges once. Record post-merge lifecycle state with `em` commands and follow
-[`docs/event-modeling/workflow.md`](docs/event-modeling/workflow.md) for artifact ownership and phase gates.
-
+Start from a ratified Event Model slice in a short-lived feature batch. `em` is authoritative for
+the model and slice lifecycle. For Nemeo, exporting a documented slice into the implementation
+backlog is its ratification boundary; the slice must have `status: ready-to-implement`,
+`ratifiedBy`, and `ratifiedOn` before planning. Each implementation PR names its model and slice
+key. Dependent PRs may form a stack whose design layer is not merged separately; the complete batch
+merges once. Record post-merge implementation state with `em` commands and follow
+[`docs/event-modeling/workflow.md`](docs/event-modeling/workflow.md) for artifact ownership and
+phase gates.
 ## Feature code layout
 
 Business-capability slices belong under `src/features/<aggregate-or-context>/<slice>/`, following

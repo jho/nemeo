@@ -45,8 +45,9 @@ executable delivery work.
 
 An artifact moves to the next phase only after its required review and validation checks pass.
 Automation MUST validate Event Model syntax and slice readiness before allocating implementation
-work. Human approval of a slice PR is its ratification boundary; post-merge `em` lifecycle updates
-MUST be mechanical bookkeeping rather than a second merge gate.
+work. For this project, exporting documented MVP slices into the implementation backlog is the
+ratification boundary; the backlog handoff MUST record `ratifiedBy` and `ratifiedOn`. Slice PRs
+then implement already-ratified slices, and merge MUST NOT be a second ratification gate.
 
 ## Accepted architecture constraints
 
@@ -55,12 +56,13 @@ the decision context, alternatives, rationale, and consequences; Event Model des
 work MUST comply with these constraints.
 
 - The Event Model and linked slice documents are the authoritative domain design. `em` is the
-  required lifecycle tool. Plans, backlogs, and tasks MAY be generated directly from reviewed
+  required lifecycle tool. Plans, backlogs, and tasks MAY be generated directly from ratified
   slice documents. See [ADR 0002](../architecture/adrs/0002-event-modeling-delivery-workflow.md).
 - Feature batches SHOULD use a parent issue with sub-issues. Dependent slice PRs SHOULD form a
   short-lived stack, with the design layer at the bottom and one merge for the complete batch. Each
-  slice PR MUST name its model and slice key and serves as both implementation and review/ratification
-  boundary. Post-merge `em` lifecycle commands MUST record ratification and implementation state.
+  slice PR MUST name its model and slice key. Slices MUST be ratified when they enter the backlog;
+  post-backlog `em` lifecycle commands record ratification and post-merge commands record
+  implementation state.
 - All changes are delivered through focused pull requests with Markdown, Event Model validation,
   and whitespace checks as the current CI gates. See [ADR 0001](../architecture/adrs/0001-pull-request-and-ci-workflow.md).
 - MVP deployment and integration testing use Docker Compose as the cloud-agnostic service contract;
