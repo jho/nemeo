@@ -77,6 +77,9 @@ these constraints.
   credentials, raw provider data, financial values, and avoidable PII; operational labels MUST have
   bounded cardinality. The minimum signals are application/worker logs, liveness/readiness,
   request/runtime/database health, job and provider-sync outcomes, and projection lag where used.
+  Structured loggers MUST use the normalized repository-relative module path as their `module`
+  namespace and MUST support most-specific module-level thresholds falling back to broader prefixes
+  and `LOG_LEVEL`. See [ADR 0022](../../docs/architecture/adrs/0022-module-path-logging-namespaces.md).
   Operational alerts MUST remain actionable and separate from user-facing financial notifications.
   See [ADR 0021](../../docs/architecture/adrs/0021-mvp-observability-and-incident-response.md).
 - MVP backend work uses Node.js 24 LTS with strict TypeScript and Fastify. API

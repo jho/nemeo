@@ -4,11 +4,12 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import type { Pool } from "pg";
 import { databaseReadinessChecks } from "../../observability/metrics.js";
+import { moduleLoggerOptions } from "../../observability/logger.js";
 
 const REDACTED = "[REDACTED]";
 
 const logger = {
-  level: process.env.LOG_LEVEL ?? "info",
+  ...moduleLoggerOptions(import.meta.url),
   redact: {
     paths: [
       "req.headers.authorization",
