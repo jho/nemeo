@@ -47,6 +47,7 @@ These need product/design answers first. They are tracked as GitHub issues, not 
 | [#24](https://github.com/jho/nemeo/issues/24) / [ADR 0019](adrs/0019-ci-quality-gates-and-execution-tiers.md) | CI quality gates and execution tiers | Accepted | ADRs 0001, 0017, 0018 |
 | [#30](https://github.com/jho/nemeo/issues/30) / [ADR 0020](adrs/0020-mvp-environment-topology-and-promotion.md) | MVP environment topology and promotion flow | Accepted | ADRs 0003, 0005, 0017, 0019 |
 | [#32](https://github.com/jho/nemeo/issues/32) / [ADR 0021](adrs/0021-mvp-observability-and-incident-response.md) | MVP observability and incident-response baseline | Accepted | ADRs 0015, 0019, 0020 |
+| [#64](https://github.com/jho/nemeo/issues/64) / [ADR 0022](adrs/0022-module-path-logging-namespaces.md) | Module-path structured logging namespaces and targeted thresholds | Accepted | ADRs 0005, 0021 |
 | [#25](https://github.com/jho/nemeo/issues/25) | Pull-request and CI workflow | Accepted | #12, #24 |
 | [#33](https://github.com/jho/nemeo/issues/33) / [ADR 0004](adrs/0004-typespec-fastify-vertical-slice-backend.md) | MVP backend platform, API-first contracts, and vertical slices | Accepted | #12, #23 |
 | [#34](https://github.com/jho/nemeo/issues/34) / [ADR 0006](adrs/0006-application-api-standards.md) | Application API standards and ergonomics | Accepted | #33, #16 |

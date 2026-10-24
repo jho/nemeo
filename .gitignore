@@ -6,3 +6,11 @@ Thumbs.db
 
 # Spec Kit writes per-checkout allocation state here; it is not shared project state.
 .specify/feature.json
+
+node_modules/
+dist/
+coverage/
+test-results/
+.env
+.env.*
+!.env.example
