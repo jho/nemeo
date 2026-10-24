@@ -1,6 +1,7 @@
 services:
   db:
-    ports: !reset []
+    ports:
+      - "127.0.0.1:${TEST_POSTGRES_PORT:-5432}:5432"
     volumes: !reset []
     tmpfs:
       - /var/lib/postgresql/data

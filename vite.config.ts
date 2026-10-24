@@ -9,6 +9,9 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
+    fs: {
+      allow: [".."],
+    },
     proxy: {
       "/api": "http://localhost:3000",
     },

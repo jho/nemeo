@@ -1,3 +1,4 @@
+import { shutdownTelemetry } from "../../observability/instrumentation.js";
 import { buildApp } from "./app.js";
 import { Pool } from "pg";
 
@@ -23,6 +24,7 @@ try {
 const shutdown = async () => {
   await app.close();
   await database.end();
+  await shutdownTelemetry();
 };
 
 process.once("SIGINT", shutdown);

@@ -23,7 +23,7 @@ npm run dev:web          # Vite development server
 npm run validate         # Typecheck, contracts, lint, formatting, and unit tests
 npm run build            # API, web, and TypeSpec/OpenAPI builds
 npm run test:integration # PostgreSQL-backed test tier
-npm run test:e2e         # Playwright critical-path tier placeholder
+npm run test:e2e         # Playwright critical-path tier
 npm run db:migrate        # Apply pending migrations
 npm run db:migrate:dry-run # Preview pending migration SQL
 npm run db:migrate:down   # Roll back the latest migration locally
@@ -47,6 +47,27 @@ The application is available at `http://localhost:3000`. `/health` is the livene
 ```bash
 docker compose -f compose.yaml -f compose.ci.yaml up --build --abort-on-container-exit
 ```
+
+Integration tests use `DATABASE_URL` or the `PG*` variables and are skipped when no database
+configuration is present. CI starts a clean PostgreSQL service, applies migrations, and then runs
+`npm run test:integration`; a warm local Compose database can be used with the same command.
+
+The application initializes OpenTelemetry before the Fastify and PostgreSQL modules load. The
+OpenTelemetry SDK reads standard `OTEL_*` environment variables for service identity, sampling,
+exporters, endpoints, and instrumentation enablement. No exporter is enabled by default, so local
+and CI runs do not require a telemetry vendor or collector. For example:
+
+```bash
+OTEL_SERVICE_NAME=nemeo \
+OTEL_TRACES_EXPORTER=otlp \
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 \
+npm run dev
+```
+
+Fastify and Node auto-instrumentation provide request, runtime, and database signals. The
+application also exposes bounded-outcome instruments for database readiness, jobs, provider syncs,
+and projection updates/lag. Logs redact request bodies, query strings, credentials, provider
+payload fields, financial values, account numbers, and common token fields.
 
 Local database reset is deliberately guarded:
 
