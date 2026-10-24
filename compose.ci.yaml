@@ -1,0 +1,13 @@
+services:
+  db:
+    ports: !reset []
+    volumes: !reset []
+    tmpfs:
+      - /var/lib/postgresql/data
+
+  app:
+    ports: !reset []
+
+volumes:
+  postgres-data:
+    driver: local
