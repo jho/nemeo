@@ -24,8 +24,10 @@ npm run validate         # Typecheck, contracts, lint, formatting, and unit test
 npm run build            # API, web, and TypeSpec/OpenAPI builds
 npm run test:integration # PostgreSQL-backed test tier
 npm run test:e2e         # Playwright critical-path tier placeholder
-npm run db:migrate       # Apply local database migrations
-npm run db:reset         # Reset local database only with explicit confirmation
+npm run db:migrate        # Apply pending migrations
+npm run db:migrate:dry-run # Preview pending migration SQL
+npm run db:migrate:down   # Roll back the latest migration locally
+npm run db:reset          # Reset local database only with explicit confirmation
 npm start                # Run the compiled application
 ```
 
@@ -59,6 +61,12 @@ source files.
 TypeSpec is the API source of truth. The generated OpenAPI contract is written to
 `contracts/generated/openapi.yaml`; do not hand-edit it. `npm run contracts:check` regenerates the
 contract and fails when the checked-in artifact drifts from the TypeSpec source.
+
+PostgreSQL migrations use `node-pg-migrate`. Add immutable, ordered migration files under
+`db/migrations/`. Use the migration helpers for ordinary schema changes and raw SQL or async
+migrations for data backfills. Prefer expand/contract changes: add compatible schema first, deploy
+the application transition, backfill data, and remove obsolete structures only in a later migration.
+Migrations run in transactions by default; opt out only for PostgreSQL operations that require it.
 
 The web app is built from `web/index.html` and `src/interfaces/web/`. Vite proxies `/api` to the
 Fastify development server. The production build is served by Fastify from the same application

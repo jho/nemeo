@@ -24,7 +24,9 @@
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration --passWithNoTests",
     "test:e2e": "playwright test --pass-with-no-tests",
-    "db:migrate": "node scripts/db-migrate.mjs",
+    "db:migrate": "node-pg-migrate up --migrations-dir db/migrations",
+    "db:migrate:dry-run": "node-pg-migrate up --dry-run --migrations-dir db/migrations",
+    "db:migrate:down": "node-pg-migrate down --migrations-dir db/migrations",
     "db:reset": "node scripts/db-reset.mjs",
     "validate": "npm run typecheck && npm run contracts:build && npm run lint && npm run format:check && npm run test:unit"
   },
@@ -32,6 +34,7 @@
     "@fastify/static": "^8.2.0",
     "dotenv": "^17.2.2",
     "fastify": "^5.6.1",
+    "node-pg-migrate": "^9.0.0",
     "pg": "^8.16.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
