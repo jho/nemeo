@@ -30,10 +30,12 @@ Nemeo will use a conventional modular monolith for MVP.
 - Each interface will have a clear entry module so it can become a separate process or image later.
 - Vertical slices remain the primary organization. A slice owns its user-facing behavior, command or
   query capability, domain rules, persistence port, transport mappings, and tests.
-- Business-capability slices MUST live under `src/features/<bounded-context>/<slice>/`. The
-  bounded-context directory groups related slices; the slice directory is the implementation
-  boundary and may contain its application capability, handlers, domain rules, ports, and slice
-  tests.
+- Business-capability slices MUST live under `src/features/<aggregate-or-context>/<slice>/`,
+  following the Event Model's aggregate/consistency context. The first directory groups related
+  slices; the slice directory is the implementation boundary and may contain its application
+  capability, handlers, domain rules, ports, and slice tests. A larger bounded-context hierarchy
+  is deferred until the model has an independent language, contract, ownership, or deployment
+  boundary.
 - `src/interfaces/` owns process entry points and transport registration. Interface code MUST call a
   feature's published capability rather than importing its internal handlers or persistence code.
   `src/infrastructure/` owns replaceable adapters such as PostgreSQL, external identity providers,
@@ -72,7 +74,7 @@ src/interfaces/worker/main.ts
 src/interfaces/web/main.ts
 ```
 
-They may initially be composed by `src/main.ts`. Business contexts are represented by feature
+They may initially be composed by `src/main.ts`. Event Model contexts are represented by feature
 directories, for example:
 
 ```text
@@ -112,10 +114,10 @@ multiple independently released packages.
 MVP development and Compose-based integration testing remain simple: one application image, one
 application process, and PostgreSQL as the separate stateful service. A feature can move through
 TypeSpec, frontend, Fastify, domain behavior, worker behavior, and tests in one focused slice.
-Logical feature and bounded-context boundaries prevent the monolith from becoming a shared-layer
-application while preserving the option to extract a high-value domain later. The explicit layout
-also makes Event Model slice ownership visible to developers and agents without requiring a custom
-framework or task runner.
+Logical feature and aggregate boundaries prevent the monolith from becoming a shared-layer
+application while preserving the option to introduce bounded contexts or extract a high-value
+domain later. The explicit layout also makes Event Model slice ownership visible to developers and
+agents without requiring a custom framework or task runner.
 
 The tradeoff is shared failure and resource boundaries. A worker failure can affect the application
 process, and web/API/worker workloads cannot scale independently. Those are acceptable MVP costs;

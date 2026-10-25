@@ -91,10 +91,12 @@ these constraints.
   checkpoints, or database serialization. See [ADR 0004](../../docs/architecture/adrs/0004-typespec-fastify-vertical-slice-backend.md)
   and [ADR 0011](../../docs/architecture/adrs/0011-domain-persistence-and-event-strategy.md).
 - Business-capability slices MUST be organized under
-  `src/features/<bounded-context>/<slice>/`. Interfaces MUST register transports and invoke only
-  published feature capabilities; infrastructure adapters MUST remain under `src/infrastructure/`;
-  cross-feature code MUST NOT import another feature's internal handlers, domain objects, or
-  persistence code. See [ADR 0005](../../docs/architecture/adrs/0005-modular-monolith-topology.md).
+  `src/features/<aggregate-or-context>/<slice>/`, following the Event Model's aggregate/consistency
+  context. Interfaces MUST register transports and invoke only published feature capabilities;
+  infrastructure adapters MUST remain under `src/infrastructure/`; cross-feature code MUST NOT
+  import another feature's internal handlers, domain objects, or persistence code. Larger bounded
+  contexts are deferred until a real independent language, contract, ownership, or deployment
+  boundary exists. See [ADR 0005](../../docs/architecture/adrs/0005-modular-monolith-topology.md).
 - Transaction and Budget domain history MUST be immutable, versioned, auditable, and replayable.
   Their current state and query models MUST be derived through idempotent, rebuildable projections.
   Identity, provider operations, sync workflows, household access, and reporting infrastructure
