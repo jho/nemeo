@@ -2,6 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-09-16
+- Last amended: 2026-10-25
 - GitHub issue: [#16](https://github.com/jho/nemeo/issues/16)
 - Related API decision: [ADR 0004](0004-typespec-fastify-vertical-slice-backend.md)
 - Related operations decision: [#19](https://github.com/jho/nemeo/issues/19)
@@ -29,6 +30,18 @@ Nemeo will use a conventional modular monolith for MVP.
 - Each interface will have a clear entry module so it can become a separate process or image later.
 - Vertical slices remain the primary organization. A slice owns its user-facing behavior, command or
   query capability, domain rules, persistence port, transport mappings, and tests.
+- Business-capability slices MUST live under `src/features/<bounded-context>/<slice>/`. The
+  bounded-context directory groups related slices; the slice directory is the implementation
+  boundary and may contain its application capability, handlers, domain rules, ports, and slice
+  tests.
+- `src/interfaces/` owns process entry points and transport registration. Interface code MUST call a
+  feature's published capability rather than importing its internal handlers or persistence code.
+  `src/infrastructure/` owns replaceable adapters such as PostgreSQL, external identity providers,
+  sessions, and event/projection implementations. Supporting modules such as
+  `src/observability/` remain outside feature business logic.
+- A feature MUST expose a small explicit public module for cross-feature composition. Cross-feature
+  code MUST use that public capability or an explicitly modeled command, query, event, translation,
+  or application composition boundary; it MUST NOT reach through another feature's internal files.
 - Event Model bounded contexts remain explicit logical modules within the monolith. A context may
   contain multiple slices, but slices in other contexts MUST use its published commands, queries,
   or events rather than importing its internal handlers, domain objects, or persistence code.
@@ -59,13 +72,13 @@ src/interfaces/worker/main.ts
 src/interfaces/web/main.ts
 ```
 
-They may initially be composed by `src/main.ts`. Domain contexts should have the same kind of
-logical seam, for example:
+They may initially be composed by `src/main.ts`. Business contexts are represented by feature
+directories, for example:
 
 ```text
-src/contexts/transactions/
-src/contexts/budget/
-src/contexts/connections/
+src/features/transactions/
+src/features/budget/
+src/features/connections/
 ```
 
 A later deployment may run interface entry points or domain contexts as separate processes from the
@@ -99,8 +112,10 @@ multiple independently released packages.
 MVP development and Compose-based integration testing remain simple: one application image, one
 application process, and PostgreSQL as the separate stateful service. A feature can move through
 TypeSpec, frontend, Fastify, domain behavior, worker behavior, and tests in one focused slice.
-Logical context boundaries prevent the monolith from becoming a shared-layer application while
-preserving the option to extract a high-value domain later.
+Logical feature and bounded-context boundaries prevent the monolith from becoming a shared-layer
+application while preserving the option to extract a high-value domain later. The explicit layout
+also makes Event Model slice ownership visible to developers and agents without requiring a custom
+framework or task runner.
 
 The tradeoff is shared failure and resource boundaries. A worker failure can affect the application
 process, and web/API/worker workloads cannot scale independently. Those are acceptable MVP costs;
