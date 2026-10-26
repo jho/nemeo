@@ -1,7 +1,7 @@
 ---
 schemaVersion: 1
 pattern: state-change
-swimlane: User → UserProfile
+swimlane: User → Identity
 status: ready-to-implement
 ratifiedBy: jho (backlog export)
 ratifiedOn: 2026-10-23
@@ -21,7 +21,7 @@ Returning users take the alternative `Authenticate` slice.
 
 ## UI / interaction design
 
-- Screen: [Authentication](../../design/wireframes/authentication.html)
+- Screen: [Authentication](../../../../design/wireframes/authentication.html)
 - MVP copy: **Continue with Google**.
 - The screen does not ask the user to choose sign-up versus sign-in; the provider result determines
   which command is processed.

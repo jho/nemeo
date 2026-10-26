@@ -30,8 +30,8 @@ they must not redefine domain behavior.
 2. Run the model and readiness checks before allocating implementation:
 
    ```bash
-   em validate docs/event-model/budgeting.em
-   em validate docs/event-model/budgeting.em --slice-ready <slice-key> --json
+   em system docs/event-model/system.yaml
+   em validate docs/event-model/models/<context>/<context>.em --slice-ready <slice-key> --json
    ```
 
 3. Create a parent issue for the feature batch and sub-issues for slices or verification work.
@@ -44,10 +44,10 @@ they must not redefine domain behavior.
 7. Record the merged lifecycle state with `em`:
 
    ```bash
-   em slice ratify --skip-review docs/event-model/budgeting.em <slice-key>
-   em slice mark-implemented docs/event-model/budgeting.em <slice-key> <pr-url>
-   em slice index docs/event-model/budgeting.em
-   em conform-scope docs/event-model/budgeting.em --repo .
+   em slice ratify --skip-review docs/event-model/models/<context>/<context>.em <slice-key>
+   em slice mark-implemented docs/event-model/models/<context>/<context>.em <slice-key> <pr-url>
+   em slice index docs/event-model/models/<context>/<context>.em
+   em conform-scope docs/event-model/models/<context>/<context>.em --repo .
    ```
 
 These post-merge commands are bookkeeping, not a second ratification PR. Use the installed `em
@@ -58,7 +58,7 @@ contract` output and `em <command> --help` when a lifecycle command's options va
 Every slice PR should include:
 
 ```text
-Event Model: docs/event-model/budgeting.em
+Event Models: docs/event-model/system.yaml
 Slice: <slice-key>
 Batch: #<parent-issue>
 Depends on: <base branch or PR, if stacked>

@@ -18,8 +18,14 @@ repos:
   - repo: local
     hooks:
       - id: event-model-validation
-        name: validate event model
-        entry: npx --yes @milehimikey/em@1.13.0 validate docs/event-model/budgeting.em
+        name: validate event model system
+        entry: npx --yes @milehimikey/em@1.14.0 system docs/event-model/system.yaml
         language: system
         pass_filenames: false
-        files: ^docs/event-model/budgeting\.em$
+        files: ^docs/event-model/(system\.yaml|models/.*\.em)$
+      - id: event-model-render
+        name: render event model diagrams
+        entry: bash scripts/render-event-models.sh
+        language: system
+        pass_filenames: false
+        files: ^docs/event-model/(system\.yaml|models/.*\.(em|svg))$

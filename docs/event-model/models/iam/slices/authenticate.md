@@ -19,7 +19,7 @@ used for signup; it is not a second step after signup.
 
 ## UI / interaction design
 
-- Screen: [Authentication](../../design/wireframes/authentication.html)
+- Screen: [Authentication](../../../../design/wireframes/authentication.html)
 - MVP copy: **Continue with Google**.
 - The screen does not ask the user to choose sign-up versus sign-in; the provider result determines
   which command is processed.

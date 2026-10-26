@@ -20,7 +20,7 @@ second authentication step.
 ## UI / interaction design
 
 - Entry: immediately after Google signup or authentication.
-- Wireframe: [Start household setup](../../design/wireframes/start-household-setup.html)
+- Wireframe: [Start household setup](../../../../design/wireframes/start-household-setup.html)
 - The screen shows the authenticated state, asks for a household name, and continues to `Create
   Initial Household`.
 - The prototype covers validation, loading, and successful continuation states. Authorization and
