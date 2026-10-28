@@ -1,7 +1,7 @@
 ---
 schemaVersion: 1
 pattern: state-change
-swimlane: User → Identity
+swimlane: User → User
 status: ready-to-implement
 ratifiedBy: jho (backlog export)
 ratifiedOn: 2026-10-23
