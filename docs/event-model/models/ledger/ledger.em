@@ -8,11 +8,28 @@ context Account
 context Transaction
 context Rule
 
-slice "Import Provider Records" {
-  translation Provider Record Import consumes feeds:event.provider-data-normalized
-  command Import Provider Records
-  event Provider Records Imported @Account public
+slice "Receive Provider Records" {
+  translation Provider Record Intake consumes feeds:event.provider-data-normalized
+  command Receive Provider Records
+  event Provider Records Received @Account
 }
+
+slice "Prepare Provider Record Import" {
+  view Records To Import from "Provider Records Received"
+  processor Provider Record Importer
+}
+
+slice "Import Provider Account" {
+  command Import Provider Account
+  event Account Imported @Account
+}
+arrow Provider Record Importer -> Import Provider Account
+
+slice "Import Provider Transaction" {
+  command Import Provider Transaction
+  event Transaction Imported @Transaction public
+}
+arrow Provider Record Importer -> Import Provider Transaction
 
 slice "Select Accounts for Budget" {
   ui Account Selection Screen @User
@@ -26,7 +43,7 @@ slice "Show Selected Budget Accounts" {
 }
 
 slice "Reconcile Account Balances" {
-  view Balance Reconciliation Worklist from "Provider Records Imported"
+  view Balance Reconciliation Worklist from "Account Imported"
   processor Balance Reconciler
 }
 arrow Balance Reconciler -> Record Opening Balance
@@ -38,12 +55,12 @@ slice "Record Opening Balance" {
 }
 
 slice "Review Imported Transactions" {
-  view Imported Transactions from "Provider Records Imported", "Opening Balance Recorded"
+  view Imported Transactions from "Transaction Imported", "Opening Balance Recorded"
   ui Transactions Screen @User
 }
 
 slice "Find Transactions to Categorize" {
-  view Transactions Needing Categories from "Provider Records Imported"
+  view Transactions Needing Categories from "Transaction Imported"
   ui Categorization Review Screen @User
   processor Categorization Automation
 }
@@ -124,7 +141,7 @@ slice "Edit Transaction Category" {
 }
 
 slice "Read Transactions Through MCP" {
-  view MCP Transaction Data from "Provider Records Imported", "Transactions Categorized", "Transaction Category Corrected", "Transaction Category Edited"
+  view MCP Transaction Data from "Transaction Imported", "Transactions Categorized", "Transaction Category Corrected", "Transaction Category Edited"
   ui MCP Transaction Query @Agent
 }
 
@@ -140,6 +157,6 @@ slice "Show Applied MCP Change" {
 }
 
 slice "View Shared Transactions" {
-  view Shared Transaction List from "Provider Records Imported", "Transactions Categorized"
+  view Shared Transaction List from "Transaction Imported", "Transactions Categorized"
   ui Family Transactions Screen @HouseholdViewer
 }

@@ -64,7 +64,7 @@ slice "Show Category Targets" {
 }
 
 slice "Refresh Budget Activity" {
-  translation Ledger Activity Changed consumes ledger:event.provider-records-imported, ledger:event.transactions-categorized, ledger:event.transfer-confirmed, ledger:event.transaction-category-corrected, ledger:event.category-rule-applied, ledger:event.transaction-category-edited
+  translation Ledger Activity Changed consumes ledger:event.transaction-imported, ledger:event.transactions-categorized, ledger:event.transfer-confirmed, ledger:event.transaction-category-corrected, ledger:event.category-rule-applied, ledger:event.transaction-category-edited
   command Calculate Budget Progress
   event Budget Progress Calculated @Budget
 }
