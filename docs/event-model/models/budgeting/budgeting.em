@@ -18,27 +18,38 @@ slice "Prepare Category Initialization" {
   processor Category Taxonomy Initializer
 }
 
-slice "Initialize Budget Categories" {
-  command Initialize Budget Categories
+slice "Create Category" {
+  command Create Category
   event Category Created @Category
 }
-arrow Category Taxonomy Initializer -> Initialize Budget Categories
+arrow Category Taxonomy Initializer -> Create Category
+
+slice "Prepare Budget Category Membership" {
+  view Categories To Add from "Category Created"
+  processor Budget Category Initializer
+}
+
+slice "Add Category To Budget" {
+  command Add Category To Budget
+  event Category Added To Budget @Budget
+}
+arrow Budget Category Initializer -> Add Category To Budget
 
 slice "Prepare Category Targets" {
-  view Target Inference Inputs from "Budget Created", "Category Created"
+  view Target Inference Inputs from "Budget Created", "Category Added To Budget"
   processor Target Inference Automation
 }
 
-slice "Propose Category Targets" {
-  command Propose Category Targets
-  event Category Targets Proposed @Category
+slice "Propose Category Target" {
+  command Propose Category Target
+  event Category Target Proposed @Category
 }
-arrow Target Inference Automation -> Propose Category Targets
+arrow Target Inference Automation -> Propose Category Target
 
-slice "Approve Category Targets" {
+slice "Approve Category Target" {
   ui Target Approval Screen @User
-  command Approve Category Targets
-  event Category Targets Approved @Category
+  command Approve Category Target
+  event Category Target Approved @Category
 }
 
 slice "Adjust Category Target" {
@@ -48,7 +59,7 @@ slice "Adjust Category Target" {
 }
 
 slice "Show Category Targets" {
-  view Proposed Targets from "Category Targets Proposed", "Category Targets Approved", "Category Target Adjusted"
+  view Proposed Targets from "Category Target Proposed", "Category Target Approved", "Category Target Adjusted"
   ui Target Review Screen @User
 }
 
