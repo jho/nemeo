@@ -16,20 +16,25 @@ slice "Receive Provider Records" {
 
 slice "Prepare Provider Record Import" {
   view Records To Import from "Provider Records Received"
-  processor Provider Record Importer
+  processor Account Importer
 }
 
 slice "Import Provider Account" {
   command Import Provider Account
   event Account Imported @Account
 }
-arrow Provider Record Importer -> Import Provider Account
+arrow Account Importer -> Import Provider Account
+
+slice "Prepare Transaction Import" {
+  view Accounts Ready For Transaction Import from "Account Imported"
+  processor Transaction Importer
+}
 
 slice "Import Provider Transaction" {
   command Import Provider Transaction
   event Transaction Imported @Transaction public
 }
-arrow Provider Record Importer -> Import Provider Transaction
+arrow Transaction Importer -> Import Provider Transaction
 
 slice "Select Accounts for Budget" {
   ui Account Selection Screen @User
