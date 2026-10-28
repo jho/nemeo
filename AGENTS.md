@@ -27,3 +27,16 @@ implementation PR names its model and slice key and is both the implementation a
 boundary for that slice. Dependent PRs may form a stack whose design layer is not merged separately;
 the complete batch merges once. Record post-merge lifecycle state with `em` commands and follow
 [`docs/sdd-workflow.md`](docs/sdd-workflow.md) for artifact ownership and phase gates.
+
+## Feature code layout
+
+Business-capability slices belong under `src/features/<aggregate-or-context>/<slice>/`, following
+the Event Model's aggregate/consistency context. A slice owns its application capability,
+command/query handlers, domain rules, ports, and slice-specific tests. Do not invent a larger
+bounded-context hierarchy until the model has an independent language, contract, ownership, or
+deployment boundary that requires one.
+Transport registration belongs under `src/interfaces/`; replaceable adapters belong under
+`src/infrastructure/`; cross-cutting support such as telemetry belongs in its own supporting module.
+Interface and cross-feature code may use only a feature's explicit public capability and must not
+import another feature's internal handlers, domain objects, or persistence code. Preserve the
+Event Model slice boundary even when a feature is relational rather than event-sourced.

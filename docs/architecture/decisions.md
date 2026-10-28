@@ -34,7 +34,7 @@ These need product/design answers first. They are tracked as GitHub issues, not 
 | [#13](https://github.com/jho/nemeo/issues/13) / [ADR 0008](adrs/0008-ui-platform-and-rendering-strategy.md) | UI platform and rendering strategy | Accepted | Product issue #3 |
 | [#14](https://github.com/jho/nemeo/issues/14) / [ADR 0009](adrs/0009-ui-component-library-and-design-system.md) | UI component library and design system | Accepted foundation; brand values follow product issue #11 | #13, product issue #11 |
 | [#15](https://github.com/jho/nemeo/issues/15) / [ADR 0010](adrs/0010-information-architecture-and-interaction-patterns.md) | Information architecture and interaction model | Accepted | Product issues #2, #4; ADRs 0008, 0009 |
-| [#16](https://github.com/jho/nemeo/issues/16) / [ADR 0005](adrs/0005-modular-monolith-topology.md) | Initial modular-monolith application topology | Accepted | #33, #12, #23 |
+| [#16](https://github.com/jho/nemeo/issues/16) / [ADR 0005](adrs/0005-modular-monolith-topology.md) | Modular-monolith topology and feature-slice code layout | Accepted | #33, #12, #23 |
 | [#17](https://github.com/jho/nemeo/issues/17) / [ADR 0011](adrs/0011-domain-persistence-and-event-strategy.md) | Domain persistence and event strategy | Accepted | Event-model slice specs |
 | [#18](https://github.com/jho/nemeo/issues/18) / [ADR 0014](adrs/0014-provider-adapter-contract.md) | Provider adapter contract | Accepted | Product issue #10, ADR 0011 |
 | [#19](https://github.com/jho/nemeo/issues/19) / [ADR 0015](adrs/0015-postgres-automation-jobs-and-scheduling.md) | PostgreSQL automation jobs, scheduling, retries, and idempotency | Accepted | #17, #18 |
