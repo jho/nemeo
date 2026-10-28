@@ -20,12 +20,12 @@ slice "Prepare Category Initialization" {
 
 slice "Initialize Budget Categories" {
   command Initialize Budget Categories
-  event Budget Categories Initialized @Category
+  event Category Created @Category
 }
 arrow Category Taxonomy Initializer -> Initialize Budget Categories
 
 slice "Prepare Category Targets" {
-  view Target Inference Inputs from "Budget Created", "Budget Categories Initialized"
+  view Target Inference Inputs from "Budget Created", "Category Created"
   processor Target Inference Automation
 }
 
