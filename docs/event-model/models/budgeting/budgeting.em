@@ -10,11 +10,11 @@ context Category
 slice "Create Initial Budget" {
   translation Account Selection Completed consumes ledger:event.budget-accounts-selected
   command Create Initial Budget
-  event Initial Budget Created @Budget
+  event Budget Created @Budget
 }
 
 slice "Prepare Category Initialization" {
-  view Category Initialization Inputs from "Initial Budget Created"
+  view Category Initialization Inputs from "Budget Created"
   processor Category Taxonomy Initializer
 }
 
@@ -25,7 +25,7 @@ slice "Initialize Budget Categories" {
 arrow Category Taxonomy Initializer -> Initialize Budget Categories
 
 slice "Prepare Category Targets" {
-  view Target Inference Inputs from "Initial Budget Created", "Budget Categories Initialized"
+  view Target Inference Inputs from "Budget Created", "Budget Categories Initialized"
   processor Target Inference Automation
 }
 

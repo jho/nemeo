@@ -86,14 +86,13 @@
 <text xml:space="preserve" text-anchor="middle" x="71.15" y="-19.32" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#5f6368">Category</text>
 </g>
 <!-- __row_6&#45;&gt;__row_7 -->
-<!-- initial_budget_created -->
+<!-- budget_created -->
 <g data-slice="0" id="node153" class="node">
-<title>initial_budget_created</title>
+<title>budget_created</title>
 <path fill="#f6b26b" stroke="#b7791f" stroke-width="1.3" d="M261.15,-135.71C261.15,-135.71 141.15,-135.71 141.15,-135.71 135.15,-135.71 129.15,-129.71 129.15,-123.71 129.15,-123.71 129.15,-96.12 129.15,-96.12 129.15,-90.12 135.15,-84.12 141.15,-84.12 141.15,-84.12 261.15,-84.12 261.15,-84.12 267.15,-84.12 273.15,-90.12 273.15,-96.12 273.15,-96.12 273.15,-123.71 273.15,-123.71 273.15,-129.71 267.15,-135.71 261.15,-135.71"/>
-<text xml:space="preserve" text-anchor="middle" x="201.15" y="-113.22" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#3f2a06">Initial Budget</text>
-<text xml:space="preserve" text-anchor="middle" x="201.15" y="-100.02" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#3f2a06">Created</text>
+<text xml:space="preserve" text-anchor="middle" x="201.15" y="-106.62" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#3f2a06">Budget Created</text>
 </g>
-<!-- __row_6&#45;&gt;initial_budget_created -->
+<!-- __row_6&#45;&gt;budget_created -->
 <!-- __ph_7_0 -->
 <!-- __row_7&#45;&gt;__ph_7_0 -->
 <!-- __hdr_1 -->
@@ -856,7 +855,7 @@
 </g>
 <!-- __ph_4_23&#45;&gt;shared_budget_dashboard -->
 <!-- create_initial_budget&#45;&gt;category_initialization_inputs -->
-<!-- create_initial_budget&#45;&gt;initial_budget_created -->
+<!-- create_initial_budget&#45;&gt;budget_created -->
 <!-- category_initialization_inputs&#45;&gt;initialize_budget_categories -->
 <!-- __ph_6_1 -->
 <!-- category_initialization_inputs&#45;&gt;__ph_6_1 -->
@@ -950,8 +949,8 @@
 <!-- mcp_budget_data&#45;&gt;__ph_6_22 -->
 <!-- __ph_6_23 -->
 <!-- shared_budget_dashboard&#45;&gt;__ph_6_23 -->
-<!-- initial_budget_created&#45;&gt;__ph_6_1 -->
-<!-- initial_budget_created&#45;&gt;__ph_7_0 -->
+<!-- budget_created&#45;&gt;__ph_6_1 -->
+<!-- budget_created&#45;&gt;__ph_7_0 -->
 <!-- __ph_6_1&#45;&gt;__ph_6_2 -->
 <!-- __ph_7_1 -->
 <!-- __ph_6_1&#45;&gt;__ph_7_1 -->
