@@ -57,6 +57,7 @@ key. Dependent PRs may form a stack whose design layer is not merged separately;
 merges once. Record post-merge implementation state with `em` commands and follow
 [`docs/event-modeling/workflow.md`](docs/event-modeling/workflow.md) for artifact ownership and
 phase gates.
+
 ## Feature code layout
 
 Business-capability slices belong under `src/features/<aggregate-or-context>/<slice>/`, following
@@ -70,6 +71,7 @@ Interface and cross-feature code may use only a feature's explicit public capabi
 import another feature's internal handlers, domain objects, or persistence code. Preserve the
 Event Model slice boundary even when a feature is relational rather than event-sourced.
 
+<<<<<<< HEAD
 ## Contract workflow
 
 Nemeo has two related contract layers. Agents MUST keep their ownership distinct:
@@ -99,6 +101,26 @@ When decomposed into multiple `em` models, keep one model directory per context 
 system manifest. Cross-context behavior must use published events, views, commands, or translations.
 Do not share persistence between contexts. See
 [ADR 0022](docs/architecture/adrs/0022-bounded-context-model-and-provider-feed-boundary.md).
+
+||||||| parent of 521258e (fix: resolve agent guidance markdown lint)
+## Event Model boundaries
+
+Nemeo's bounded-context boundaries are `iam`, `feeds`, `ledger`, and `budgeting`.
+
+- `iam` owns authentication identity, profiles, household membership, invitations, and access.
+- `feeds` owns external provider connections, synchronization, retries, normalization, and provider
+  observations; it does not own canonical accounts or transactions.
+- `ledger` owns canonical accounts and transactions, including categorization and transfer
+  associations.
+- `budgeting` owns budgets, categories, targets, and budget decisions; pace and reporting are
+  derived views unless a later decision establishes a durable domain fact.
+
+The initial aggregate lanes are `User` and `Household` (IAM), `Connection` and `SyncRun` (Feeds),
+`Account`, `Transaction`, and `Rule` (Ledger), and `Budget` and `Category` (Budgeting). A lane
+requires its own consistency boundary and state lifecycle; do not create one for every feature,
+projection, or automation. `Rule` is an internal learned-preference boundary for category assignment
+and transfer linkage, not a generic MVP rule-management product. `Transfer`, `Categorization`,
+`Target`, `Pace`, `Progress`, and `Dashboard` are not aggregates.
 
 ## UI design artifacts
 
