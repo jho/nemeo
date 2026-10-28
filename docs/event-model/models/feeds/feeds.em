@@ -11,8 +11,19 @@ slice "Connect SimpleFIN" {
   event SimpleFIN Connection Established @Connection
 }
 
-slice "Discover Provider Accounts" {
-  view Discovered Accounts from "SimpleFIN Connection Established"
+slice "Prepare Provider Account Discovery" {
+  view Provider Account Discovery Pending from "SimpleFIN Connection Established"
+  translation Provider Account Discovery from "Provider Account Discovery Pending"
+}
+
+slice "Discover Provider Account" {
+  command Discover Provider Account
+  event Provider Account Discovered @Connection public
+}
+arrow Provider Account Discovery -> Discover Provider Account
+
+slice "Show Discovered Accounts" {
+  view Discovered Accounts from "Provider Account Discovered"
   ui Account Selection Screen @User
 }
 
@@ -43,11 +54,11 @@ slice "Normalize Provider Data" {
   translation Provider Data Normalizer from "Provider Data Pending Normalization"
 }
 
-slice "Record Normalized Provider Data" {
-  command Record Normalized Provider Data
-  event Provider Data Normalized @SyncRun public
+slice "Record Normalized Provider Record" {
+  command Record Normalized Provider Record
+  event Provider Record Normalized @SyncRun public
 }
-arrow Provider Data Normalizer -> Record Normalized Provider Data
+arrow Provider Data Normalizer -> Record Normalized Provider Record
 
 slice "Schedule Recurring Sync" {
   view Due Connections from "Provider Sync Started"

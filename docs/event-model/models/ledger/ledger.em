@@ -8,25 +8,20 @@ context Account
 context Transaction
 context Rule
 
-slice "Receive Provider Records" {
-  translation Provider Record Intake consumes feeds:event.provider-data-normalized
-  command Receive Provider Records
-  event Provider Records Received @Account
-}
-
-slice "Prepare Provider Record Import" {
-  view Records To Import from "Provider Records Received"
-  processor Account Importer
-}
-
 slice "Import Provider Account" {
+  translation Provider Account Import consumes feeds:event.provider-account-discovered
   command Import Provider Account
   event Account Imported @Account
 }
-arrow Account Importer -> Import Provider Account
 
-slice "Prepare Transaction Import" {
-  view Accounts Ready For Transaction Import from "Account Imported"
+slice "Receive Provider Records" {
+  translation Provider Record Intake consumes feeds:event.provider-record-normalized
+  command Receive Provider Record
+  event Provider Record Received @Transaction
+}
+
+slice "Prepare Provider Record Import" {
+  view Records To Import from "Provider Record Received", "Account Imported"
   processor Transaction Importer
 }
 
