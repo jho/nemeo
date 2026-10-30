@@ -19,7 +19,7 @@ repos:
     hooks:
       - id: event-model-validation
         name: validate event model system
-        entry: npx --yes @milehimikey/em@1.14.0 system docs/event-model/system.yaml
+        entry: npm exec --yes --package @milehimikey/em@1.14.0 -- em system docs/event-model/system.yaml
         language: system
         pass_filenames: false
         files: ^docs/event-model/(system\.yaml|models/.*\.em)$

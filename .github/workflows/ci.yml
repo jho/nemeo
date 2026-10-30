@@ -33,7 +33,7 @@ jobs:
         run: pre-commit run --all-files
 
       - name: Validate event model system
-        run: npx --yes @milehimikey/em@1.14.0 system docs/event-model/system.yaml
+        run: npm exec --yes --package @milehimikey/em@1.14.0 -- em system docs/event-model/system.yaml
 
       - name: Render context diagrams
         run: bash scripts/render-event-models.sh
