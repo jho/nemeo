@@ -16,6 +16,16 @@ version: 1
 Create the new user’s first household with a user-provided name. The authenticated user becomes the
 household’s root manager, and subsequent budget setup is owned by that household.
 
+## Application API contract
+
+- `POST /v1/households` accepts `{ "name": string }` for the authenticated user.
+- The application derives the root manager from the session; the client cannot provide an owner or
+  household ID.
+- A successful response returns the created household and manager role. Duplicate initial creation
+  is rejected or resolved to the existing household according to the command invariants.
+- The resulting household is available through `GET /v1/household`.
+- The route maps to `Create Initial Household`; `Household Created` is the durable domain result.
+
 ## Domain behavior
 
 ### Command

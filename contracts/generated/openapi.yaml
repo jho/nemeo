@@ -15,8 +15,92 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthResponse"
+  /v1/auth/google/callback:
+    get:
+      operationId: completeGoogleAuthentication
+      parameters:
+        - $ref: "#/components/parameters/GoogleAuthCallbackQuery.code"
+        - $ref: "#/components/parameters/GoogleAuthCallbackQuery.state"
+        - $ref: "#/components/parameters/GoogleAuthCallbackQuery.error"
+      responses:
+        "302":
+          description: Redirection
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
+  /v1/auth/google/start:
+    get:
+      operationId: startGoogleAuthentication
+      parameters: []
+      responses:
+        "302":
+          description: Redirection
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
+  /v1/household:
+    get:
+      operationId: getCurrentHousehold
+      parameters: []
+      responses:
+        "200":
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HouseholdResponse"
+  /v1/households:
+    post:
+      operationId: createInitialHousehold
+      parameters: []
+      responses:
+        "200":
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HouseholdResponse"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateInitialHouseholdRequest"
 components:
+  parameters:
+    GoogleAuthCallbackQuery.code:
+      name: code
+      in: query
+      required: true
+      schema:
+        type: string
+      explode: false
+    GoogleAuthCallbackQuery.error:
+      name: error
+      in: query
+      required: false
+      schema:
+        type: string
+      explode: false
+    GoogleAuthCallbackQuery.state:
+      name: state
+      in: query
+      required: true
+      schema:
+        type: string
+      explode: false
   schemas:
+    CreateInitialHouseholdRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
     HealthResponse:
       type: object
       required:
@@ -26,6 +110,21 @@ components:
           type: string
           enum:
             - ok
+    HouseholdResponse:
+      type: object
+      required:
+        - id
+        - name
+        - role
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+          enum:
+            - manager
 servers:
   - url: http://localhost:3000
     description: Local development
