@@ -42,9 +42,9 @@ paths:
               required: true
               schema:
                 type: string
-  /v1/household-setup:
+  /v1/household:
     get:
-      operationId: getHouseholdSetupStatus
+      operationId: getCurrentHousehold
       parameters: []
       responses:
         "200":
@@ -52,7 +52,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HouseholdSetupStatusResponse"
+                $ref: "#/components/schemas/HouseholdResponse"
   /v1/households:
     post:
       operationId: createInitialHousehold
@@ -125,15 +125,6 @@ components:
           type: string
           enum:
             - manager
-    HouseholdSetupStatusResponse:
-      type: object
-      required:
-        - canCreateInitialHousehold
-      properties:
-        canCreateInitialHousehold:
-          type: boolean
-        householdId:
-          type: string
 servers:
   - url: http://localhost:3000
     description: Local development

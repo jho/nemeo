@@ -54,6 +54,16 @@ slice "Create Initial Household" {
   }
 }
 
+slice "View Current Household" {
+  view Current Household public from "Household Created" {
+    householdId: uuid
+    name: string
+    rootManagerUserId: uuid
+    role: string derived
+  } note "slices/view-current-household.md"
+  ui Household Screen @User
+}
+
 slice "Invite Household Viewer" {
   ui Household Access Screen @User
   command Invite Household Viewer
@@ -74,13 +84,4 @@ slice "Accept Household Invitation" {
 slice "Household Access" {
   view Household Members from "Household Created", "Household Viewer Invited", "Household Viewer Added"
   ui Household Access Screen @User
-}
-
-slice "Start Household Setup" {
-  view Household Setup Status public from "User Account Created", "User Authenticated" {
-    userId: uuid
-    householdId: uuid derived
-    canCreateInitialHousehold: boolean derived
-  } note "slices/start-household-setup.md"
-  ui Household Setup Screen @User
 }

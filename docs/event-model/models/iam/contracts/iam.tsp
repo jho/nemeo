@@ -45,13 +45,14 @@ namespace IAM {
   /**
    * Consumers tolerate unknown fields; additive changes do not break them.
    */
-  model HouseholdSetupStatus {
-    userId: string;
+  model CurrentHousehold {
     householdId: string;
-    canCreateInitialHousehold: boolean;
+    name: string;
+    rootManagerUserId: string;
+    role: string;
   }
 
   interface Views {
-    op getHouseholdSetupStatus(): HouseholdSetupStatus;
+    op getCurrentHousehold(): CurrentHousehold;
   }
 }

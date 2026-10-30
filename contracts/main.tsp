@@ -32,11 +32,6 @@ model GoogleAuthCallbackQuery {
   error?: string;
 }
 
-model HouseholdSetupStatusResponse {
-  canCreateInitialHousehold: boolean;
-  householdId?: string;
-}
-
 model CreateInitialHouseholdRequest {
   name: string;
 }
@@ -59,9 +54,9 @@ op startGoogleAuthentication(): RedirectResponse;
 @get
 op completeGoogleAuthentication(...GoogleAuthCallbackQuery): RedirectResponse;
 
-@route("/v1/household-setup")
+@route("/v1/household")
 @get
-op getHouseholdSetupStatus(): HouseholdSetupStatusResponse;
+op getCurrentHousehold(): HouseholdResponse;
 
 @route("/v1/households")
 @post
