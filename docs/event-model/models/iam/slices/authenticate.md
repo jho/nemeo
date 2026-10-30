@@ -29,6 +29,20 @@ used for signup; it is not a second step after signup.
 The user selects the configured provider action and completes its OIDC flow. For MVP that action is
 **Continue with Google**. Nemeo receives a validated provider result through the identity adapter.
 
+## Application API contract
+
+- `GET /v1/auth/google/start` begins the browser flow and redirects the user to Google with an
+  opaque state/nonce protected by the identity adapter.
+- `GET /v1/auth/google/callback` receives the provider response, validates the state and Google
+  result, and resolves a normalized provider identity before invoking `Authenticate`.
+- OAuth authorization codes, tokens, state/nonce values, client secrets, and raw Google payloads
+  remain at the HTTP/identity-adapter boundary. They are never command fields or event facts.
+- A successful `User Authenticated` event is followed by a revocable secure browser session and a
+  redirect to the appropriate household route. Authentication must not require a second sign-in
+  screen.
+- Callback failures, cancelled consent, invalid state, and invalid provider results return a
+  recoverable authentication error without recording `User Authenticated` or issuing a session.
+
 ## Domain behavior
 
 ### Command
