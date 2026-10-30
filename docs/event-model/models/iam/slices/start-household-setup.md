@@ -17,6 +17,14 @@ Show an authenticated user the initial household setup state and provide the ent
 creating their first household. Signup and returning authentication both lead here without a
 second authentication step.
 
+## Application API contract
+
+- `GET /v1/household-setup` returns the authenticated user’s `Household Setup Status`.
+- The response includes whether initial household creation is allowed and is always scoped to the
+  current session; it does not accept a user or household ID from the client.
+- An unauthenticated request redirects to Google authentication without revealing setup state.
+- This is a read-only projection route and never records a domain event.
+
 ## UI / interaction design
 
 - Entry: immediately after Google signup or authentication.
