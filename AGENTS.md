@@ -40,3 +40,24 @@ Transport registration belongs under `src/interfaces/`; replaceable adapters bel
 Interface and cross-feature code may use only a feature's explicit public capability and must not
 import another feature's internal handlers, domain objects, or persistence code. Preserve the
 Event Model slice boundary even when a feature is relational rather than event-sourced.
+
+## Contract workflow
+
+Nemeo has two related contract layers. Agents MUST keep their ownership distinct:
+
+1. Event Model domain contracts are generated from public Event Model elements with `em api
+   generate`. Generated files live beside their model under the model's `contracts/` directory,
+   are checked with `em api check`, and MUST NOT be hand-edited.
+2. Application API contracts are authored in TypeSpec under `contracts/api/`. They define the
+   versioned HTTP resources and business commands consumed by the web client and exposed to MCP.
+   OpenAPI, client types, documentation, and MCP bindings are generated outputs; they MUST NOT be
+   parallel hand-authored sources of truth.
+
+When designing a slice, the designer MUST identify its application API operations, operation IDs,
+request and response models, errors, authorization scope, and whether an operation is MCP-exposed.
+Each operation MUST map to the slice or to an explicitly documented cross-slice query. Implementers
+MUST consume the approved contract and MUST NOT invent routes or payloads in transport code.
+
+Before implementation, run the repository's contract generation and validation checks together with
+the Event Model checks. Generated artifacts are reproducible outputs and are never edited to fix a
+runtime or business-rule problem; change the TypeSpec or Event Model source instead.

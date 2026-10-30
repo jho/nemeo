@@ -21,7 +21,10 @@ distinct read models and are governed by ADR 0007.
 
 ### Contract and media type
 
-- TypeSpec is the source of truth. It emits versioned OpenAPI 3.1 artifacts.
+- Application TypeSpec under `contracts/api/` is the source of truth for the HTTP API. It emits
+  versioned OpenAPI 3.1 artifacts. Event Model-generated TypeSpec under model-local `contracts/`
+  directories is a separate domain-seam contract and is not replaced by, or merged into, the
+  application API source.
 - The public API is JSON over HTTPS using `application/json` for successful requests and
   `application/problem+json` for errors.
 - Generated OpenAPI and client artifacts are reproducible outputs. They are not hand-edited and do
@@ -71,6 +74,24 @@ distinct read models and are governed by ADR 0007.
   asynchronous behavior behind a successful synchronous response.
 - Public APIs expose capabilities and representations, not internal events, aggregates, repositories,
   or database tables.
+
+### Contract ownership and slice mapping
+
+- The Event Model owns domain behavior and public domain seams. `em api generate` owns the generated
+  domain TypeSpec contract for public Event Model elements; agents MUST use `em api check` to detect
+  drift and MUST fix the Event Model rather than editing generated contract files.
+- The application API owns HTTP resource representations, command request models, transport errors,
+  authentication and authorization requirements, idempotency behavior, and MCP exposure metadata.
+  These are authored in application TypeSpec and mapped to one or more Event Model slices.
+- A designer MUST record for every application operation its slice or cross-slice query mapping,
+  operation ID, request and response models, error outcomes, authorization scope, and MCP exposure
+  decision. “Generated from the Event Model” is not sufficient API design detail.
+- The application API MAY expose a projection or compose several domain slices without making those
+  internal domain boundaries public. The API contract MUST remain stable when internal slice
+  composition changes.
+- Application TypeSpec, generated Event Model contracts, OpenAPI, generated clients, and MCP
+  artifacts are checked in or generated according to the repository's contract scripts; generated
+  artifacts MUST be reproducible and MUST NOT be hand-edited.
 
 ### Request and response conventions
 
@@ -210,7 +231,9 @@ version scheme.
 
 Nemeo gets a coherent, Stripe-inspired API surface without treating REST as a CRUD-only doctrine.
 The API is discoverable for clients, expressive for Event Model commands, safe for financial data,
-and friendly to TypeSpec/OpenAPI generation.
+and friendly to TypeSpec/OpenAPI generation. The explicit two-layer contract model prevents agents
+from treating a generated domain seam as a complete HTTP design while still allowing the API and
+MCP surfaces to be generated from a common authored application contract.
 
 The tradeoff is that API design becomes a real contract: changing a schema, error code, pagination
 rule, or command semantics requires compatibility review and contract tests. Some details remain
