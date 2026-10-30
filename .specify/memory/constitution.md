@@ -82,9 +82,11 @@ these constraints.
   and `LOG_LEVEL`. See [ADR 0022](../../docs/architecture/adrs/0022-module-path-logging-namespaces.md).
   Operational alerts MUST remain actionable and separate from user-facing financial notifications.
   See [ADR 0021](../../docs/architecture/adrs/0021-mvp-observability-and-incident-response.md).
-- MVP backend work uses Node.js 24 LTS with strict TypeScript and Fastify. API
-  contracts originate in TypeSpec and emit versioned OpenAPI artifacts; generated API artifacts do
-  not own business logic. See [ADR 0004](../../docs/architecture/adrs/0004-typespec-fastify-vertical-slice-backend.md).
+- MVP backend work uses Node.js 24 LTS with strict TypeScript and Fastify. Event Model domain
+  contracts are generated from public model elements with `em api generate`; application API
+  contracts are authored in `contracts/api/` TypeSpec and emit versioned OpenAPI artifacts.
+  Generated contracts are never hand-edited and do not own business logic. See [ADR 0004](../../docs/architecture/adrs/0004-typespec-fastify-vertical-slice-backend.md)
+  and [ADR 0006](../../docs/architecture/adrs/0006-application-api-standards.md).
 - Backend implementation is organized by Event Model-aligned vertical feature slices with distinct
   command and query capabilities. Application command handlers MUST depend on slice-owned,
   aggregate-specific repository ports rather than Emmett, generic event-store APIs, projection
@@ -155,11 +157,11 @@ these constraints.
   metrics over Reporting projections with explicit dimensions, units, and time semantics. Both MUST
   be tenant/household scoped and permission checked, and neither may create an alternate command
   path. See [ADR 0007](../../docs/architecture/adrs/0007-search-and-analytics-query-model.md).
-- The application API MUST be TypeSpec-first and emit versioned OpenAPI 3.1 artifacts. It MUST use
-  predictable resource URLs alongside explicit business command actions, JSON representations,
-  Problem Details errors, cursor pagination, bounded filters, explicit idempotency, and path-based
-  major versioning. API operations MUST map to slice capabilities and MUST NOT expose persistence
-  internals. See [ADR 0006](../../docs/architecture/adrs/0006-application-api-standards.md).
+- The application API MUST be authored in `contracts/api/` TypeSpec and emit versioned OpenAPI 3.1
+  artifacts. It MUST use predictable resource URLs alongside explicit business command actions, JSON
+  representations, Problem Details errors, cursor pagination, bounded filters, explicit idempotency,
+  and path-based major versioning. API operations MUST document their Event Model slice or
+  cross-slice query mapping and MUST NOT expose persistence internals. See [ADR 0006](../../docs/architecture/adrs/0006-application-api-standards.md).
 - The MVP client MUST be a responsive React/TypeScript SPA built with Vite and served as static
   assets by the same Fastify application and `nemeo` image. It MUST consume the generated API
   contract rather than backend internals. The client MUST provide installable PWA metadata with
