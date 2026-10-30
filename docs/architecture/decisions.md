@@ -30,7 +30,7 @@ These need product/design answers first. They are tracked as GitHub issues, not 
 
 | ADR | Decision | Status | Depends on |
 |---|---|---|---|
-| [#61](https://github.com/jho/nemeo/issues/61) / [ADR 0002](adrs/0002-spec-driven-development-workflow.md) | Pure Event Modeling SDLC and stacked batch delivery (updated in place from #12) | Accepted | — |
+| [#61](https://github.com/jho/nemeo/issues/61) / [ADR 0002](adrs/0002-event-modeling-delivery-workflow.md) | Pure Event Modeling delivery and stacked batch workflow (updated in place from #12) | Accepted | — |
 | [#13](https://github.com/jho/nemeo/issues/13) / [ADR 0008](adrs/0008-ui-platform-and-rendering-strategy.md) | UI platform and rendering strategy | Accepted | Product issue #3 |
 | [#14](https://github.com/jho/nemeo/issues/14) / [ADR 0009](adrs/0009-ui-component-library-and-design-system.md) | UI component library and design system | Accepted foundation; brand values follow product issue #11 | #13, product issue #11 |
 | [#15](https://github.com/jho/nemeo/issues/15) / [ADR 0010](adrs/0010-information-architecture-and-interaction-patterns.md) | Information architecture and interaction model | Accepted | Product issues #2, #4; ADRs 0008, 0009 |
@@ -52,6 +52,7 @@ These need product/design answers first. They are tracked as GitHub issues, not 
 | [#33](https://github.com/jho/nemeo/issues/33) / [ADR 0004](adrs/0004-typespec-fastify-vertical-slice-backend.md) | MVP backend platform, API-first contracts, and vertical slices | Accepted | #12, #23 |
 | [#34](https://github.com/jho/nemeo/issues/34) / [ADR 0006](adrs/0006-application-api-standards.md) | Application API standards and ergonomics | Accepted | #33, #16 |
 | [ADR 0007](adrs/0007-search-and-analytics-query-model.md) | Search and analytics query model follow-up | Accepted; depends on API standards | ADR 0006, #17 |
+| [#16](https://github.com/jho/nemeo/issues/16) / [ADR 0022](adrs/0022-bounded-context-model-and-provider-feed-boundary.md) | Bounded contexts and provider-feed/ledger boundary | Accepted | ADRs 0005, 0011, 0014 |
 
 Issue #24 is the umbrella backlog item for these three testing decisions; each focused ADR is
 accepted together in the same reviewed change. ADRs are created only after the corresponding
@@ -60,7 +61,7 @@ architecture decision is resolved. The `adrs/` directory is reserved for accepte
 ## Recommended decision order
 
 1. Product constraints: first-run journey, pace semantics, mobile scope, and data-lifecycle promises.
-2. SDD artifact ownership and event-model slicing workflow.
+2. Event Model artifact ownership and slice delivery workflow.
 3. Hosting constraints: deployment model, regions, managed services, environments, security, and operational budget.
 4. Backend platform and vertical-slice organization.
 5. Application topology and module/process boundaries.

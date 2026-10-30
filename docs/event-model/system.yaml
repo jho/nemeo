@@ -1,0 +1,11 @@
+systemSchemaVersion: "2.0"
+name: Nemeo
+models:
+  iam:
+    source: models/iam/iam.em
+  feeds:
+    source: models/feeds/feeds.em
+  ledger:
+    source: models/ledger/ledger.em
+  budgeting:
+    source: models/budgeting/budgeting.em

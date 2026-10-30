@@ -3,7 +3,7 @@
 - Status: Accepted
 - Date: 2026-10-06
 - GitHub issue: [#24](https://github.com/jho/nemeo/issues/24)
-- Related workflow: [ADR 0001](0001-pull-request-and-ci-workflow.md), [ADR 0002](0002-spec-driven-development-workflow.md)
+- Related workflow: [ADR 0001](0001-pull-request-and-ci-workflow.md), [ADR 0002](0002-event-modeling-delivery-workflow.md)
 
 ## Context
 

@@ -19,7 +19,9 @@ issues are resolved before accepted ADRs are written. Event Model changes are va
 The initial CI workflow runs:
 
 - pre-commit Markdown hygiene and linting;
-- Event Model validation for `budgeting.em`;
+- Event Model system validation for `docs/event-model/system.yaml` and its context models;
+- deterministic rendering of each context model into its checked-in SVG under
+  `docs/event-model/models/<context>/<context>.svg`, with CI failing on drift;
 - Git whitespace checks.
 
 The pull-request template requires the author to identify product, Event Model, architecture,
@@ -30,6 +32,8 @@ verification, and documentation impact.
 This gives the documentation-first repository a reviewable workflow with low setup cost. It does
 not yet provide type-checking, application tests, migration checks, provider contract tests,
 security scanning, or end-to-end tests; those become required as implementation is introduced.
+Rendered Event Model diagrams are generated artifacts and must be refreshed through
+`scripts/render-event-models.sh`, never edited by hand.
 
 The workflow currently uses pinned action and hook revisions where practical. Application test and
 CI execution tiers are defined by the follow-up [ADR 0019](0019-ci-quality-gates-and-execution-tiers.md).

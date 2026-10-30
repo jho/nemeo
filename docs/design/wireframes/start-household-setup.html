@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nemeo — Start Household Setup</title>
+  <style>
+    :root {
+      --ink: #20243a;
+      --muted: #74778b;
+      --paper: #f7f7fb;
+      --surface: #ffffff;
+      --line: #e1e3ee;
+      --blue: #5b65ae;
+      --blue-soft: #eceeff;
+      --green: #347b68;
+      --green-soft: #e4f3ee;
+      --amber: #99611e;
+      --amber-soft: #fff1d7;
+      --coral: #bd594b;
+      --coral-soft: #fbe7e3;
+      --radius: 18px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    .shell { min-height: 100vh; display: grid; grid-template-columns: 220px minmax(0, 1fr); }
+    .nav { background: #27283d; color: #e2e4f0; padding: 25px 16px; display: flex; flex-direction: column; }
+    .brand { display: flex; align-items: center; gap: 10px; color: white; font-weight: 750; letter-spacing: -.03em; font-size: 20px; padding: 0 10px 34px; }
+    .bot { width: 28px; height: 28px; border-radius: 9px; background: #e0e3ff; position: relative; box-shadow: 0 0 0 3px rgba(146, 153, 235, .12); }
+    .bot::before, .bot::after { content: ""; position: absolute; top: 10px; width: 4px; height: 4px; border-radius: 50%; background: var(--blue); }
+    .bot::before { left: 7px; } .bot::after { right: 7px; }
+    .nav-note { margin-top: auto; border-top: 1px solid #454762; padding: 18px 10px 0; color: #afb3c9; font-size: 12px; line-height: 1.5; }
+
+    main { display: grid; place-items: center; padding: 40px 24px; }
+    .content { width: min(100%, 720px); }
+    .progress { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; color: var(--muted); font-size: 12px; font-weight: 700; }
+    .progress-line { height: 4px; flex: 1; border-radius: 99px; background: var(--blue-soft); overflow: hidden; }
+    .progress-line::before { content: ""; display: block; width: 34%; height: 100%; background: var(--blue); border-radius: inherit; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 24px; padding: clamp(24px, 5vw, 52px); box-shadow: 0 22px 60px rgba(24, 33, 43, .08); }
+    .eyebrow { color: var(--blue); font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    h1 { margin: 10px 0 12px; font-size: clamp(30px, 5vw, 46px); line-height: 1.02; letter-spacing: -.055em; }
+    .lede { max-width: 560px; margin: 0; color: var(--muted); font-size: 16px; line-height: 1.55; }
+    .connected { display: flex; align-items: center; gap: 10px; margin: 28px 0; padding: 13px 15px; border: 1px solid #cde6dc; border-radius: 12px; background: var(--green-soft); color: var(--green); font-size: 13px; }
+    .check { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--green); color: white; font-size: 13px; font-weight: 800; }
+    .form { display: grid; gap: 9px; margin-top: 26px; }
+    label { font-size: 13px; font-weight: 750; }
+    input { width: 100%; border: 1px solid #c9ccda; border-radius: 11px; padding: 13px 14px; color: var(--ink); background: white; outline: none; }
+    input:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(91, 101, 174, .15); }
+    input[aria-invalid="true"] { border-color: var(--coral); box-shadow: 0 0 0 4px rgba(189, 89, 75, .12); }
+    .hint { color: var(--muted); font-size: 12px; }
+    .error { display: none; color: var(--coral); font-size: 12px; }
+    .error[data-visible="true"] { display: block; }
+    .actions { display: flex; justify-content: flex-end; margin-top: 28px; }
+    .primary { border: 0; border-radius: 10px; padding: 12px 18px; background: var(--blue); color: white; font-weight: 800; }
+    .primary:hover, .primary:focus-visible { filter: brightness(.94); outline: 3px solid rgba(91, 101, 174, .2); outline-offset: 2px; }
+    .primary[disabled] { cursor: wait; opacity: .65; }
+    .status { min-height: 22px; margin-top: 18px; color: var(--muted); font-size: 13px; }
+    .status[data-kind="error"] { color: var(--coral); }
+    .status[data-kind="success"] { color: var(--green); }
+    .success { display: none; padding: 18px; border-radius: 14px; background: var(--green-soft); color: var(--green); line-height: 1.5; }
+    .success[data-visible="true"] { display: block; }
+
+    @media (max-width: 680px) {
+      .shell { display: block; }
+      .nav { min-height: 68px; padding: 18px 20px; }
+      .brand { padding: 0; }
+      .nav-note { display: none; }
+      main { min-height: calc(100vh - 68px); padding: 24px 16px; align-items: start; }
+      .progress { margin-bottom: 18px; }
+      .card { border-radius: 18px; padding: 26px 22px; }
+      .actions, .primary { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="nav" aria-label="Application navigation">
+      <div class="brand"><span class="bot" aria-hidden="true"></span><span>Nemeo</span></div>
+      <div class="nav-note">Your budget stays understandable while Nemeo handles the busywork.</div>
+    </aside>
+
+    <main>
+      <section class="content" aria-labelledby="page-title">
+        <div class="progress" aria-label="Setup progress">
+          <span>Setup</span>
+          <span class="progress-line" aria-hidden="true"></span>
+          <span>1 of 3</span>
+        </div>
+
+        <article class="card">
+          <div class="eyebrow">One quick step</div>
+          <h1 id="page-title">Let’s set up your household</h1>
+          <p class="lede">Give your budget a name. Nemeo will use it to organize your accounts, spending, and pace for the people who share it.</p>
+
+          <div class="connected" role="status">
+            <span class="check" aria-hidden="true">✓</span>
+            <span>Signed in with Google</span>
+          </div>
+
+          <form id="household-form" novalidate>
+            <div class="form">
+              <label for="household-name">Household name</label>
+              <input id="household-name" name="householdName" type="text" autocomplete="organization" placeholder="e.g. Hollander household" aria-describedby="name-hint name-error">
+              <span id="name-hint" class="hint">You can change this later.</span>
+              <span id="name-error" class="error" data-visible="false">Enter a household name to continue.</span>
+            </div>
+            <div class="actions">
+              <button class="primary" type="submit">Continue</button>
+            </div>
+            <div id="form-status" class="status" role="status" aria-live="polite"></div>
+          </form>
+
+          <div id="success" class="success" data-visible="false" role="status">
+            Household ready. The next step is connecting an account so Nemeo can prepare your first budget.
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const form = document.querySelector('#household-form');
+    const input = document.querySelector('#household-name');
+    const error = document.querySelector('#name-error');
+    const status = document.querySelector('#form-status');
+    const success = document.querySelector('#success');
+    const button = form.querySelector('button');
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const name = input.value.trim();
+      if (!name) {
+        input.setAttribute('aria-invalid', 'true');
+        error.dataset.visible = 'true';
+        status.textContent = '';
+        input.focus();
+        return;
+      }
+
+      input.removeAttribute('aria-invalid');
+      error.dataset.visible = 'false';
+      button.disabled = true;
+      button.textContent = 'Creating…';
+      status.dataset.kind = '';
+      status.textContent = 'Saving your household…';
+
+      window.setTimeout(() => {
+        form.hidden = true;
+        success.dataset.visible = 'true';
+      }, 650);
+    });
+
+    input.addEventListener('input', () => {
+      if (input.value.trim()) {
+        input.removeAttribute('aria-invalid');
+        error.dataset.visible = 'false';
+      }
+    });
+  </script>
+</body>
+</html>
