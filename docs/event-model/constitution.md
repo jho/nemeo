@@ -83,7 +83,7 @@ work MUST comply with these constraints.
   See [ADR 0021](../architecture/adrs/0021-mvp-observability-and-incident-response.md).
 - MVP backend work uses Node.js 24 LTS with strict TypeScript and Fastify. Event Model domain
   contracts are generated from public model elements with `em api generate`; application API
-  contracts are authored in `contracts/api/` TypeSpec and emit versioned OpenAPI artifacts.
+  contracts are authored in `contracts/` TypeSpec and emit versioned OpenAPI artifacts.
   Generated contracts are never hand-edited and do not own business logic. See [ADR 0004](../architecture/adrs/0004-typespec-fastify-vertical-slice-backend.md)
   and [ADR 0006](../architecture/adrs/0006-application-api-standards.md).
 - Backend implementation is organized by Event Model-aligned vertical feature slices with distinct
@@ -170,11 +170,14 @@ work MUST comply with these constraints.
   metrics over Reporting projections with explicit dimensions, units, and time semantics. Both MUST
   be tenant/household scoped and permission checked, and neither may create an alternate command
   path. See [ADR 0007](../architecture/adrs/0007-search-and-analytics-query-model.md).
-- The application API MUST be authored in `contracts/api/` TypeSpec and emit versioned OpenAPI 3.1
-  artifacts. It MUST use predictable resource URLs alongside explicit business command actions, JSON
-  representations, Problem Details errors, cursor pagination, bounded filters, explicit idempotency,
-  and path-based major versioning. API operations MUST document their Event Model slice or
-  cross-slice query mapping and MUST NOT expose persistence internals. See [ADR 0006](../architecture/adrs/0006-application-api-standards.md).
+- The application API MUST be authored in TypeSpec and emit versioned OpenAPI 3.1 artifacts. Internal
+  entity IDs MUST be UUIDs named `id`; provider/external IDs MUST remain explicit strings. Closed
+  value sets MUST use enums or unions. HTTP resources MUST use plural nouns and standard REST verbs;
+  command action paths are reserved for non-CRUD lifecycle transitions. Prefer entity resources over
+  UI/workflow endpoints. Collections MUST use bounded typed filters, allowlisted sorting, opaque
+  cursor pagination, and the common `data`/`hasMore`/`nextCursor` envelope. API operations MUST
+  document their Event Model slice or cross-slice query mapping and MUST NOT expose persistence
+  internals. See [ADR 0006](../architecture/adrs/0006-application-api-standards.md).
 - The MVP client MUST be a responsive React/TypeScript SPA built with Vite and served as static
   assets by the same Fastify application and `nemeo` image. It MUST consume the generated API
   contract rather than backend internals. The client MUST provide installable PWA metadata with
