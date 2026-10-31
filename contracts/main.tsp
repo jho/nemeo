@@ -42,6 +42,12 @@ model HouseholdResponse {
   role: "manager";
 }
 
+model HouseholdCollectionResponse {
+  data: HouseholdResponse[];
+  hasMore: boolean;
+  nextCursor?: string;
+}
+
 @route("/health")
 @get
 op health(): HealthResponse;
@@ -54,9 +60,9 @@ op startGoogleAuthentication(): RedirectResponse;
 @get
 op completeGoogleAuthentication(...GoogleAuthCallbackQuery): RedirectResponse;
 
-@route("/v1/household")
+@route("/v1/households")
 @get
-op getCurrentHousehold(): HouseholdResponse;
+op listHouseholds(): HouseholdCollectionResponse;
 
 @route("/v1/households")
 @post

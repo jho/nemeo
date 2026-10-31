@@ -42,9 +42,9 @@ paths:
               required: true
               schema:
                 type: string
-  /v1/household:
+  /v1/households:
     get:
-      operationId: getCurrentHousehold
+      operationId: listHouseholds
       parameters: []
       responses:
         "200":
@@ -52,8 +52,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HouseholdResponse"
-  /v1/households:
+                $ref: "#/components/schemas/HouseholdCollectionResponse"
     post:
       operationId: createInitialHousehold
       parameters: []
@@ -110,6 +109,20 @@ components:
           type: string
           enum:
             - ok
+    HouseholdCollectionResponse:
+      type: object
+      required:
+        - data
+        - hasMore
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/HouseholdResponse"
+        hasMore:
+          type: boolean
+        nextCursor:
+          type: string
     HouseholdResponse:
       type: object
       required:

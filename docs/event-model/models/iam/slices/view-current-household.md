@@ -21,10 +21,11 @@ The authenticated user or an application client requests the current household.
 
 ## Application API contract
 
-- `GET /v1/household` returns the current household for the authenticated user.
-- A successful response includes the household ID, name, and the user’s role.
-- If the authenticated user has no household, the route returns `404 household_not_found`; this is
-  the normal onboarding state, not a domain event.
+- `GET /v1/households` returns the authenticated user’s household collection.
+- In MVP the collection contains zero or one household and each item includes the household ID,
+  name, and the user’s role.
+- If the authenticated user has no household, the route returns an empty collection; this is the
+  normal onboarding state, not a domain event.
 - An unauthenticated request is rejected or redirected to Google authentication without revealing
   household state.
 
@@ -75,7 +76,7 @@ _No invariants declared in the model._
 - **Given:**
   - an authenticated user belongs to a household
 - **When:**
-  - the user requests `GET /v1/household`
+  - the user requests `GET /v1/households`
 - **Then:**
   - the current household and the user’s role are returned
   - no domain event is recorded
@@ -85,9 +86,9 @@ _No invariants declared in the model._
 - **Given:**
   - an authenticated user does not belong to a household
 - **When:**
-  - the user requests `GET /v1/household`
+  - the user requests `GET /v1/households`
 - **Then:**
-  - the API returns `404 household_not_found`
+  - the API returns an empty collection
   - no household state or domain event is created
   - the application may present initial household setup
 
