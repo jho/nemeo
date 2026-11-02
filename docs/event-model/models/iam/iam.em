@@ -16,7 +16,7 @@ slice "Sign Up" {
     authenticationRequestId: string
   } note "slices/sign-up.md"
   event User Account Created @User public {
-    userId: uuid assigned
+    id: uuid assigned
     provider: string
     providerSubject: string
     verifiedEmail: string
@@ -33,7 +33,7 @@ slice "Authenticate" {
     authenticationRequestId: string
   } note "slices/authenticate.md"
   event User Authenticated @User public {
-    userId: uuid assigned
+    id: uuid assigned
     provider: string
     authenticatedAt: datetime assigned
     authenticationRequestId: string
@@ -47,18 +47,18 @@ slice "Create Initial Household" {
     name: string
   } note "slices/create-initial-household.md"
   event Household Created @Household public {
-    householdId: uuid assigned
+    id: uuid assigned
     name: string
-    rootManagerUserId: uuid assigned
+    rootManagerId: uuid assigned
     createdAt: datetime assigned
   }
 }
 
 slice "View Current Household" {
   view Current Household public from "Household Created" {
-    householdId: uuid
+    id: uuid
     name: string
-    rootManagerUserId: uuid
+    rootManagerId: uuid
     role: string derived
   } note "slices/view-current-household.md"
   ui Household Screen @User

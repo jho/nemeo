@@ -80,6 +80,8 @@ Nemeo has two related contract layers. Agents MUST keep their ownership distinct
    are checked with `em api check`, and MUST NOT be hand-edited.
 2. Application API contracts are authored in TypeSpec under `contracts/`. They define the
    versioned HTTP resources and business commands consumed by the web client and exposed to MCP.
+  They MAY import generated Event Model contracts to reuse domain shapes, but MUST explicitly map
+  those shapes into HTTP resources and MUST NOT expose every event or view as a route.
    OpenAPI, client types, documentation, and MCP bindings are generated outputs; they MUST NOT be
    parallel hand-authored sources of truth.
 

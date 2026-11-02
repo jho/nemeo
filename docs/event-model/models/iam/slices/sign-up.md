@@ -72,7 +72,7 @@ not create a household or grant household access.
 
 ## Event facts
 
-`User Account Created` contains a new `userId`, provider and stable subject mapping, initial
+`User Account Created` contains a new `id`, provider and stable subject mapping, initial
 verified email when supplied, and creation timestamp. It contains no password, provider token,
 authorization code, raw provider payload, or session secret.
 

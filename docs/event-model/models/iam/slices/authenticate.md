@@ -69,7 +69,7 @@ the session secret is not part of the event stream.
 
 ## Event facts
 
-`User Authenticated` contains the resolved `userId`, provider, authentication timestamp, and
+`User Authenticated` contains the resolved `id`, provider, authentication timestamp, and
 correlation identifier. It contains no browser session token, provider credential, or raw provider
 payload.
 

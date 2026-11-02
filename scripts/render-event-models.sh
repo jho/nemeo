@@ -6,7 +6,7 @@ for model in iam feeds ledger budgeting; do
   model_file="docs/event-model/models/$model/$model.em"
   model_dir="docs/event-model/models/$model"
 
-  npm exec --yes --package @milehimikey/em@1.14.0 -- em render \
+  ./node_modules/.bin/em render \
     "$model_file" \
     -o "$model_dir/$model.svg"
 
@@ -17,7 +17,7 @@ for model in iam feeds ledger budgeting; do
     slice_name="$(sed -n 's/^# Slice: //p' "$slice_doc")"
     [ -n "$slice_name" ] || continue
 
-    npm exec --yes --package @milehimikey/em@1.14.0 -- em render \
+    ./node_modules/.bin/em render \
       "$model_file" \
       --slice "$slice_name" \
       -o "$model_dir/slices/$slice_key.svg"

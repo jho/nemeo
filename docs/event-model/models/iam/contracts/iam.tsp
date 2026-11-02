@@ -8,7 +8,7 @@ namespace IAM {
    */
   model UserAccountCreated {
     /** system-assigned — not supplied by the triggering command */
-    userId: string;
+    id: string;
     provider: string;
     providerSubject: string;
     verifiedEmail: string;
@@ -22,7 +22,7 @@ namespace IAM {
    */
   model UserAuthenticated {
     /** system-assigned — not supplied by the triggering command */
-    userId: string;
+    id: string;
     provider: string;
     /** system-assigned — not supplied by the triggering command */
     authenticatedAt: utcDateTime;
@@ -34,10 +34,10 @@ namespace IAM {
    */
   model HouseholdCreated {
     /** system-assigned — not supplied by the triggering command */
-    householdId: string;
+    id: string;
     name: string;
     /** system-assigned — not supplied by the triggering command */
-    rootManagerUserId: string;
+    rootManagerId: string;
     /** system-assigned — not supplied by the triggering command */
     createdAt: utcDateTime;
   }
@@ -46,9 +46,9 @@ namespace IAM {
    * Consumers tolerate unknown fields; additive changes do not break them.
    */
   model CurrentHousehold {
-    householdId: string;
+    id: string;
     name: string;
-    rootManagerUserId: string;
+    rootManagerId: string;
     role: string;
   }
 

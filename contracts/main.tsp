@@ -1,6 +1,7 @@
 import "@typespec/http";
 import "@typespec/rest";
 import "@typespec/openapi3";
+import "../docs/event-model/models/iam/contracts/iam.tsp";
 
 using TypeSpec.Http;
 using TypeSpec.Rest;
@@ -36,10 +37,17 @@ model CreateInitialHouseholdRequest {
   name: string;
 }
 
+enum HouseholdRole {
+  manager,
+  viewer,
+}
+
+/** Projected from IAM.CurrentHousehold into the HTTP resource representation. */
 model HouseholdResponse {
+  @format("uuid")
   id: string;
   name: string;
-  role: "manager";
+  role: HouseholdRole;
 }
 
 model HouseholdCollectionResponse {

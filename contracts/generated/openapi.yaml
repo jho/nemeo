@@ -132,12 +132,17 @@ components:
       properties:
         id:
           type: string
+          format: uuid
         name:
           type: string
         role:
-          type: string
-          enum:
-            - manager
+          $ref: "#/components/schemas/HouseholdRole"
+      description: Projected from IAM.CurrentHousehold into the HTTP resource representation.
+    HouseholdRole:
+      type: string
+      enum:
+        - manager
+        - viewer
 servers:
   - url: http://localhost:3000
     description: Local development
