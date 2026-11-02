@@ -8,7 +8,7 @@ context Household
 
 slice "Sign Up" {
   ui Authentication Screen @User
-  command Sign Up {
+  command Sign Up public {
     provider: string
     providerSubject: string
     verifiedEmail: string
@@ -27,7 +27,7 @@ slice "Sign Up" {
 
 slice "Authenticate" {
   ui Authentication Screen @User
-  command Authenticate {
+  command Authenticate public {
     provider: string
     providerSubject: string
     authenticationRequestId: string
@@ -42,7 +42,7 @@ slice "Authenticate" {
 
 slice "Create Initial Household" {
   ui Household Setup Screen @User
-  command Create Initial Household {
+  command Create Initial Household public {
     userId: uuid
     name: string
   } note "slices/create-initial-household.md"

@@ -54,4 +54,10 @@ namespace IAM {
   interface Views {
     op getCurrentHousehold(): CurrentHousehold;
   }
+
+  interface Commands {
+    op signUp(provider: string, providerSubject: string, verifiedEmail: string, displayName: string, authenticationRequestId: string): void;
+    op authenticate(provider: string, providerSubject: string, authenticationRequestId: string): void;
+    op createInitialHousehold(userId: string, name: string): void;
+  }
 }
