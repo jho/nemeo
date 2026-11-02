@@ -65,6 +65,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Check TypeSpec and generated OpenAPI
+        run: npm run contracts:check
+
       - name: Run quality checks and pure tests
         run: npm run validate
 
