@@ -25,7 +25,9 @@ distinct read models and are governed by ADR 0007.
 - Application TypeSpec under `contracts/` is the source of truth for the HTTP API. It emits
   versioned OpenAPI 3.1 artifacts. Event Model-generated TypeSpec under model-local `contracts/`
   directories remains the domain-seam source of truth; application TypeSpec MAY import those files
-  to reuse or project their schemas, but does not automatically expose all domain elements as HTTP.
+  to reuse their schemas directly when the domain shape is also the required resource shape, or to
+  define an explicit named transport projection when transport semantics differ. It does not
+  automatically expose all domain elements as HTTP.
 - The public API is JSON over HTTPS using `application/json` for successful requests and
   `application/problem+json` for errors.
 - Generated OpenAPI and client artifacts are reproducible outputs. They are not hand-edited and do

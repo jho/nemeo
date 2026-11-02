@@ -40,8 +40,10 @@ Nemeo's MVP backend platform is Node.js with TypeScript and Fastify.
 - A domain contract and an application API contract have different owners: the former describes a
   public Event Model seam, while the latter describes transport representations, authorization,
   errors, idempotency, and MCP exposure. Application TypeSpec MAY import generated domain contracts
-  as schema dependencies and project them into HTTP resources, but it MUST NOT expose every domain
-  event or view as an HTTP operation. The operation-to-slice mapping must remain explicit.
+  as schema dependencies. When a generated domain view matches the required HTTP resource shape,
+  the application contract SHOULD reuse it directly; otherwise it MUST define an explicit named
+  transport projection. It MUST NOT expose every domain event or view as an HTTP operation. The
+  operation-to-slice mapping must remain explicit.
 - MCP capabilities MUST be curated from the contract and application capabilities. A generic
   endpoint-to-tool generator MUST NOT automatically expose every API operation or bypass the
   authorization, confirmation, and tenancy rules defined by the MCP boundary decision.

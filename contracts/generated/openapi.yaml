@@ -62,7 +62,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HouseholdResponse"
+                $ref: "#/components/schemas/IAM.CurrentHousehold"
       requestBody:
         required: true
         content:
@@ -118,12 +118,12 @@ components:
         data:
           type: array
           items:
-            $ref: "#/components/schemas/HouseholdResponse"
+            $ref: "#/components/schemas/IAM.CurrentHousehold"
         hasMore:
           type: boolean
         nextCursor:
           type: string
-    HouseholdResponse:
+    IAM.CurrentHousehold:
       type: object
       required:
         - id
@@ -132,17 +132,11 @@ components:
       properties:
         id:
           type: string
-          format: uuid
         name:
           type: string
         role:
-          $ref: "#/components/schemas/HouseholdRole"
-      description: Projected from IAM.CurrentHousehold into the HTTP resource representation.
-    HouseholdRole:
-      type: string
-      enum:
-        - manager
-        - viewer
+          type: string
+      description: Consumers tolerate unknown fields; additive changes do not break them.
 servers:
   - url: http://localhost:3000
     description: Local development

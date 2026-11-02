@@ -37,21 +37,8 @@ model CreateInitialHouseholdRequest {
   name: string;
 }
 
-enum HouseholdRole {
-  manager,
-  viewer,
-}
-
-/** Projected from IAM.CurrentHousehold into the HTTP resource representation. */
-model HouseholdResponse {
-  @format("uuid")
-  id: string;
-  name: string;
-  role: HouseholdRole;
-}
-
 model HouseholdCollectionResponse {
-  data: HouseholdResponse[];
+  data: IAM.CurrentHousehold[];
   hasMore: boolean;
   nextCursor?: string;
 }
@@ -74,4 +61,4 @@ op listHouseholds(): HouseholdCollectionResponse;
 
 @route("/v1/households")
 @post
-op createInitialHousehold(@body body: CreateInitialHouseholdRequest): HouseholdResponse;
+op createInitialHousehold(@body body: CreateInitialHouseholdRequest): IAM.CurrentHousehold;

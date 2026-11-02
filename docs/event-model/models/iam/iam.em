@@ -58,7 +58,6 @@ slice "View Current Household" {
   view Current Household public from "Household Created" {
     id: uuid
     name: string
-    rootManagerId: uuid
     role: string derived
   } note "slices/view-current-household.md"
   ui Household Screen @User

@@ -51,7 +51,6 @@ _This slice has no event in the model._
 |-------|------|----------------|
 | id | uuid | from event `Household Created` |
 | name | string | from event `Household Created` |
-| rootManagerId | uuid | from event `Household Created` |
 | role | string | Derived |
 <!-- GENERATED:em-slice-view:end -->
 

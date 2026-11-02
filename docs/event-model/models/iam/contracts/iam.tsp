@@ -48,7 +48,6 @@ namespace IAM {
   model CurrentHousehold {
     id: string;
     name: string;
-    rootManagerId: string;
     role: string;
   }
 
