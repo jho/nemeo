@@ -56,8 +56,11 @@ namespace IAM {
   }
 
   interface Commands {
+    /** INV-SIGN-1: A provider and provider subject pair maps to at most one user account */
     op signUp(provider: string, providerSubject: string, verifiedEmail: string, displayName: string, authenticationRequestId: string): void;
+    /** INV-AUTH-1: Authentication requires an existing exact provider and provider subject mapping */
     op authenticate(provider: string, providerSubject: string, authenticationRequestId: string): void;
+    /** INV-HH-1: A user cannot create a second household in MVP */
     op createInitialHousehold(userId: string, name: string): void;
   }
 }
