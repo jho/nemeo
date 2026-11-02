@@ -15,6 +15,7 @@ slice "Sign Up" {
     displayName: string
     authenticationRequestId: string
   } note "slices/sign-up.md"
+  invariant INV-SIGN-1 "A provider and provider subject pair maps to at most one user account"
   event User Account Created @User public {
     id: uuid assigned
     provider: string
@@ -32,6 +33,7 @@ slice "Authenticate" {
     providerSubject: string
     authenticationRequestId: string
   } note "slices/authenticate.md"
+  invariant INV-AUTH-1 "Authentication requires an existing exact provider and provider subject mapping"
   event User Authenticated @User public {
     id: uuid assigned
     provider: string
@@ -46,6 +48,7 @@ slice "Create Initial Household" {
     userId: uuid
     name: string
   } note "slices/create-initial-household.md"
+  invariant INV-HH-1 "A user cannot create a second household in MVP"
   event Household Created @Household public {
     id: uuid assigned
     name: string
