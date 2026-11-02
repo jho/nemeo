@@ -77,7 +77,9 @@ Nemeo has two related contract layers. Agents MUST keep their ownership distinct
 
 1. Event Model domain contracts are generated from public Event Model elements with `em api
    generate`. Generated files live beside their model under the model's `contracts/` directory,
-   are checked with `em api check`, and MUST NOT be hand-edited.
+   are checked with `em api check`, and MUST NOT be hand-edited. Regenerate them with
+   `em api generate <file>.em` after changing the model's public commands, events, views, or
+   fields; never patch the generated TypeSpec directly.
 2. Application HTTP bindings are authored in TypeSpec under `contracts/`. They define the
   versioned routes, transport-specific request/response envelopes, and HTTP policy consumed by the
   web client and exposed to MCP. `contracts/main.tsp` is only the contract assembly entry point;
