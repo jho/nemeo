@@ -47,6 +47,10 @@ op startGoogleAuthentication(): RedirectResponse;
 @get
 op completeGoogleAuthentication(...GoogleAuthCallbackQuery): RedirectResponse;
 
+@route("/v1/users/me")
+@get
+op getCurrentUser(): IAM.CurrentUser;
+
 @route("/v1/households")
 @get
 op listHouseholds(): HouseholdCollectionResponse;

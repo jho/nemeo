@@ -12,6 +12,7 @@ namespace IAM {
     provider: string;
     providerSubject: string;
     verifiedEmail: string;
+    displayName: string;
     /** system-assigned — not supplied by the triggering command */
     createdAt: utcDateTime;
     authenticationRequestId: string;
@@ -45,6 +46,16 @@ namespace IAM {
   /**
    * Consumers tolerate unknown fields; additive changes do not break them.
    */
+  model CurrentUser {
+    id: string;
+    provider: string;
+    verifiedEmail: string;
+    displayName: string;
+  }
+
+  /**
+   * Consumers tolerate unknown fields; additive changes do not break them.
+   */
   model CurrentHousehold {
     id: string;
     name: string;
@@ -52,6 +63,7 @@ namespace IAM {
   }
 
   interface Views {
+    op getCurrentUser(): CurrentUser;
     op getCurrentHousehold(): CurrentHousehold;
   }
 

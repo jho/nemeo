@@ -69,6 +69,17 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/CreateInitialHouseholdRequest"
+  /v1/users/me:
+    get:
+      operationId: getCurrentUser
+      parameters: []
+      responses:
+        "200":
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IAM.CurrentUser"
 components:
   parameters:
     GoogleAuthCallbackQuery.code:
@@ -135,6 +146,23 @@ components:
         name:
           type: string
         role:
+          type: string
+      description: Consumers tolerate unknown fields; additive changes do not break them.
+    IAM.CurrentUser:
+      type: object
+      required:
+        - id
+        - provider
+        - verifiedEmail
+        - displayName
+      properties:
+        id:
+          type: string
+        provider:
+          type: string
+        verifiedEmail:
+          type: string
+        displayName:
           type: string
       description: Consumers tolerate unknown fields; additive changes do not break them.
 servers:
