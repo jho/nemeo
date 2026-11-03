@@ -1,2 +1,2 @@
 import "./common.tsp";
-import "./iam.tsp";
+import "./systems/iam.tsp";

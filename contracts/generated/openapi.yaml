@@ -17,11 +17,18 @@ paths:
                 $ref: "#/components/schemas/HealthResponse"
   /v1/auth/google/callback:
     get:
-      operationId: completeGoogleAuthentication
+      operationId: IAM_completeGoogleAuthentication
+      description: |-
+        EM mapping:
+        - Model: iam
+        - Boundary: Google OIDC callback
+        - Translations: Google OIDC Callback — New Identity or Google OIDC Callback — Existing Identity
+        - Commands: IAM.Commands.signUp or IAM.Commands.authenticate
+        - Results: IAM.UserAccountCreated or IAM.UserAuthenticated
       parameters:
-        - $ref: "#/components/parameters/GoogleAuthCallbackQuery.code"
-        - $ref: "#/components/parameters/GoogleAuthCallbackQuery.state"
-        - $ref: "#/components/parameters/GoogleAuthCallbackQuery.error"
+        - $ref: "#/components/parameters/IAM.GoogleAuthCallbackQuery.code"
+        - $ref: "#/components/parameters/IAM.GoogleAuthCallbackQuery.state"
+        - $ref: "#/components/parameters/IAM.GoogleAuthCallbackQuery.error"
       responses:
         "302":
           description: Redirection
@@ -32,7 +39,14 @@ paths:
                 type: string
   /v1/auth/google/start:
     get:
-      operationId: startGoogleAuthentication
+      operationId: IAM_startGoogleAuthentication
+      description: |-
+        EM mapping:
+        - Model: iam
+        - Boundary: Google OIDC callback
+        - Translation: Google OIDC Callback — New Identity
+        - Command: IAM.Commands.signUp
+        - Result: IAM.UserAccountCreated
       parameters: []
       responses:
         "302":
@@ -44,7 +58,13 @@ paths:
                 type: string
   /v1/households:
     get:
-      operationId: listHouseholds
+      operationId: IAM_listHouseholds
+      description: |-
+        EM mapping:
+        - Model: iam
+        - Slice: view-current-household
+        - View: IAM.Views.getCurrentHousehold / IAM.CurrentHousehold
+        - Auth: authenticated principal
       parameters: []
       responses:
         "200":
@@ -52,9 +72,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HouseholdCollectionResponse"
+                $ref: "#/components/schemas/IAM.HouseholdCollectionResponse"
     post:
-      operationId: createInitialHousehold
+      operationId: IAM_createInitialHousehold
+      description: |-
+        EM mapping:
+        - Model: iam
+        - Slice: create-initial-household
+        - Command: IAM.Commands.createInitialHousehold
+        - Input projection: userId comes from the authenticated session; name comes from the request
+        - Result: IAM.HouseholdCreated and IAM.CurrentHousehold
       parameters: []
       responses:
         "200":
@@ -68,10 +95,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateInitialHouseholdRequest"
+              $ref: "#/components/schemas/IAM.CreateInitialHouseholdRequest"
   /v1/users/me:
     get:
-      operationId: getCurrentUser
+      operationId: IAM_getCurrentUser
+      description: |-
+        EM mapping:
+        - Model: iam
+        - Slice: view-current-user
+        - View: IAM.Views.getCurrentUser / IAM.CurrentUser
+        - Auth: authenticated principal
       parameters: []
       responses:
         "200":
@@ -82,21 +115,21 @@ paths:
                 $ref: "#/components/schemas/IAM.CurrentUser"
 components:
   parameters:
-    GoogleAuthCallbackQuery.code:
+    IAM.GoogleAuthCallbackQuery.code:
       name: code
       in: query
       required: true
       schema:
         type: string
       explode: false
-    GoogleAuthCallbackQuery.error:
+    IAM.GoogleAuthCallbackQuery.error:
       name: error
       in: query
       required: false
       schema:
         type: string
       explode: false
-    GoogleAuthCallbackQuery.state:
+    IAM.GoogleAuthCallbackQuery.state:
       name: state
       in: query
       required: true
@@ -104,13 +137,6 @@ components:
         type: string
       explode: false
   schemas:
-    CreateInitialHouseholdRequest:
-      type: object
-      required:
-        - name
-      properties:
-        name:
-          type: string
     HealthResponse:
       type: object
       required:
@@ -120,19 +146,12 @@ components:
           type: string
           enum:
             - ok
-    HouseholdCollectionResponse:
+    IAM.CreateInitialHouseholdRequest:
       type: object
       required:
-        - data
-        - hasMore
+        - name
       properties:
-        data:
-          type: array
-          items:
-            $ref: "#/components/schemas/IAM.CurrentHousehold"
-        hasMore:
-          type: boolean
-        nextCursor:
+        name:
           type: string
     IAM.CurrentHousehold:
       type: object
@@ -165,6 +184,20 @@ components:
         displayName:
           type: string
       description: Consumers tolerate unknown fields; additive changes do not break them.
+    IAM.HouseholdCollectionResponse:
+      type: object
+      required:
+        - data
+        - hasMore
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/IAM.CurrentHousehold"
+        hasMore:
+          type: boolean
+        nextCursor:
+          type: string
 servers:
   - url: http://localhost:3000
     description: Local development

@@ -88,11 +88,12 @@ Nemeo has two related contract layers. Agents MUST keep their ownership distinct
 2. Application HTTP bindings are authored in TypeSpec under `contracts/`. They define the
   versioned routes, transport-specific request/response envelopes, and HTTP policy consumed by the
   web client and exposed to MCP. `contracts/main.tsp` is only the contract assembly entry point;
-  context binding files own the HTTP routes, while generated Event Model contracts own public
-  command, event, and view schemas/operations. Bindings MUST import those generated contracts
-  rather than redeclaring their domain shapes. When transport semantics differ, a binding MAY
-  define an explicit named transport projection. Application TypeSpec MUST NOT expose every event
-  or view as a route.
+  system binding files under `contracts/systems/` own the HTTP routes, while generated Event Model
+  contracts own public command, event, and view schemas/operations. Bindings MUST import those
+  generated contracts rather than redeclaring their domain shapes. Every operation MUST document
+  its Event Model system, slice, and command/view mapping. When transport semantics differ, a
+  binding MAY define an explicit named transport projection. Application TypeSpec MUST NOT expose
+  every event or view as a route. See [`docs/api-contract-workflow.md`](docs/api-contract-workflow.md).
    OpenAPI, client types, documentation, and MCP bindings are generated outputs; they MUST NOT be
    parallel hand-authored sources of truth.
 
