@@ -2,13 +2,12 @@ model "IAM"
 
 persona User
 persona HouseholdViewer
-persona IdentityAdapter
 
 context User
 context Household
 
 slice "Sign Up" {
-  ui Authentication Screen @User
+  translation Google OIDC Signup Result
   command Sign Up public {
     provider: string
     providerSubject: string
@@ -28,15 +27,6 @@ slice "Sign Up" {
   }
 }
 
-slice "Resolve User Identity" {
-  view User Identity from "User Account Created" {
-    id: uuid
-    provider: string
-    providerSubject: string
-  }
-  ui Resolve User Identity @IdentityAdapter
-}
-
 slice "View Current User" {
   view Current User public from "User Account Created" note "slices/view-current-user.md" {
     id: uuid
@@ -48,7 +38,7 @@ slice "View Current User" {
 }
 
 slice "Authenticate" {
-  ui Authentication Screen @User
+  translation Google OIDC Authentication Result
   command Authenticate public {
     provider: string
     providerSubject: string

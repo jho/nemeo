@@ -1,6 +1,6 @@
 ---
 schemaVersion: 1
-pattern: state-change
+pattern: translation
 swimlane: User → User
 status: ready-to-implement
 ratifiedBy: jho (backlog export)
