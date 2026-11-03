@@ -37,7 +37,7 @@ _This slice has no event in the model._
 
 ## Read Model / View
 <!-- GENERATED:em-slice-view:start — generated from the model by `em slice sync`; do not hand-edit -->
-- **View:** `Current User` built from events: "User Account Created"
+- **View:** `Current User` built from events: "User Account Created", "User Authenticated"
 
 | Field | Type | Source / Notes |
 |-------|------|----------------|

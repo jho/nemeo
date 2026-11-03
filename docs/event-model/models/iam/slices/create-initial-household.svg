@@ -34,14 +34,14 @@
 <text xml:space="preserve" text-anchor="middle" x="41.87" y="-126.28" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#5f6368">API</text>
 </g>
 <!-- __row_1&#45;&gt;__row_2 -->
-<!-- household_setup_screen -->
+<!-- household_setup_screen_2 -->
 <g data-slice="0" id="node6" class="node">
-<title>household_setup_screen</title>
+<title>household_setup_screen_2</title>
 <polygon fill="#ffffff" stroke="#9aa0a6" stroke-width="1.3" points="237.87,-245.52 93.87,-245.52 93.87,-200.88 237.87,-200.88 237.87,-245.52"/>
 <text xml:space="preserve" text-anchor="middle" x="165.87" y="-226.5" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#202124">Household Setup</text>
 <text xml:space="preserve" text-anchor="middle" x="165.87" y="-213.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#202124">Screen</text>
 </g>
-<!-- __row_1&#45;&gt;household_setup_screen -->
+<!-- __row_1&#45;&gt;household_setup_screen_2 -->
 <!-- __row_3 -->
 <g id="node4" class="node">
 <title>__row_3</title>
@@ -76,8 +76,8 @@
 <text xml:space="preserve" text-anchor="start" x="166.47" y="-6.86" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#5f6368">datetime</text>
 </g>
 <!-- __row_3&#45;&gt;household_created -->
-<!-- __hdr_0&#45;&gt;household_setup_screen -->
-<!-- household_setup_screen&#45;&gt;create_initial_household -->
+<!-- __hdr_0&#45;&gt;household_setup_screen_2 -->
+<!-- household_setup_screen_2&#45;&gt;create_initial_household -->
 <!-- create_initial_household&#45;&gt;household_created -->
 <g class="em-notes"></g><g class="em-issues"></g><g class="em-divergences"></g><g class="em-loops-to"></g></g>
 <g class="em-status-legend"><rect x="0" y="373" width="251" height="68" fill="#FFFFFF"/><line x1="0" y1="373" x2="251" y2="373" stroke="#D0D0D0" stroke-width="1"/><text x="16" y="401" font-family="Helvetica" font-weight="bold" font-size="12" fill="#202124">Slice Status</text><rect x="16" y="409" width="11" height="11" fill="#F6B26B" stroke="#B7791F"/><text x="33" y="419" font-family="Helvetica" font-size="11" fill="#3C4043">Ready to implement</text></g></svg>

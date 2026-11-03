@@ -2,6 +2,7 @@ model "IAM"
 
 persona User
 persona HouseholdViewer
+persona UserAPI
 
 context User
 context Household
@@ -27,16 +28,6 @@ slice "Sign Up" {
   }
 }
 
-slice "View Current User" {
-  view Current User public from "User Account Created" note "slices/view-current-user.md" {
-    id: uuid
-    provider: string
-    verifiedEmail: string
-    displayName: string
-  } note "slices/view-current-user.md"
-  ui User Profile Screen @User
-}
-
 slice "Authenticate" {
   translation Google OIDC Callback — Existing Identity
   command Authenticate public {
@@ -51,6 +42,17 @@ slice "Authenticate" {
     authenticatedAt: datetime assigned
     authenticationRequestId: string
   }
+}
+
+slice "View Current User" {
+  view Current User public from "User Account Created", "User Authenticated" note "slices/view-current-user.md" {
+    id: uuid
+    provider: string
+    verifiedEmail: string
+    displayName: string
+  }
+  ui Read Current User @UserAPI
+  ui Household Setup Screen @User
 }
 
 slice "Create Initial Household" {
