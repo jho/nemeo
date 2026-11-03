@@ -7,7 +7,7 @@ context User
 context Household
 
 slice "Sign Up" {
-  translation Google OIDC Signup Result
+  translation Google OIDC Callback — New Identity
   command Sign Up public {
     provider: string
     providerSubject: string
@@ -38,7 +38,7 @@ slice "View Current User" {
 }
 
 slice "Authenticate" {
-  translation Google OIDC Authentication Result
+  translation Google OIDC Callback — Existing Identity
   command Authenticate public {
     provider: string
     providerSubject: string

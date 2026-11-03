@@ -28,8 +28,9 @@ Returning users take the alternative `Authenticate` slice.
 
 ## Trigger and actor
 
-The user selects the configured provider action and completes its OIDC flow. For MVP that action is
-**Continue with Google**. Nemeo receives a validated provider result through the identity adapter.
+The user selects **Continue with Google** and completes the OIDC flow. Nemeo receives one validated
+Google callback. The application checks the `(provider, providerSubject)` identity projection; this
+slice is the new-identity branch when no matching user exists. It is not a second OAuth flow.
 
 ## Application API contract
 
@@ -51,6 +52,9 @@ The user selects the configured provider action and completes its OIDC flow. For
 `Sign Up` accepts a normalized, validated provider identity result. Provider tokens,
 authorization codes, client secrets, and raw provider payloads remain in the identity adapter and
 must not cross into the domain command or event payload.
+
+The same Google callback is routed to this command only when the provider subject is not already
+linked to a Nemeo user. A linked subject follows the `Authenticate` slice instead.
 
 The command creates a profile only when the stable `(provider, providerSubject)` pair is not already
 linked. Session issuance is an application result after the event is durably recorded.

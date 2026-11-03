@@ -53,6 +53,8 @@ implementation modules. Model an external-system boundary as a `translation`; a 
 triggers a command, which records the event. For an ephemeral external input, omit `from`; use a
 preceding view and `from` only when a durable queue, topic, or other persisted artifact is part of
 the boundary. Internal lookup projections are views used by commands or automations, not personas.
+When one external input branches to alternative commands, model each mutually exclusive branch as
+its own translation slice and document the routing condition; do not imply multiple external flows.
 
 ## Feature implementation
 
