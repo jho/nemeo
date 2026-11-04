@@ -9,7 +9,7 @@ context Household
 
 slice "Sign Up" {
   translation Google OIDC Callback — New Identity
-  command Sign Up public {
+  command Sign Up {
     provider: string
     providerSubject: string
     verifiedEmail: string
@@ -30,7 +30,7 @@ slice "Sign Up" {
 
 slice "Authenticate" {
   translation Google OIDC Callback — Existing Identity
-  command Authenticate public {
+  command Authenticate {
     provider: string
     providerSubject: string
     authenticationRequestId: string

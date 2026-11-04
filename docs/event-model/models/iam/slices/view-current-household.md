@@ -65,8 +65,8 @@ _No invariants declared in the model._
 
 - The view is scoped to the authenticated user and never accepts a client-supplied user ID.
 - A user belongs to at most one household in MVP.
-- A missing household is represented by the API resource-not-found response; it does not append an
-  event or create setup state.
+- A missing household is represented by an empty collection; it does not append an event or create
+  setup state.
 
 ## Scenarios (Given / When / Then)
 

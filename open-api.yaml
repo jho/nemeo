@@ -70,7 +70,7 @@ paths:
             schema:
               $ref: "#/components/schemas/CreateInitialHouseholdRequest"
     get:
-      operationId: HttpViews_listHouseholds
+      operationId: HttpViews_getCurrentHousehold
       description: "EM mapping: iam / view-current-household / Views.getCurrentHousehold."
       parameters: []
       responses:

@@ -41,7 +41,7 @@ model HouseholdCollectionResponse {
 }
 
 @route("/v1")
-interface HttpCommands {
+interface HttpCommands extends IAM.Commands {
   /**
    * EM mapping: iam / create-initial-household / Commands.createInitialHousehold.
    * The authenticated principal supplies userId; the HTTP body supplies name.
@@ -64,7 +64,7 @@ interface HttpCommands {
 // generated Views interface: its household view is exposed as a collection
 // and its user view is scoped to the authenticated principal.
 @route("/v1")
-interface HttpViews {
+interface HttpViews extends IAM.Views {
   /** EM mapping: iam / view-current-user / Views.getCurrentUser. */
   @route("/users/me")
   @get
@@ -73,7 +73,7 @@ interface HttpViews {
   /** EM mapping: iam / view-current-household / Views.getCurrentHousehold. */
   @route("/households")
   @get
-  op listHouseholds(): HouseholdCollectionResponse;
+  op getCurrentHousehold(): HouseholdCollectionResponse;
 }
 
 /**
