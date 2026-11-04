@@ -17,18 +17,12 @@ paths:
                 $ref: "#/components/schemas/HealthResponse"
   /v1/auth/google/callback:
     get:
-      operationId: IAM_completeGoogleAuthentication
-      description: |-
-        EM mapping:
-        - Model: iam
-        - Boundary: Google OIDC callback
-        - Translations: Google OIDC Callback — New Identity or Google OIDC Callback — Existing Identity
-        - Commands: IAM.Commands.signUp or IAM.Commands.authenticate
-        - Results: IAM.UserAccountCreated or IAM.UserAuthenticated
+      operationId: HttpAuthentication_completeGoogleAuthentication
+      description: Maps to Google OIDC Callback — New Identity or Existing Identity.
       parameters:
-        - $ref: "#/components/parameters/IAM.GoogleAuthCallbackQuery.code"
-        - $ref: "#/components/parameters/IAM.GoogleAuthCallbackQuery.state"
-        - $ref: "#/components/parameters/IAM.GoogleAuthCallbackQuery.error"
+        - $ref: "#/components/parameters/GoogleAuthCallbackQuery.code"
+        - $ref: "#/components/parameters/GoogleAuthCallbackQuery.state"
+        - $ref: "#/components/parameters/GoogleAuthCallbackQuery.error"
       responses:
         "302":
           description: Redirection
@@ -39,14 +33,8 @@ paths:
                 type: string
   /v1/auth/google/start:
     get:
-      operationId: IAM_startGoogleAuthentication
-      description: |-
-        EM mapping:
-        - Model: iam
-        - Boundary: Google OIDC callback
-        - Translation: Google OIDC Callback — New Identity
-        - Command: IAM.Commands.signUp
-        - Result: IAM.UserAccountCreated
+      operationId: HttpAuthentication_startGoogleAuthentication
+      description: Starts the Google OIDC translation.
       parameters: []
       responses:
         "302":
@@ -57,35 +45,20 @@ paths:
               schema:
                 type: string
   /v1/households:
-    get:
-      operationId: IAM_listHouseholds
-      description: |-
-        EM mapping:
-        - Model: iam
-        - Slice: view-current-household
-        - View: IAM.Views.getCurrentHousehold / IAM.CurrentHousehold
-        - Auth: authenticated principal
-      parameters: []
-      responses:
-        "200":
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/IAM.HouseholdCollectionResponse"
     post:
-      operationId: IAM_createInitialHousehold
+      operationId: HttpCommands_createInitialHousehold
       description: |-
-        EM mapping:
-        - Model: iam
-        - Slice: create-initial-household
-        - Command: IAM.Commands.createInitialHousehold
-        - Input projection: userId comes from the authenticated session; name comes from the request
-        - Result: IAM.HouseholdCreated and IAM.CurrentHousehold
+        EM mapping: iam / create-initial-household / Commands.createInitialHousehold.
+        The authenticated principal supplies userId; the HTTP body supplies name.
       parameters: []
       responses:
-        "200":
-          description: The request has succeeded.
+        "201":
+          description: The request has succeeded and a new resource has been created as a result.
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
           content:
             application/json:
               schema:
@@ -95,16 +68,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/IAM.CreateInitialHouseholdRequest"
+              $ref: "#/components/schemas/CreateInitialHouseholdRequest"
+    get:
+      operationId: HttpViews_listHouseholds
+      description: "EM mapping: iam / view-current-household / Views.getCurrentHousehold."
+      parameters: []
+      responses:
+        "200":
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HouseholdCollectionResponse"
   /v1/users/me:
     get:
-      operationId: IAM_getCurrentUser
-      description: |-
-        EM mapping:
-        - Model: iam
-        - Slice: view-current-user
-        - View: IAM.Views.getCurrentUser / IAM.CurrentUser
-        - Auth: authenticated principal
+      operationId: HttpViews_getCurrentUser
+      description: "EM mapping: iam / view-current-user / Views.getCurrentUser."
       parameters: []
       responses:
         "200":
@@ -115,21 +94,21 @@ paths:
                 $ref: "#/components/schemas/IAM.CurrentUser"
 components:
   parameters:
-    IAM.GoogleAuthCallbackQuery.code:
+    GoogleAuthCallbackQuery.code:
       name: code
       in: query
       required: true
       schema:
         type: string
       explode: false
-    IAM.GoogleAuthCallbackQuery.error:
+    GoogleAuthCallbackQuery.error:
       name: error
       in: query
       required: false
       schema:
         type: string
       explode: false
-    IAM.GoogleAuthCallbackQuery.state:
+    GoogleAuthCallbackQuery.state:
       name: state
       in: query
       required: true
@@ -137,6 +116,13 @@ components:
         type: string
       explode: false
   schemas:
+    CreateInitialHouseholdRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
     HealthResponse:
       type: object
       required:
@@ -146,12 +132,19 @@ components:
           type: string
           enum:
             - ok
-    IAM.CreateInitialHouseholdRequest:
+    HouseholdCollectionResponse:
       type: object
       required:
-        - name
+        - data
+        - hasMore
       properties:
-        name:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/IAM.CurrentHousehold"
+        hasMore:
+          type: boolean
+        nextCursor:
           type: string
     IAM.CurrentHousehold:
       type: object
@@ -184,20 +177,6 @@ components:
         displayName:
           type: string
       description: Consumers tolerate unknown fields; additive changes do not break them.
-    IAM.HouseholdCollectionResponse:
-      type: object
-      required:
-        - data
-        - hasMore
-      properties:
-        data:
-          type: array
-          items:
-            $ref: "#/components/schemas/IAM.CurrentHousehold"
-        hasMore:
-          type: boolean
-        nextCursor:
-          type: string
 servers:
   - url: http://localhost:3000
     description: Local development

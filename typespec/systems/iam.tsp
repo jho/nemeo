@@ -6,7 +6,10 @@ using TypeSpec.Http;
 using TypeSpec.Rest;
 using IAM;
 
-namespace Nemeo.IAM;
+// Keep the HTTP binding in the Nemeo service namespace. The imported generated
+// IAM contract remains the source of truth for the domain shapes and operation
+// mapping; this file owns only the public HTTP projections.
+namespace Nemeo;
 
 model RedirectResponse {
   @statusCode
@@ -37,60 +40,56 @@ model HouseholdCollectionResponse {
   nextCursor?: string;
 }
 
-/**
- * EM mapping:
- * - Model: iam
- * - Boundary: Google OIDC callback
- * - Translation: Google OIDC Callback — New Identity
- * - Command: IAM.Commands.signUp
- * - Result: IAM.UserAccountCreated
- */
-@route("/v1/auth/google/start")
-@get
-op startGoogleAuthentication(): RedirectResponse;
+@route("/v1")
+interface HttpCommands {
+  /**
+   * EM mapping: iam / create-initial-household / Commands.createInitialHousehold.
+   * The authenticated principal supplies userId; the HTTP body supplies name.
+   */
+  @route("/households")
+  @post
+  op createInitialHousehold(@body body: CreateInitialHouseholdRequest): {
+    @statusCode
+    _: 201;
+
+    @header("Location")
+    location: string;
+
+    @body
+    household: CurrentHousehold;
+  };
+}
+
+// This is a transport projection rather than a one-to-one publication of the
+// generated Views interface: its household view is exposed as a collection
+// and its user view is scoped to the authenticated principal.
+@route("/v1")
+interface HttpViews {
+  /** EM mapping: iam / view-current-user / Views.getCurrentUser. */
+  @route("/users/me")
+  @get
+  op getCurrentUser(): CurrentUser;
+
+  /** EM mapping: iam / view-current-household / Views.getCurrentHousehold. */
+  @route("/households")
+  @get
+  op listHouseholds(): HouseholdCollectionResponse;
+}
 
 /**
- * EM mapping:
- * - Model: iam
- * - Boundary: Google OIDC callback
- * - Translations: Google OIDC Callback — New Identity or Google OIDC Callback — Existing Identity
- * - Commands: IAM.Commands.signUp or IAM.Commands.authenticate
- * - Results: IAM.UserAccountCreated or IAM.UserAuthenticated
+ * OAuth is an application-boundary translation rather than a one-to-one
+ * transport projection of a single generated command. The callback chooses
+ * signUp or authenticate from the provider subject, then redirects to the UI.
  */
-@route("/v1/auth/google/callback")
-@get
-op completeGoogleAuthentication(...GoogleAuthCallbackQuery): RedirectResponse;
+@route("/v1/auth/google")
+interface HttpAuthentication {
+  /** Starts the Google OIDC translation. */
+  @route("/start")
+  @get
+  op startGoogleAuthentication(): RedirectResponse;
 
-/**
- * EM mapping:
- * - Model: iam
- * - Slice: view-current-user
- * - View: IAM.Views.getCurrentUser / IAM.CurrentUser
- * - Auth: authenticated principal
- */
-@route("/v1/users/me")
-@get
-op getCurrentUser(): CurrentUser;
-
-/**
- * EM mapping:
- * - Model: iam
- * - Slice: view-current-household
- * - View: IAM.Views.getCurrentHousehold / IAM.CurrentHousehold
- * - Auth: authenticated principal
- */
-@route("/v1/households")
-@get
-op listHouseholds(): HouseholdCollectionResponse;
-
-/**
- * EM mapping:
- * - Model: iam
- * - Slice: create-initial-household
- * - Command: IAM.Commands.createInitialHousehold
- * - Input projection: userId comes from the authenticated session; name comes from the request
- * - Result: IAM.HouseholdCreated and IAM.CurrentHousehold
- */
-@route("/v1/households")
-@post
-op createInitialHousehold(@body body: CreateInitialHouseholdRequest): CurrentHousehold;
+  /** Maps to Google OIDC Callback — New Identity or Existing Identity. */
+  @route("/callback")
+  @get
+  op completeGoogleAuthentication(...GoogleAuthCallbackQuery): RedirectResponse;
+}

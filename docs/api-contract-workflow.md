@@ -16,6 +16,11 @@ Every application operation must document its mapping to the Event Model system,
 command/view. Reuse generated domain shapes when transport semantics match. Define a named request
 or response projection when HTTP concerns differ, and explain the difference in the binding.
 
+Do not inherit a generated command or view interface when that would publish unrelated domain
+operations or expose a domain operation with the wrong HTTP shape. Use a named binding interface
+with explicit operation mappings in that case; the generated contract remains the source for the
+domain types and the binding remains the source for transport semantics.
+
 The application binding must not expose every generated event or view automatically. It is the
 explicit boundary between the domain contract and HTTP/OpenAPI.
 
