@@ -14,6 +14,6 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ["dist/**", "contracts/generated/**", "node_modules/**"],
+    ignores: ["dist/**", "node_modules/**"],
   },
 );

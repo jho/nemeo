@@ -1,6 +1,6 @@
 ---
 schemaVersion: 1
-pattern: state-change
+pattern: translation
 swimlane: User → User
 status: ready-to-implement
 ratifiedBy: jho (backlog export)
@@ -28,8 +28,9 @@ Returning users take the alternative `Authenticate` slice.
 
 ## Trigger and actor
 
-The user selects the configured provider action and completes its OIDC flow. For MVP that action is
-**Continue with Google**. Nemeo receives a validated provider result through the identity adapter.
+The user selects **Continue with Google** and completes the OIDC flow. Nemeo receives one validated
+Google callback. The application checks the `(provider, providerSubject)` identity projection; this
+slice is the new-identity branch when no matching user exists. It is not a second OAuth flow.
 
 ## Application API contract
 
@@ -52,6 +53,9 @@ The user selects the configured provider action and completes its OIDC flow. For
 authorization codes, client secrets, and raw provider payloads remain in the identity adapter and
 must not cross into the domain command or event payload.
 
+The same Google callback is routed to this command only when the provider subject is not already
+linked to a Nemeo user. A linked subject follows the `Authenticate` slice instead.
+
 The command creates a profile only when the stable `(provider, providerSubject)` pair is not already
 linked. Session issuance is an application result after the event is durably recorded.
 
@@ -72,9 +76,9 @@ not create a household or grant household access.
 
 ## Event facts
 
-`User Account Created` contains a new `userId`, provider and stable subject mapping, initial
-verified email when supplied, and creation timestamp. It contains no password, provider token,
-authorization code, raw provider payload, or session secret.
+`User Account Created` contains a new `id`, provider and stable subject mapping, initial verified
+email and display name when supplied, and creation timestamp. It contains no password, provider
+token, authorization code, raw provider payload, or session secret.
 
 ## Scenarios
 

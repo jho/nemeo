@@ -1,6 +1,6 @@
 ---
 schemaVersion: 1
-pattern: state-change
+pattern: translation
 swimlane: User → User
 status: ready-to-implement
 ratifiedBy: jho (backlog export)
@@ -26,8 +26,9 @@ used for signup; it is not a second step after signup.
 
 ## Trigger and actor
 
-The user selects the configured provider action and completes its OIDC flow. For MVP that action is
-**Continue with Google**. Nemeo receives a validated provider result through the identity adapter.
+The user selects **Continue with Google** and completes the OIDC flow. Nemeo receives one validated
+Google callback. The application checks the `(provider, providerSubject)` identity projection; this
+slice is the existing-identity branch when a matching user exists. It is not a second OAuth flow.
 
 ## Application API contract
 
@@ -50,6 +51,9 @@ The user selects the configured provider action and completes its OIDC flow. For
 `Authenticate` accepts a normalized, validated provider identity result. Provider tokens,
 authorization codes, client secrets, and raw provider payloads remain in the identity adapter.
 
+The same Google callback is routed to this command only when the provider subject is already linked
+to a Nemeo user. An unknown subject follows the `Sign Up` slice instead.
+
 The command resolves an existing identity by the stable `(provider, providerSubject)` pair. It does
 not create profiles, link identities, or merge users.
 
@@ -69,7 +73,7 @@ the session secret is not part of the event stream.
 
 ## Event facts
 
-`User Authenticated` contains the resolved `userId`, provider, authentication timestamp, and
+`User Authenticated` contains the resolved `id`, provider, authentication timestamp, and
 correlation identifier. It contains no browser session token, provider credential, or raw provider
 payload.
 

@@ -1,7 +1,7 @@
 # ADR 0006: Application API Standards and Ergonomics
 
 - Status: Accepted
-- Date: 2026-09-17
+- Date: 2026-10-31
 - GitHub issue: [#34](https://github.com/jho/nemeo/issues/34)
 - Platform decision: [ADR 0004](0004-typespec-fastify-vertical-slice-backend.md)
 - Query-model follow-up: [ADR 0007](0007-search-and-analytics-query-model.md)
@@ -11,7 +11,8 @@
 
 Nemeo's application API is the contract between the web client, backend slices, workers, MCP, and
 future first-party clients. It should have the predictable, discoverable ergonomics of a mature
-resource-oriented API while still representing Event Model commands that are not generic CRUD.
+resource-oriented API, with the clarity and consistency associated with Stripe's API, while still
+representing Event Model commands that are not generic CRUD.
 
 The API must be TypeSpec-first, compatible with the modular monolith, safe for household-scoped
 financial data, and suitable for generated clients and contract testing. Search and analytics have
@@ -21,10 +22,13 @@ distinct read models and are governed by ADR 0007.
 
 ### Contract and media type
 
-- Application TypeSpec under `contracts/api/` is the source of truth for the HTTP API. It emits
-  versioned OpenAPI 3.1 artifacts. Event Model-generated TypeSpec under model-local `contracts/`
-  directories is a separate domain-seam contract and is not replaced by, or merged into, the
-  application API source.
+- TypeSpec under `typespec/` is the source of truth for the HTTP API and emits versioned OpenAPI
+  artifacts at the repository root as `open-api.yaml`. `typespec/main.tsp` is only the assembly entry point; system binding files own
+  routes and transport policy. Event Model-generated TypeSpec under model-local `contracts/`
+  directories remains the domain-seam source of truth for public command, event, and view
+  schemas/operations. HTTP bindings MUST import those files rather than redeclare domain shapes;
+  they MAY define an explicit named transport projection when transport semantics differ. They do
+  not automatically expose all domain elements as HTTP.
 - The public API is JSON over HTTPS using `application/json` for successful requests and
   `application/problem+json` for errors.
 - Generated OpenAPI and client artifacts are reproducible outputs. They are not hand-edited and do
@@ -34,19 +38,20 @@ distinct read models and are governed by ADR 0007.
 
 ### Resources and commands
 
-- Resource URLs use plural, stable nouns: `/v1/transactions`, `/v1/budgets`, and
-  `/v1/connections`.
+- Resource URLs use plural, stable nouns: `/v1/transactions`, `/v1/budgets`,
+  `/v1/connections`, and `/v1/households`.
 - URL path segments use lowercase kebab-case. Resource IDs are path parameters, not query
-  parameters, when addressing one resource.
+  parameters, when addressing one resource, and use the conventional `{id}` name for the
+  resource's primary identifier.
 - Resource retrieval uses standard `GET` operations and returns resource representations directly.
 - CRUD operation selection is fixed:
 
   | Intent | Method | Example |
   |---|---|---|
   | Create a resource | `POST` collection | `POST /v1/budgets` |
-  | Update a resource | `PATCH` member | `PATCH /v1/budgets/{budget_id}` |
-  | Delete a resource | `DELETE` member | `DELETE /v1/budgets/{budget_id}` |
-  | Retrieve a resource | `GET` member | `GET /v1/budgets/{budget_id}` |
+  | Update a resource | `PATCH` member | `PATCH /v1/budgets/{id}` |
+  | Delete a resource | `DELETE` member | `DELETE /v1/budgets/{id}` |
+  | Retrieve a resource | `GET` member | `GET /v1/budgets/{id}` |
   | List resources | `GET` collection | `GET /v1/budgets` |
 
 - `PATCH` is a typed partial-update request: the body is a TypeSpec model whose optional fields
@@ -62,10 +67,10 @@ distinct read models and are governed by ADR 0007.
   cursor. Collection-specific summary fields may be added without changing the envelope.
 - CRUD operations use conventional REST semantics: `POST` creates a resource, `PATCH` updates a
   resource, and `DELETE` removes a resource. CRUD commands MUST NOT be represented as
-  action paths such as `POST /v1/budgets/{budget_id}/update` or
-  `POST /v1/budgets/{budget_id}/delete`.
+  action paths such as `POST /v1/budgets/{id}/update` or
+  `POST /v1/budgets/{id}/delete`.
 - Non-CRUD Event Model commands use `POST` operations with explicit action paths such as
-  `POST /v1/budgets/{budget_id}/approve-targets`.
+  `POST /v1/budgets/{id}/approve-targets`.
 - Action names use lowercase kebab-case verbs and describe a business operation, not a persistence
   operation: `approve-targets`, `confirm-category`, and `start-sync` are valid; `update`, `delete`,
   and `save` are not.
@@ -74,6 +79,10 @@ distinct read models and are governed by ADR 0007.
   asynchronous behavior behind a successful synchronous response.
 - Public APIs expose capabilities and representations, not internal events, aggregates, repositories,
   or database tables.
+- Entity and collection endpoints are preferred over UI/workflow endpoints. For example, the
+  authenticated user's household is represented by `GET /v1/households`; an empty collection is the
+  normal pre-household onboarding state. Do not introduce endpoints such as
+  `/v1/household-setup` when a resource representation can express the state.
 
 ### Contract ownership and slice mapping
 
@@ -89,6 +98,10 @@ distinct read models and are governed by ADR 0007.
 - The application API MAY expose a projection or compose several domain slices without making those
   internal domain boundaries public. The API contract MUST remain stable when internal slice
   composition changes.
+- When an API capability is exposed through MCP, its MCP tool name, request shape, response shape,
+  authorization scope, and confirmation semantics SHOULD remain aligned with the application API.
+  MCP may omit unsafe or transport-specific operations, but it must not invent a conflicting domain
+  model.
 - Application TypeSpec, generated Event Model contracts, OpenAPI, generated clients, and MCP
   artifacts are checked in or generated according to the repository's contract scripts; generated
   artifacts MUST be reproducible and MUST NOT be hand-edited.
@@ -108,9 +121,16 @@ distinct read models and are governed by ADR 0007.
   calendar-local date. Monetary values use an explicit amount/currency model and never floating
   point JSON numbers.
 
-### Schemas and identifiers
+### Schemas, identifiers, and enums
 
-- IDs are opaque strings and clients MUST NOT infer their structure.
+- Every Nemeo-owned entity has a UUID primary identifier named `id` in commands, events, and
+  resource representations. References to other entities use `<entity>Id`, such as `householdId`
+  or `rootManagerId`.
+- Provider and other externally assigned identifiers remain strings and use an explicit provider or
+  external-identity name such as `providerSubject`; they are never reused as Nemeo primary keys.
+- Closed sets use TypeSpec enums or string unions rather than unconstrained strings. This includes
+  providers, roles, lifecycle states, statuses, and other finite domain vocabularies. Use a string
+  only when values are genuinely open-ended or provider-defined.
 - Timestamps use RFC 3339/ISO 8601 representations with explicit timezone semantics.
 - Domain-specific values such as money, percentages, and durations use explicit TypeSpec models and
   units; clients must not infer units from field names alone.
@@ -151,6 +171,9 @@ Errors use Problem Details with stable machine-readable extensions:
 - Cursor pagination is the default for collections and must use a stable explicit ordering.
 - Clients may request a bounded `limit` between 1 and 100; the server owns the maximum page size and
   may return fewer items.
+- Collection requests use the common query vocabulary `limit`, `startingAfter`, and `endingBefore`;
+  cursor values are opaque. A resource may add typed filters and an allowlisted `sort` parameter,
+  but it must document the accepted fields and directions.
 - Collection responses use `hasMore` and `nextCursor`. Cursors are opaque and clients MUST NOT parse
   or construct them.
 - Offset pagination is not used for user-facing collection APIs.
@@ -231,7 +254,8 @@ version scheme.
 
 Nemeo gets a coherent, Stripe-inspired API surface without treating REST as a CRUD-only doctrine.
 The API is discoverable for clients, expressive for Event Model commands, safe for financial data,
-and friendly to TypeSpec/OpenAPI generation. The explicit two-layer contract model prevents agents
+and friendly to TypeSpec/OpenAPI generation. Stable IDs, finite-value types, plural resources, and
+consistent collection queries reduce client-specific interpretation. The explicit two-layer contract model prevents agents
 from treating a generated domain seam as a complete HTTP design while still allowing the API and
 MCP surfaces to be generated from a common authored application contract.
 
