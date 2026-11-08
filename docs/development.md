@@ -80,7 +80,7 @@ deployment environment. They are never stored in `compose.yaml`, the Docker imag
 source files.
 
 TypeSpec is the API source of truth. The generated OpenAPI contract is written to
-`contracts/generated/openapi.yaml`; do not hand-edit it. `npm run contracts:check` regenerates the
+`open-api.yaml`; do not hand-edit it. `npm run contracts:check` regenerates the
 contract and fails when the checked-in artifact drifts from the TypeSpec source.
 
 PostgreSQL migrations use `node-pg-migrate`. Add immutable, ordered migration files under

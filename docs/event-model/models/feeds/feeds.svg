@@ -22,7 +22,7 @@
 <!-- __row_0&#45;&gt;__row_1 -->
 <!-- __hdr_0 -->
 <g id="node7" class="node">
-<title>__hdr_0</title>
+<title>Connect SimpleFIN — State Change · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="245.26,-476.86 101.26,-476.86 101.26,-443.74 245.26,-443.74 245.26,-476.86"/>
 <text xml:space="preserve" text-anchor="middle" x="173.26" y="-457.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Connect SimpleFIN</text>
 </g>
@@ -81,7 +81,7 @@
 <!-- __row_5&#45;&gt;__ph_5_0 -->
 <!-- __hdr_1 -->
 <g id="node8" class="node">
-<title>__hdr_1</title>
+<title>Prepare Provider Account Discovery — Translation · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="414.26,-476.86 270.26,-476.86 270.26,-443.74 414.26,-443.74 414.26,-476.86"/>
 <text xml:space="preserve" text-anchor="middle" x="342.26" y="-463.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Prepare Provider</text>
 <text xml:space="preserve" text-anchor="middle" x="342.26" y="-451.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Account Discovery</text>
@@ -90,7 +90,7 @@
 <!-- __hdr_0&#45;&gt;__ph_1_0 -->
 <!-- __hdr_2 -->
 <g id="node9" class="node">
-<title>__hdr_2</title>
+<title>Discover Provider Account — State Change · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="583.26,-476.86 439.26,-476.86 439.26,-443.74 583.26,-443.74 583.26,-476.86"/>
 <text xml:space="preserve" text-anchor="middle" x="511.26" y="-463.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Discover Provider</text>
 <text xml:space="preserve" text-anchor="middle" x="511.26" y="-451.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Account</text>
@@ -106,7 +106,7 @@
 <!-- __hdr_1&#45;&gt;provider_account_discovery -->
 <!-- __hdr_3 -->
 <g id="node10" class="node">
-<title>__hdr_3</title>
+<title>Show Discovered Accounts — State View · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="752.26,-476.86 608.26,-476.86 608.26,-443.74 752.26,-443.74 752.26,-476.86"/>
 <text xml:space="preserve" text-anchor="middle" x="680.26" y="-463.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Show Discovered</text>
 <text xml:space="preserve" text-anchor="middle" x="680.26" y="-451.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Accounts</text>
@@ -116,7 +116,7 @@
 <!-- __hdr_2&#45;&gt;__ph_1_2 -->
 <!-- __hdr_4 -->
 <g id="node11" class="node">
-<title>__hdr_4</title>
+<title>Start Provider Sync — State Change · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="921.26,-476.86 777.26,-476.86 777.26,-443.74 921.26,-443.74 921.26,-476.86"/>
 <text xml:space="preserve" text-anchor="middle" x="849.26" y="-457.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Start Provider Sync</text>
 </g>
@@ -125,7 +125,7 @@
 <!-- __hdr_3&#45;&gt;__ph_1_3 -->
 <!-- __hdr_5 -->
 <g id="node12" class="node">
-<title>__hdr_5</title>
+<title>Request SimpleFIN Data — State View · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="1090.26,-476.86 946.26,-476.86 946.26,-443.74 1090.26,-443.74 1090.26,-476.86"/>
 <text xml:space="preserve" text-anchor="middle" x="1018.26" y="-463.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Request SimpleFIN</text>
 <text xml:space="preserve" text-anchor="middle" x="1018.26" y="-451.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Data</text>
@@ -135,7 +135,7 @@
 <!-- __hdr_4&#45;&gt;__ph_1_4 -->
 <!-- __hdr_6 -->
 <g id="node13" class="node">
-<title>__hdr_6</title>
+<title>Receive Provider Data — Translation · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="1259.26,-476.86 1115.26,-476.86 1115.26,-443.74 1259.26,-443.74 1259.26,-476.86"/>
 <text xml:space="preserve" text-anchor="middle" x="1187.26" y="-463.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Receive Provider</text>
 <text xml:space="preserve" text-anchor="middle" x="1187.26" y="-451.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Data</text>
@@ -145,7 +145,7 @@
 <!-- __hdr_5&#45;&gt;__ph_1_5 -->
 <!-- __hdr_7 -->
 <g id="node14" class="node">
-<title>__hdr_7</title>
+<title>Receive Provider Sync Failure — Translation · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="1428.26,-476.86 1284.26,-476.86 1284.26,-443.74 1428.26,-443.74 1428.26,-476.86"/>
 <text xml:space="preserve" text-anchor="middle" x="1356.26" y="-463.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Receive Provider</text>
 <text xml:space="preserve" text-anchor="middle" x="1356.26" y="-451.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Sync Failure</text>
@@ -161,7 +161,7 @@
 <!-- __hdr_6&#45;&gt;simplefin_data_adapter -->
 <!-- __hdr_8 -->
 <g id="node15" class="node">
-<title>__hdr_8</title>
+<title>Normalize Provider Data — Translation · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="1597.26,-476.86 1453.26,-476.86 1453.26,-443.74 1597.26,-443.74 1597.26,-476.86"/>
 <text xml:space="preserve" text-anchor="middle" x="1525.26" y="-463.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Normalize Provider</text>
 <text xml:space="preserve" text-anchor="middle" x="1525.26" y="-451.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Data</text>
@@ -177,7 +177,7 @@
 <!-- __hdr_7&#45;&gt;simplefin_failure_adapter -->
 <!-- __hdr_9 -->
 <g id="node16" class="node">
-<title>__hdr_9</title>
+<title>Record Normalized Provider Record — State Change · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="1766.26,-476.86 1622.26,-476.86 1622.26,-443.74 1766.26,-443.74 1766.26,-476.86"/>
 <text xml:space="preserve" text-anchor="middle" x="1694.26" y="-463.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Record Normalized</text>
 <text xml:space="preserve" text-anchor="middle" x="1694.26" y="-451.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Provider Record</text>
@@ -193,7 +193,7 @@
 <!-- __hdr_8&#45;&gt;provider_data_normalizer -->
 <!-- __hdr_10 -->
 <g id="node17" class="node">
-<title>__hdr_10</title>
+<title>Schedule Recurring Sync — Automation · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="1935.26,-476.86 1791.26,-476.86 1791.26,-443.74 1935.26,-443.74 1935.26,-476.86"/>
 <text xml:space="preserve" text-anchor="middle" x="1863.26" y="-463.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Schedule Recurring</text>
 <text xml:space="preserve" text-anchor="middle" x="1863.26" y="-451.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Sync</text>
@@ -203,7 +203,7 @@
 <!-- __hdr_9&#45;&gt;__ph_1_9 -->
 <!-- __hdr_11 -->
 <g id="node18" class="node">
-<title>__hdr_11</title>
+<title>Start Scheduled Provider Sync — State Change · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="2104.26,-476.86 1960.26,-476.86 1960.26,-443.74 2104.26,-443.74 2104.26,-476.86"/>
 <text xml:space="preserve" text-anchor="middle" x="2032.26" y="-463.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Start Scheduled</text>
 <text xml:space="preserve" text-anchor="middle" x="2032.26" y="-451.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Provider Sync</text>
@@ -219,7 +219,7 @@
 <!-- __hdr_10&#45;&gt;recurring_sync_scheduler -->
 <!-- __hdr_12 -->
 <g id="node19" class="node">
-<title>__hdr_12</title>
+<title>Retry Failed Sync — Automation · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="2273.26,-476.86 2129.26,-476.86 2129.26,-443.74 2273.26,-443.74 2273.26,-476.86"/>
 <text xml:space="preserve" text-anchor="middle" x="2201.26" y="-457.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Retry Failed Sync</text>
 </g>
@@ -228,7 +228,7 @@
 <!-- __hdr_11&#45;&gt;__ph_1_11 -->
 <!-- __hdr_13 -->
 <g id="node20" class="node">
-<title>__hdr_13</title>
+<title>Retry Provider Sync — State Change · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="2442.26,-476.86 2298.26,-476.86 2298.26,-443.74 2442.26,-443.74 2442.26,-476.86"/>
 <text xml:space="preserve" text-anchor="middle" x="2370.26" y="-457.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Retry Provider Sync</text>
 </g>
@@ -243,7 +243,7 @@
 <!-- __hdr_12&#45;&gt;sync_retry_automation -->
 <!-- __hdr_14 -->
 <g id="node21" class="node">
-<title>__hdr_14</title>
+<title>Request Manual Sync — State Change · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="2611.26,-476.86 2467.26,-476.86 2467.26,-443.74 2611.26,-443.74 2611.26,-476.86"/>
 <text xml:space="preserve" text-anchor="middle" x="2539.26" y="-457.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Request Manual Sync</text>
 </g>
@@ -252,7 +252,7 @@
 <!-- __hdr_13&#45;&gt;__ph_1_13 -->
 <!-- __hdr_15 -->
 <g id="node22" class="node">
-<title>__hdr_15</title>
+<title>Review Sync Status — State View · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="2780.26,-476.86 2636.26,-476.86 2636.26,-443.74 2780.26,-443.74 2780.26,-476.86"/>
 <text xml:space="preserve" text-anchor="middle" x="2708.26" y="-457.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Review Sync Status</text>
 </g>
@@ -261,7 +261,7 @@
 <!-- __hdr_14&#45;&gt;__ph_1_14 -->
 <!-- __hdr_16 -->
 <g id="node23" class="node">
-<title>__hdr_16</title>
+<title>Show Manual Sync Status — State View · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="2949.26,-476.86 2805.26,-476.86 2805.26,-443.74 2949.26,-443.74 2949.26,-476.86"/>
 <text xml:space="preserve" text-anchor="middle" x="2877.26" y="-463.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Show Manual Sync</text>
 <text xml:space="preserve" text-anchor="middle" x="2877.26" y="-451.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Status</text>

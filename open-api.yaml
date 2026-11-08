@@ -1,0 +1,187 @@
+openapi: 3.0.0
+info:
+  title: Nemeo API
+  version: 0.0.0
+tags: []
+paths:
+  /health:
+    get:
+      operationId: health
+      parameters: []
+      responses:
+        "200":
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /v1/auth/google/callback:
+    get:
+      operationId: HttpAuthentication_completeGoogleAuthentication
+      description: Maps to Google OIDC Callback — New Identity or Existing Identity.
+      parameters:
+        - $ref: "#/components/parameters/GoogleAuthCallbackQuery.code"
+        - $ref: "#/components/parameters/GoogleAuthCallbackQuery.state"
+        - $ref: "#/components/parameters/GoogleAuthCallbackQuery.error"
+      responses:
+        "302":
+          description: Redirection
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
+  /v1/auth/google/start:
+    get:
+      operationId: HttpAuthentication_startGoogleAuthentication
+      description: Starts the Google OIDC translation.
+      parameters: []
+      responses:
+        "302":
+          description: Redirection
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
+  /v1/households:
+    post:
+      operationId: HttpCommands_createInitialHousehold
+      description: |-
+        EM mapping: iam / create-initial-household / Commands.createInitialHousehold.
+        The authenticated principal supplies userId; the HTTP body supplies name.
+      parameters: []
+      responses:
+        "201":
+          description: The request has succeeded and a new resource has been created as a result.
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IAM.CurrentHousehold"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateInitialHouseholdRequest"
+    get:
+      operationId: HttpViews_getCurrentHousehold
+      description: "EM mapping: iam / view-current-household / Views.getCurrentHousehold."
+      parameters: []
+      responses:
+        "200":
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HouseholdCollectionResponse"
+  /v1/users/me:
+    get:
+      operationId: HttpViews_getCurrentUser
+      description: "EM mapping: iam / view-current-user / Views.getCurrentUser."
+      parameters: []
+      responses:
+        "200":
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IAM.CurrentUser"
+components:
+  parameters:
+    GoogleAuthCallbackQuery.code:
+      name: code
+      in: query
+      required: true
+      schema:
+        type: string
+      explode: false
+    GoogleAuthCallbackQuery.error:
+      name: error
+      in: query
+      required: false
+      schema:
+        type: string
+      explode: false
+    GoogleAuthCallbackQuery.state:
+      name: state
+      in: query
+      required: true
+      schema:
+        type: string
+      explode: false
+  schemas:
+    CreateInitialHouseholdRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+      description: The template for omitting properties.
+    HealthResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - ok
+    HouseholdCollectionResponse:
+      type: object
+      required:
+        - data
+        - hasMore
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/IAM.CurrentHousehold"
+        hasMore:
+          type: boolean
+        nextCursor:
+          type: string
+    IAM.CurrentHousehold:
+      type: object
+      required:
+        - id
+        - name
+        - role
+      properties:
+        id:
+          $ref: "#/components/schemas/IAM.Uuid"
+        name:
+          type: string
+        role:
+          type: string
+      description: Consumers tolerate unknown fields; additive changes do not break them.
+    IAM.CurrentUser:
+      type: object
+      required:
+        - id
+        - provider
+        - verifiedEmail
+        - displayName
+      properties:
+        id:
+          $ref: "#/components/schemas/IAM.Uuid"
+        provider:
+          type: string
+        verifiedEmail:
+          type: string
+        displayName:
+          type: string
+      description: Consumers tolerate unknown fields; additive changes do not break them.
+    IAM.Uuid:
+      type: string
+      format: uuid
+servers:
+  - url: http://localhost:3000
+    description: Local development
+    variables: {}
