@@ -34,7 +34,8 @@ Nemeo's MVP backend platform is Node.js with TypeScript and Fastify.
     model's `contracts/` directory. They are checked with `em api check` and are never hand-edited.
   - Application HTTP bindings are authored in TypeSpec under `typespec/`. They define the
     versioned HTTP routes and transport policy used by the web client and exposed to MCP.
-    `typespec/main.tsp` is only the assembly entry point; context binding files own routes, while
+    `typespec/main.tsp` is only the assembly entry point; each `typespec/<system>/main.tsp` owns
+    that system's routes, while
     generated Event Model contracts own public command, event, and view schemas/operations.
 - Application TypeSpec MUST emit the versioned OpenAPI contract; handwritten OpenAPI is not a
   parallel source of truth. Generated OpenAPI, client types, documentation, validation artifacts,
@@ -100,7 +101,7 @@ This gives Nemeo one primary backend language and two explicit contract pipeline
 ```text
 Event Model (.em) --em api generate--> domain TypeSpec --import--> context HTTP bindings
 
-typespec/main.tsp --assemble--> system HTTP bindings --compile--> open-api.yaml
+typespec/main.tsp --assemble--> typespec/<system>/main.tsp bindings --compile--> open-api.yaml
                                                 -> Fastify boundary -> vertical slice capability
                                       └-----> generated/curated MCP capability
 ```

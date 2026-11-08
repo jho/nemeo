@@ -23,8 +23,8 @@ distinct read models and are governed by ADR 0007.
 ### Contract and media type
 
 - TypeSpec under `typespec/` is the source of truth for the HTTP API and emits versioned OpenAPI
-  artifacts at the repository root as `open-api.yaml`. `typespec/main.tsp` is only the assembly entry point; system binding files own
-  routes and transport policy. Event Model-generated TypeSpec under model-local `contracts/`
+  artifacts at the repository root as `open-api.yaml`. `typespec/main.tsp` is only the assembly entry point; each
+  `typespec/<system>/main.tsp` owns that system's routes and transport policy. Event Model-generated TypeSpec under model-local `contracts/`
   directories remains the domain-seam source of truth for public command, event, and view
   schemas/operations. HTTP bindings MUST import those files rather than redeclare domain shapes;
   they MAY define an explicit named transport projection when transport semantics differ. They do
