@@ -30,9 +30,9 @@ model GoogleAuthCallbackQuery {
   error?: string;
 }
 
-model CreateInitialHouseholdRequest {
-  name: string;
-}
+// Reuse the generated command payload while omitting the userId supplied by
+// the authenticated principal.
+model CreateInitialHouseholdRequest is OmitProperties<CreateInitialHousehold, "userId">;
 
 model HouseholdCollectionResponse {
   data: CurrentHousehold[];

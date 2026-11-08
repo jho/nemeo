@@ -44,7 +44,7 @@
     "react-dom": "^19.1.1"
   },
   "devDependencies": {
-    "@milehimikey/em": "^1.14.0",
+    "@milehimikey/em": "^1.22.0",
     "@playwright/test": "^1.55.0",
     "@types/node": "^24.5.2",
     "@types/pg": "^8.15.5",

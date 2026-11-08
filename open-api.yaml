@@ -123,6 +123,7 @@ components:
       properties:
         name:
           type: string
+      description: The template for omitting properties.
     HealthResponse:
       type: object
       required:
@@ -154,7 +155,7 @@ components:
         - role
       properties:
         id:
-          type: string
+          $ref: "#/components/schemas/IAM.Uuid"
         name:
           type: string
         role:
@@ -169,7 +170,7 @@ components:
         - displayName
       properties:
         id:
-          type: string
+          $ref: "#/components/schemas/IAM.Uuid"
         provider:
           type: string
         verifiedEmail:
@@ -177,6 +178,9 @@ components:
         displayName:
           type: string
       description: Consumers tolerate unknown fields; additive changes do not break them.
+    IAM.Uuid:
+      type: string
+      format: uuid
 servers:
   - url: http://localhost:3000
     description: Local development

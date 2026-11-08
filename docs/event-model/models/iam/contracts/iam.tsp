@@ -3,12 +3,14 @@
 // Scope: the model's `public` commands (write API), events (async) and views (read API).
 
 namespace IAM {
+  @format("uuid") scalar Uuid extends string;
+
   /**
    * Consumers tolerate unknown fields; additive changes do not break them.
    */
   model UserAccountCreated {
     /** system-assigned — not supplied by the triggering command */
-    id: string;
+    id: Uuid;
     provider: string;
     providerSubject: string;
     verifiedEmail: string;
@@ -23,7 +25,7 @@ namespace IAM {
    */
   model UserAuthenticated {
     /** system-assigned — not supplied by the triggering command */
-    id: string;
+    id: Uuid;
     provider: string;
     /** system-assigned — not supplied by the triggering command */
     authenticatedAt: utcDateTime;
@@ -35,19 +37,25 @@ namespace IAM {
    */
   model HouseholdCreated {
     /** system-assigned — not supplied by the triggering command */
-    id: string;
+    id: Uuid;
     name: string;
     /** system-assigned — not supplied by the triggering command */
-    rootManagerId: string;
+    rootManagerId: Uuid;
     /** system-assigned — not supplied by the triggering command */
     createdAt: utcDateTime;
+  }
+
+  interface Events {
+    op onUserAccountCreated(payload: UserAccountCreated): void;
+    op onUserAuthenticated(payload: UserAuthenticated): void;
+    op onHouseholdCreated(payload: HouseholdCreated): void;
   }
 
   /**
    * Consumers tolerate unknown fields; additive changes do not break them.
    */
   model CurrentUser {
-    id: string;
+    id: Uuid;
     provider: string;
     verifiedEmail: string;
     displayName: string;
@@ -57,7 +65,7 @@ namespace IAM {
    * Consumers tolerate unknown fields; additive changes do not break them.
    */
   model CurrentHousehold {
-    id: string;
+    id: Uuid;
     name: string;
     role: string;
   }
@@ -67,8 +75,16 @@ namespace IAM {
     op getCurrentHousehold(): CurrentHousehold;
   }
 
-  interface Commands {
+  /**
+   * Consumers tolerate unknown fields; additive changes do not break them.
+   */
+  model CreateInitialHousehold {
     /** INV-HH-1: A user cannot create a second household in MVP */
-    op createInitialHousehold(userId: string, name: string): void;
+    userId: Uuid;
+    name: string;
+  }
+
+  interface Commands {
+    op createInitialHousehold(payload: CreateInitialHousehold): void;
   }
 }

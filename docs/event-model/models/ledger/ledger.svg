@@ -22,7 +22,7 @@
 <!-- __row_0&#45;&gt;__row_1 -->
 <!-- __hdr_0 -->
 <g id="node10" class="node">
-<title>__hdr_0</title>
+<title>Import Provider Account — Translation · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="273.15,-739.64 129.15,-739.64 129.15,-706.52 273.15,-706.52 273.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="201.15" y="-726.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Import Provider</text>
 <text xml:space="preserve" text-anchor="middle" x="201.15" y="-714.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Account</text>
@@ -105,7 +105,7 @@
 <!-- __row_8&#45;&gt;__ph_8_0 -->
 <!-- __hdr_1 -->
 <g id="node11" class="node">
-<title>__hdr_1</title>
+<title>Receive Provider Records — Translation · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="442.15,-739.64 298.15,-739.64 298.15,-706.52 442.15,-706.52 442.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="370.15" y="-726.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Receive Provider</text>
 <text xml:space="preserve" text-anchor="middle" x="370.15" y="-714.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Records</text>
@@ -114,7 +114,7 @@
 <!-- __hdr_0&#45;&gt;provider_account_import -->
 <!-- __hdr_2 -->
 <g id="node12" class="node">
-<title>__hdr_2</title>
+<title>Prepare Provider Record Import — Automation · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="611.15,-739.64 467.15,-739.64 467.15,-706.52 611.15,-706.52 611.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="539.15" y="-726.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Prepare Provider</text>
 <text xml:space="preserve" text-anchor="middle" x="539.15" y="-714.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Record Import</text>
@@ -130,7 +130,7 @@
 <!-- __hdr_1&#45;&gt;provider_record_intake -->
 <!-- __hdr_3 -->
 <g id="node13" class="node">
-<title>__hdr_3</title>
+<title>Import Provider Transaction — State Change · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="780.15,-739.64 636.15,-739.64 636.15,-706.52 780.15,-706.52 780.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="708.15" y="-726.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Import Provider</text>
 <text xml:space="preserve" text-anchor="middle" x="708.15" y="-714.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Transaction</text>
@@ -146,7 +146,7 @@
 <!-- __hdr_2&#45;&gt;transaction_importer -->
 <!-- __hdr_4 -->
 <g id="node14" class="node">
-<title>__hdr_4</title>
+<title>Select Accounts for Budget — State Change · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="949.15,-739.64 805.15,-739.64 805.15,-706.52 949.15,-706.52 949.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="877.15" y="-726.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Select Accounts for</text>
 <text xml:space="preserve" text-anchor="middle" x="877.15" y="-714.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Budget</text>
@@ -156,7 +156,7 @@
 <!-- __hdr_3&#45;&gt;__ph_1_3 -->
 <!-- __hdr_5 -->
 <g id="node15" class="node">
-<title>__hdr_5</title>
+<title>Show Selected Budget Accounts — State View · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="1118.15,-739.64 974.15,-739.64 974.15,-706.52 1118.15,-706.52 1118.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="1046.15" y="-726.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Show Selected Budget</text>
 <text xml:space="preserve" text-anchor="middle" x="1046.15" y="-714.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Accounts</text>
@@ -166,7 +166,7 @@
 <!-- __hdr_4&#45;&gt;__ph_1_4 -->
 <!-- __hdr_6 -->
 <g id="node16" class="node">
-<title>__hdr_6</title>
+<title>Reconcile Account Balances — Automation · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="1287.15,-739.64 1143.15,-739.64 1143.15,-706.52 1287.15,-706.52 1287.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="1215.15" y="-726.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Reconcile Account</text>
 <text xml:space="preserve" text-anchor="middle" x="1215.15" y="-714.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Balances</text>
@@ -176,7 +176,7 @@
 <!-- __hdr_5&#45;&gt;__ph_1_5 -->
 <!-- __hdr_7 -->
 <g id="node17" class="node">
-<title>__hdr_7</title>
+<title>Record Opening Balance — State Change · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="1456.15,-739.64 1312.15,-739.64 1312.15,-706.52 1456.15,-706.52 1456.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="1384.15" y="-726.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Record Opening</text>
 <text xml:space="preserve" text-anchor="middle" x="1384.15" y="-714.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Balance</text>
@@ -191,7 +191,7 @@
 <!-- __hdr_6&#45;&gt;balance_reconciler -->
 <!-- __hdr_8 -->
 <g id="node18" class="node">
-<title>__hdr_8</title>
+<title>Review Imported Transactions — State View · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="1625.15,-739.64 1481.15,-739.64 1481.15,-706.52 1625.15,-706.52 1625.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="1553.15" y="-726.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Review Imported</text>
 <text xml:space="preserve" text-anchor="middle" x="1553.15" y="-714.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Transactions</text>
@@ -201,7 +201,7 @@
 <!-- __hdr_7&#45;&gt;__ph_1_7 -->
 <!-- __hdr_9 -->
 <g id="node19" class="node">
-<title>__hdr_9</title>
+<title>Find Transactions to Categorize — Automation · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="1794.15,-739.64 1650.15,-739.64 1650.15,-706.52 1794.15,-706.52 1794.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="1722.15" y="-726.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Find Transactions to</text>
 <text xml:space="preserve" text-anchor="middle" x="1722.15" y="-714.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Categorize</text>
@@ -211,7 +211,7 @@
 <!-- __hdr_8&#45;&gt;__ph_1_8 -->
 <!-- __hdr_10 -->
 <g id="node20" class="node">
-<title>__hdr_10</title>
+<title>Categorize Transactions Automatically — State Change · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="1963.15,-739.64 1819.15,-739.64 1819.15,-706.52 1963.15,-706.52 1963.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="1891.15" y="-732.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Categorize</text>
 <text xml:space="preserve" text-anchor="middle" x="1891.15" y="-720.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Transactions</text>
@@ -228,7 +228,7 @@
 <!-- __hdr_9&#45;&gt;categorization_automation -->
 <!-- __hdr_11 -->
 <g id="node21" class="node">
-<title>__hdr_11</title>
+<title>Find Uncategorized Exceptions — State View · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="2132.15,-739.64 1988.15,-739.64 1988.15,-706.52 2132.15,-706.52 2132.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="2060.15" y="-726.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Find Uncategorized</text>
 <text xml:space="preserve" text-anchor="middle" x="2060.15" y="-714.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Exceptions</text>
@@ -238,7 +238,7 @@
 <!-- __hdr_10&#45;&gt;__ph_1_10 -->
 <!-- __hdr_12 -->
 <g id="node22" class="node">
-<title>__hdr_12</title>
+<title>Find Transfer Candidates — Automation · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="2301.15,-739.64 2157.15,-739.64 2157.15,-706.52 2301.15,-706.52 2301.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="2229.15" y="-726.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Find Transfer</text>
 <text xml:space="preserve" text-anchor="middle" x="2229.15" y="-714.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Candidates</text>
@@ -248,7 +248,7 @@
 <!-- __hdr_11&#45;&gt;__ph_1_11 -->
 <!-- __hdr_13 -->
 <g id="node23" class="node">
-<title>__hdr_13</title>
+<title>Suggest Transfer Match — State Change · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="2470.15,-739.64 2326.15,-739.64 2326.15,-706.52 2470.15,-706.52 2470.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="2398.15" y="-726.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Suggest Transfer</text>
 <text xml:space="preserve" text-anchor="middle" x="2398.15" y="-714.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Match</text>
@@ -264,7 +264,7 @@
 <!-- __hdr_12&#45;&gt;transfer_matching_automation -->
 <!-- __hdr_14 -->
 <g id="node24" class="node">
-<title>__hdr_14</title>
+<title>Review Transfer Suggestion — State View · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="2639.15,-739.64 2495.15,-739.64 2495.15,-706.52 2639.15,-706.52 2639.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="2567.15" y="-726.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Review Transfer</text>
 <text xml:space="preserve" text-anchor="middle" x="2567.15" y="-714.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Suggestion</text>
@@ -274,7 +274,7 @@
 <!-- __hdr_13&#45;&gt;__ph_1_13 -->
 <!-- __hdr_15 -->
 <g id="node25" class="node">
-<title>__hdr_15</title>
+<title>Confirm Transfer — State Change · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="2808.15,-739.64 2664.15,-739.64 2664.15,-706.52 2808.15,-706.52 2808.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="2736.15" y="-720.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Confirm Transfer</text>
 </g>
@@ -283,7 +283,7 @@
 <!-- __hdr_14&#45;&gt;__ph_1_14 -->
 <!-- __hdr_16 -->
 <g id="node26" class="node">
-<title>__hdr_16</title>
+<title>Reject Transfer Suggestion — State Change · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="2977.15,-739.64 2833.15,-739.64 2833.15,-706.52 2977.15,-706.52 2977.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="2905.15" y="-726.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Reject Transfer</text>
 <text xml:space="preserve" text-anchor="middle" x="2905.15" y="-714.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Suggestion</text>
@@ -293,7 +293,7 @@
 <!-- __hdr_15&#45;&gt;__ph_1_15 -->
 <!-- __hdr_17 -->
 <g id="node27" class="node">
-<title>__hdr_17</title>
+<title>Show Transfer Suggestion State — State View · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="3146.15,-739.64 3002.15,-739.64 3002.15,-706.52 3146.15,-706.52 3146.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="3074.15" y="-726.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Show Transfer</text>
 <text xml:space="preserve" text-anchor="middle" x="3074.15" y="-714.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Suggestion State</text>
@@ -303,7 +303,7 @@
 <!-- __hdr_16&#45;&gt;__ph_1_16 -->
 <!-- __hdr_18 -->
 <g id="node28" class="node">
-<title>__hdr_18</title>
+<title>Correct Transaction Category — State Change · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="3315.15,-739.64 3171.15,-739.64 3171.15,-706.52 3315.15,-706.52 3315.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="3243.15" y="-726.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Correct Transaction</text>
 <text xml:space="preserve" text-anchor="middle" x="3243.15" y="-714.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Category</text>
@@ -313,7 +313,7 @@
 <!-- __hdr_17&#45;&gt;__ph_1_17 -->
 <!-- __hdr_19 -->
 <g id="node29" class="node">
-<title>__hdr_19</title>
+<title>Remember Category Correction — State Change · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="3484.15,-739.64 3340.15,-739.64 3340.15,-706.52 3484.15,-706.52 3484.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="3412.15" y="-726.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Remember Category</text>
 <text xml:space="preserve" text-anchor="middle" x="3412.15" y="-714.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Correction</text>
@@ -323,7 +323,7 @@
 <!-- __hdr_18&#45;&gt;__ph_1_18 -->
 <!-- __hdr_20 -->
 <g id="node30" class="node">
-<title>__hdr_20</title>
+<title>Find Applicable Category Rules — Automation · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="3653.15,-739.64 3509.15,-739.64 3509.15,-706.52 3653.15,-706.52 3653.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="3581.15" y="-726.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Find Applicable</text>
 <text xml:space="preserve" text-anchor="middle" x="3581.15" y="-714.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Category Rules</text>
@@ -333,7 +333,7 @@
 <!-- __hdr_19&#45;&gt;__ph_1_19 -->
 <!-- __hdr_21 -->
 <g id="node31" class="node">
-<title>__hdr_21</title>
+<title>Apply Category Rule — State Change · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="3822.15,-739.64 3678.15,-739.64 3678.15,-706.52 3822.15,-706.52 3822.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="3750.15" y="-720.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Apply Category Rule</text>
 </g>
@@ -348,7 +348,7 @@
 <!-- __hdr_20&#45;&gt;category_rule_automation -->
 <!-- __hdr_22 -->
 <g id="node32" class="node">
-<title>__hdr_22</title>
+<title>Edit Transaction Category — State Change · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="3991.15,-739.64 3847.15,-739.64 3847.15,-706.52 3991.15,-706.52 3991.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="3919.15" y="-726.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Edit Transaction</text>
 <text xml:space="preserve" text-anchor="middle" x="3919.15" y="-714.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Category</text>
@@ -358,7 +358,7 @@
 <!-- __hdr_21&#45;&gt;__ph_1_21 -->
 <!-- __hdr_23 -->
 <g id="node33" class="node">
-<title>__hdr_23</title>
+<title>Read Transactions Through MCP — State View · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="4160.15,-739.64 4016.15,-739.64 4016.15,-706.52 4160.15,-706.52 4160.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="4088.15" y="-726.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Read Transactions</text>
 <text xml:space="preserve" text-anchor="middle" x="4088.15" y="-714.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Through MCP</text>
@@ -368,7 +368,7 @@
 <!-- __hdr_22&#45;&gt;__ph_1_22 -->
 <!-- __hdr_24 -->
 <g id="node34" class="node">
-<title>__hdr_24</title>
+<title>Change Category Through MCP — Translation · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="4329.15,-739.64 4185.15,-739.64 4185.15,-706.52 4329.15,-706.52 4329.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="4257.15" y="-726.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Change Category</text>
 <text xml:space="preserve" text-anchor="middle" x="4257.15" y="-714.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Through MCP</text>
@@ -378,7 +378,7 @@
 <!-- __hdr_23&#45;&gt;__ph_1_23 -->
 <!-- __hdr_25 -->
 <g id="node35" class="node">
-<title>__hdr_25</title>
+<title>Show Applied MCP Change — State View · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="4498.15,-739.64 4354.15,-739.64 4354.15,-706.52 4498.15,-706.52 4498.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="4426.15" y="-726.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Show Applied MCP</text>
 <text xml:space="preserve" text-anchor="middle" x="4426.15" y="-714.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Change</text>
@@ -394,7 +394,7 @@
 <!-- __hdr_24&#45;&gt;mcp_category_change_adapter -->
 <!-- __hdr_26 -->
 <g id="node36" class="node">
-<title>__hdr_26</title>
+<title>View Shared Transactions — State View · no doc yet</title>
 <polygon fill="#e3e7eb" stroke="#c7cdd4" points="4667.15,-739.64 4523.15,-739.64 4523.15,-706.52 4667.15,-706.52 4667.15,-739.64"/>
 <text xml:space="preserve" text-anchor="middle" x="4595.15" y="-726.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">View Shared</text>
 <text xml:space="preserve" text-anchor="middle" x="4595.15" y="-714.08" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="10.00" fill="#1f2933">Transactions</text>
