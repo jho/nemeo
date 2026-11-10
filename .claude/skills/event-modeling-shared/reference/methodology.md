@@ -1,0 +1,647 @@
+# Event Modeling — Methodology Reference
+
+This is the authoritative reference for the **7 steps** and **4 patterns** of Event Modeling
+(Adam Dymitruk's method). Consult it while running any phase of the `event-modeling` skill.
+Do not invent domain facts — use the Socratic prompts to extract them from the user.
+
+---
+
+## Core idea
+
+An event model is a **timeline of state changes** told as a story. Information only moves
+three ways:
+
+1. **Into** the system via a **command** (a request to change state) → produces an **event**.
+2. **Out of** the system via a **read model / view** (a projection of past events) → shown on a **UI** or consumed by an automation.
+3. There is **no other way** for information to flow. Every box on the diagram is one of:
+   UI screen, command, event, read model, or automation/processor.
+
+Concretely, that leaves exactly six legal connections, and `em` infers only these:
+`ui → command`, `command → event`, `event → read model`, `read model → ui`,
+`read model → reaction`, `reaction → command`. Every other pair is a rule violation, and an
+explicit `arrow` writing one is a validation error. The two worth naming, because they are the
+tempting shortcuts:
+
+- **`command → read model`** — the CQRS violation. A write is only ever visible to a reader
+  through the event it recorded. Put the event between them.
+- **`read model → command`** — reads never drive a write directly. A processor or translation
+  watches the read model and issues the command that sits in the same slice.
+
+If you find yourself wanting an arrow the patterns don't allow, the model is missing an
+**element**, not an arrow.
+
+**Automations and translations are not exceptions to rule 1.** They are *reactions* — a processor
+or an adapter that wakes up, decides something must change, and **issues a command** to do it. They
+never record an event themselves. A reaction box always points at a **command in its own slice** —
+the same shape a `ui` already uses in State Change — and that command produces the event. If you
+ever see a translation or automation wired straight to an event, the model is wrong.
+
+Events are **immutable past-tense facts** ("Order Placed", "Payment Captured"). They are the
+spine of the model. Everything else hangs off the events.
+
+The unit of delivery is a **slice**: a thin vertical cut through the swimlanes that delivers
+one of the four patterns. A slice is what a developer implements and tests in isolation.
+
+---
+
+## The 4 patterns
+
+Every slice is exactly one of these. In `em`, each maps to a specific shape (see `em-dsl.md`).
+
+### 1. State Change (Command pattern)
+**UI → Command → Event.** A user (or automation) submits a command; the system validates it
+against invariants and records one or more events.
+- **A State Change never travels alone, and it's joined at both ends.** Something must *trigger*
+  the command — the `ui` it's issued from, or (patterns 3 and 4) the reaction that triggers it,
+  also in this slice — and its event needs a read model that projects it. So the unit of work is a State Change
+  slice *plus* the State View slice that reads its event. Write them together; a command nothing
+  points at is a write nobody can start, an unread event is a write nobody can see, and
+  `em validate` warns on each.
+- `em` shape (one element per line — there is no one-line slice form):
+  ```em
+  slice "Do The Thing" {
+    ui X @Persona
+    command Y
+    event Z @Context
+  }
+  slice "See The Result" {   # the State View slice that reads Z — pattern 2, but required here
+    view V from "Z"
+    ui Screen @Persona
+  }
+  ```
+- This is where **invariants** live — the command is rejected if a rule is violated.
+- Socratic prompts: *"What does the user do here? What request are they making? What must be
+  true for it to succeed? What fact gets recorded when it does? What gets rejected and why?"*
+
+### 2. State View (View pattern)
+**Event(s) → Read Model → UI.** Past events are projected into a read model that a screen
+displays. Read-only; changes no state.
+- `em` shape: `slice { view V from "Event A", "Event B"  ui Screen @Persona }`
+- **Headless / API systems:** still use `ui`/`persona` — declare a persona per external
+  caller/role (e.g. `IntegratorAPI`) and treat its `ui` boxes as API calls, not screens. Shape:
+  `slice { view V from "..."  ui Read V @IntegratorAPI }`, same as any State View slice.
+  `translation` stays reserved for genuine reactions/external-system boundaries (pattern 4), not
+  for a synchronous request/response API call.
+- **Repeat read models across the timeline.** A read model is drawn fresh in **every** slice where
+  it is read — after the events that update it, before the actions that consume it — so the diagram
+  shows state flowing left-to-right (the information-completeness staircase). The same read-model
+  name recurring is intentional and **renders cleanly**. Declare every instance after the first with
+  **`view V again from "..."`**: `again` instances are exempt from the duplicate-name warning even
+  when something references them, and each reference resolves to the right instance. (A plain repeat
+  only stays warning-free while nothing references it by name, and resolves to the *first*
+  declaration when something does.) **Wire each event to a read model
+  exactly once:** a repeated instance's `from` lists only the **new** events since the previous
+  instance (not cumulative) — otherwise an event draws a duplicate arrow to the same read model at
+  every repeat. (An event may still feed several *different* read models, once each.)
+- **Instances are never connected to one another.** There is no arrow between two appearances of one
+  read model, and an explicit one is a validation error. The repeat is an ergonomic device for
+  showing the same read model at successive points in time — continuity is implied by the shared
+  name, and the events arriving at each instance are what show it changing. An arrow between them
+  would say the read model feeds itself.
+- **Place each repeat immediately after its feeding event (span-1).** The cleanest staircase puts a
+  read-model instance right after each event that updates it, sourcing **only that one adjacent
+  event** — every `event → read model` arrow is then short and forward-flowing. A read model sitting
+  far from its source events (e.g. a "list/queue" read placed early but fed by late events) draws
+  long arrows that sweep across the diagram. The renderer routes them *around* intervening boxes
+  rather than through them, so they no longer *look* like a forbidden read→read link — but the
+  distance itself is the problem: the arrowhead lands columns away from the event that produced it,
+  so **the write slice reads as dangling**, as if nothing consumed its event. A reader has to trace
+  the line across the diagram to see otherwise. The fix is never a `view → view` edge; it's to
+  repeat the read model next to each event that feeds it, and to keep a sub-flow that detours into
+  another context together rather than parking it at the end of the model.
+- Socratic prompts: *"What does the consumer need to see to make their next decision? Which past
+  events provide that information? Is this a screen or an API read? What's the freshness/consistency
+  expectation?"*
+
+### 3. Automation (Processor pattern)
+**Read Model → Processor → Command → Event, the last three together in one slice.** The system
+reacts on its own: a processor watches a read model (a "to-do list" of work) and **issues a
+command** — it never records an event directly.
+- `em` shape: the read model in the slice before, then the reaction with its command and event —
+  plus the read slice that consumes the event — three slices in all:
+  ```em
+  slice "Todo" {
+    view Todo from "..."
+  }
+  slice "Do It" {           # processor, command, and event all share this slice
+    processor P from "Todo"
+    command C
+    event E @Context
+  }
+  slice "Todo — done" {
+    view Todo again from "E"   # every event needs a reader; here it clears the to-do list
+    ui Work Board @Persona     # ...and every read model needs a consumer
+  }
+  ```
+  The processor never records the event directly — the command it triggers does, and that event
+  happens to live in the processor's own slice now because the command does. A processor with no
+  command in its slice (and no explicit arrow to one) is a validation warning: a decision the
+  system never acts on. Forgetting the third slice leaves `E` unread, which is also a warning.
+- **Naming:** name the read model after the pending work — `Payments To Process`,
+  `Orders To Fulfill`, `Pending Approvals` — never after the triggering event. The event is what
+  happened; the view is what's left to do. Reusing the event's name also collides in the shared
+  element namespace: `from` references then resolve by element kind, and `em validate` flags the
+  duplicated name.
+- Socratic prompts: *"What should happen without a human? What condition triggers it? What work
+  list does the processor watch? What command does it fire? What if it fails or retries?"*
+- **Outcomes are events of the SAME slice.** Success, failure, retry-scheduled and timeout are
+  outcome events of the one command (`Fulfilment Succeeded` / `Fulfilment Failed` / `Fulfilment
+  Retry Scheduled`), not sibling slices per control-flow branch (1.18.0 adds the
+  lint `automation-split-by-outcome`). Retry policy and failure handling are invariants and scenarios
+  in that slice's doc. A new slice only when a different actor or a different trigger is
+  involved. Canon: Dilger, "one business action… two different possible outcomes"
+  (`PaymentIssued` / `PaymentFailed`); a failure that continues the story is "Linearized" as a
+  later chapter linked to the originating event, never a branch; it reads the failure event
+  through a view or a reaction (Law 1 forbids event-to-event arrows). A retry is the processor's
+  to-do view reading the retry-scheduled event (`view X again`), so the same reaction re-fires. Same rule for State Change: one
+  command, several outcome events, one slice.
+
+### 4. Translation
+**Boundary crossing → command → event, the reaction and what it triggers together in one slice.**
+An adapter translates data across a boundary (an external system, or another bounded context) into
+the model's own language. Like an automation, a translation is a *reaction*: it **triggers a
+command**, never records an event directly. Two independent questions shape which form it takes —
+don't conflate them:
+- **Trigger source:** does the input come from outside the model, or from the model's own state
+  pushed back out?
+- **Durable artifact:** is there a queryable, persisted thing behind the trigger (a queue, topic,
+  or log), or is it an ephemeral call with nothing to query afterward?
+
+The `em` shape only tracks the second question — trigger source doesn't change it:
+- **No durable artifact:** `external input → translation → command → event`. No internal `from`.
+  Typically (not necessarily) externally triggered — a bare webhook call with nothing persisted
+  behind it.
+- **Durable artifact:** `read model → translation → command → event`. The translation reads a
+  **view** via `from`. This shape is the same whether the view was filled by the model's own event
+  (internally triggered, e.g. pushing data out) or by an external system's persisted queue
+  (externally triggered, e.g. a webhook whose inbound message is stored first for retries,
+  ordering, or audit) — an externally triggered translation backed by a real queue is
+  architecturally closer to this case than to the no-artifact one above.
+- **Event legitimacy:** a received external message counts as a legitimate domain `event` when
+  it's scoped to the context/lane whose fact it represents, not by who committed it — the same
+  move as an Anti-Corruption-Layer boundary event in DDD — and stays legitimate as long as it
+  doesn't leak into the model's own domain vocabulary.
+- `em` shape: exactly like an automation — the read model (durable-artifact form only) in the
+  slice before, then the reaction with its command and event, plus the read slice for the event:
+  ```em
+  slice "Boundary" {
+    view Source from "..."     # durable-artifact form only; omit if there's nothing persisted
+  }
+  slice "Record It" {          # translation, command, and event all share this slice
+    translation T from "Source"   # omit `from` entirely for the no-durable-artifact form
+    command C
+    event E @Context
+  }
+  slice "Source — recorded" {
+    view Source again from "E"   # every event needs a reader
+    ui Status Screen @Persona    # ...and every read model needs a consumer
+  }
+  ```
+  The translation never records the event directly — the command it triggers does.
+- Socratic prompts: *"What boundary are we crossing, and which way? What outside system or context
+  feeds us (or do we feed)? In what format? How do we know its data is trustworthy/complete? What
+  internal **command** does it trigger, and what event does that command record?"*
+
+---
+
+## The story, not the schema
+
+A model is a story of what success looks like, not a data model (Dymitruk, *What is Event Modeling*: a
+story "on a time line and with no branching"; commands capture intent, "as opposed to simply saving form
+data to a table"; "all information has to have an origin and a destination"). Models drafted from a spec
+drift into **CRUD laid on a timeline**; these rules stop that. Quoted lines are the canon; rulings marked
+*(em ruling)* are em's own — neither Dymitruk nor Dilger states a child-entity rule or bans "Update" or
+"Set" by name. Full write-up with the canon quotes: `docs/storyline.md`.
+
+- **One journey per process, start to finish.** The timeline holds one business journey per process,
+  ending in an outcome. The **main storyline** is the end-to-end happy path; retire, extend and
+  reorganize are **secondary storylines** (chapters; Dilger: "one linear flow from left to right. No
+  exceptions… Linearize it!", "Model one process at a time, each with its own clear ending"). Never one
+  lifecycle block per entity. Name the main and every secondary storyline; a `storyline "Name" { … }`
+  block groups the slices (`dsl.md`, Storylines). **A storyline is the unit a reader consumes, so it
+  is the unit an author edits too (GH #421):** the root model lists the storylines and their flow
+  (`storyline "Name" [after "Other"]`), and each story's slices live in `<slug>/<slug>.em` with its
+  docs in `<slug>/slices/`. Draft with inline blocks if that is faster, then `em storyline split
+  <root>.em` once the storylines are named — before docs are wired, so nothing moves twice.
+- **Build from walkthroughs first.** The story already lives in the spec's walkthroughs, use cases and
+  user journeys. Build the timeline from those; the resource/API reference (OpenAPI, endpoint tables,
+  migrations) fills only the operations no walkthrough touches, and is read last. Headless: a persona
+  per API caller, and that caller's journey is the story.
+- **The CRUD shape.** N entities × (create, update, archive), one trailing view per entity, no read
+  across contexts. Recognise it in your own output. Both models below validate; only the second is a
+  story:
+  ```em
+  model "Catalog (CRUD shape)"
+
+  persona Merchandiser
+
+  context Product
+
+  slice "Create Product" {
+    ui Product Form @Merchandiser
+    command Create Product
+    event Product Created @Product
+  }
+
+  slice "Update Product" {
+    ui Product Form @Merchandiser
+    command Update Product
+    event Product Updated @Product
+  }
+
+  slice "Archive Product" {
+    ui Product Form @Merchandiser
+    command Archive Product
+    event Product Archived @Product
+  }
+
+  slice "Products" {
+    view Products from "Product Created", "Product Updated", "Product Archived"
+    ui Product List @Merchandiser
+  }
+  ```
+  ```em
+  model "Catalog (storyline shape)"
+
+  persona Merchandiser
+
+  context Product
+
+  storyline "Bring a product to market" {
+    slice "Create Product" {
+      ui Product Form @Merchandiser
+      command Create Product
+      event Product Created @Product
+    }
+
+    slice "Catalog" {
+      view Catalog from "Product Created"
+      ui Browse Catalog @Merchandiser
+    }
+
+    slice "Set Price" {
+      ui Pricing Panel @Merchandiser
+      command Set Price
+      event Price Set @Product
+    }
+
+    slice "Catalog with Price" {
+      view Catalog again from "Price Set"
+      ui Browse Catalog @Merchandiser
+    }
+  }
+
+  storyline "Retire a product" after "Bring a product to market" {
+    slice "Retire Product" {
+      ui Pricing Panel @Merchandiser
+      command Retire Product
+      event Product Retired @Product
+    }
+
+    slice "Catalog without Product" {
+      view Catalog again from "Product Retired"
+      ui Browse Catalog @Merchandiser
+    }
+  }
+  ```
+  The `timeline-entity-clustered` lint is the mechanical half (it fires only once two or more
+  contexts are written; this one-entity pair stays silent); once any storyline exists,
+  `slice-outside-storyline` flags slices left outside one.
+- **Commands name intent, not endpoints** (Dilger: "Name by intent", "Every command has a reason"). One
+  endpoint may carry several intents. Signal of two intents in one command: invariants or field rules
+  that apply only "if `<field>` is set" — split it, and both commands may record the same event
+  (`CreateProduct` / `CreateProductVariant`, same `POST /products`, same `ProductCreated`). **Intent
+  test:** if a storyline step reads awkwardly with the command's name, the command is named after the
+  endpoint. `command-second-intent` and `command-repeated-across-slices` are the mechanical half.
+- **A read model is one information need** (Dilger: "Every Read Model answers a question. No question,
+  no Read Model."). **Question test:** write the question each view answers; add a view only when no
+  existing one answers it. A nested route hints the child belongs in the parent's view; the real test
+  is whether the query needs information the parent view lacks. Child with references only → the parent
+  view carries ids; child with its own data → embedded in the parent view; child queried without the
+  parent id → its own view. Aggregate rules decide write-side consistency, never read models. *(em
+  ruling)*
+- **Views as lookups: an event that creates a row carries what the row shows.** A view reads another
+  event only when that event adds, changes or removes a row the view already owns — never merely to
+  fill a column on a row some *other* event created. **Per-view check:** for each `from "E"` on a view,
+  ask *does E add, change or remove a row here? If it only fills a column, put the column on the event
+  that creates the row and drop E.* Generated models routinely come out wrong here — a wide fan-out of
+  "reference" events into every view that shows a name, and views keeping a lookup table ("every
+  neighbor's name and current email, every tool's name") beside their own rows. Fix: the decider
+  already read what it needed to enforce its own invariants (e.g. a checkout decider that reads Tool
+  Added and Neighbor Registered to validate the request already has `toolName`/`neighborName` in hand),
+  so have it assign those fields onto the event it records — the view then needs nothing beyond that
+  one event. A slice doc that needs a "Bookkeeping" paragraph (the view keeps, beyond its own rows, a
+  lookup of some other entity's fields) has this smell; see `docs/patterns.md#state-view` for the
+  worked overdue-notice example.
+  `view-lookup-source` is the mechanical, advisory half — it catches the cross-context cases with a few
+  false positives; a within-context lookup (`Tool Checked Out` read only to learn whose loan a later
+  event concerns) is invisible to it, so this check still has to be done by eye.
+  **Then split what is left into trigger and housekeeping** (Dilger: show the line from the event
+  that triggers the automation, not every event that touches its read model; GH #414). Of the
+  events a view legitimately reads, only the ones that **put work on the list** are the story — they
+  go in `from` and are drawn. Every event that merely **keeps a row current or removes it** (a due
+  date moved, an address changed, a loan returned) goes in `updates from`: still a source for
+  `derived from`, completeness and the generated built-from list, never an arrow. Write the to-do
+  list as `view Overdue Loans To Notify from "Tool Checked Out" updates from "Loan Extended",
+  "Neighbor Email Changed", "Tool Returned"`. The author chooses the triggers — `Holds To Fulfill`
+  keeps two (`from "Hold Placed", "Tool Returned"`) because both put a fulfillable hold on the
+  list. **Per-view check:** *which of these events is the reason this row appears? That is `from`;
+  everything else is `updates from`.* The render's "Kept current by" legend is the readback: if a
+  to-do view shows more than one or two inbound arrows, the split is missing. A State View that is
+  not a to-do list gets the same treatment — its screen's story is the event that creates the row.
+- **Write side: children belong in the parent's context** when the child's invariants are checks against
+  the parent. A sub-resource schema shared across parent types is one event per parent on the parent's
+  context, not a shared aggregate — check the spec's event reference, not its resource section. Where
+  two slices record the same fact, repeat the event bare (same name, same context). *(em ruling)*
+- **Repeat the view after every command that changes it** (`again`, span-1 — see State View above), so
+  the reader sees the information arrive rather than a view at the end. **A continuation names only
+  what changed:** `view X again from "E"` lists the event(s) that changed the view since the previous
+  instance — never the originating instance's whole source list again. Field sources are the union
+  across instances, so restating loses nothing and only draws the same arrows twice;
+  `again-restates-sources` (GH #424) is the mechanical half.
+- **Storylines read as stories** (owner rulings 2026-11-03, after Dilger). (1) **A storyline that reads
+  another declares `after` it:** an event of story A feeding a view of story B means B comes after A
+  in the telling — write `storyline "B" after "A"` (or on a storyline between them); two stories that
+  really run in parallel read nothing from each other. `storyline-reads-without-after` (GH #420) is
+  the mechanical half. (2) **Review each story on its own render and on the canvas, never on the
+  full timeline:** `em render <root>.em --map` draws every storyline's real diagram as a frame with
+  the flow between stories (`after` thick, reads dashed and labelled by event); the full timeline is
+  for `em diff` and ordering checks, not for reading. A storyline render shows only the storyline —
+  nothing from outside it is drawn, so an inbound arrow you miss there is a connector on the canvas.
+  (3) **Housekeeping is not drawn** (`updates from`, above) and **continuations name only what
+  changed** (above): together these are what keeps a story's render to one line per cause. *(em
+  ruling, built on Dilger's "the line from the event that triggers it")*
+- **Outcomes are events of one slice** (Dilger: "One decision. One event. One state change."; one
+  action with two outcomes is the legitimate exception): alternative events on one context in one slice
+  (`event A | B @Ctx`, GH #278), failure as a scenario first, a chapter only when core (it changes what the user does next, or has
+  its own actor/SLA). Stated once for
+  automations in the Automation pattern (`docs/patterns.md#automation`); `automation-split-by-outcome`
+  and `retry-slice-of` are the mechanical half. Two forms, alternatives always on one context: inline `event A | B @Ctx`
+  (shared clauses and fields) and `oneof { … }` (each alternative keeps its own fields and clauses):
+  ```em
+  model "Payments"
+
+  persona Customer
+
+  context Payment
+
+  slice "Settle Payment" {
+    ui Pay Screen @Customer
+    command Settle Payment
+    event Payment Issued | Payment Failed @Payment { paymentId: UUID }
+  }
+
+  slice "Payment Status" {
+    view Payment Status from "Payment Issued", "Payment Failed"
+    ui Payment Result @Customer
+  }
+
+  slice "Refund Payment" {
+    ui Refund Screen @Customer
+    command Refund Payment
+    oneof {
+      event Refund Issued @Payment { paymentId: UUID, amount: Decimal }
+      event Refund Declined @Payment { paymentId: UUID, reason: String }
+    }
+  }
+
+  slice "Refund Status" {
+    view Refund Status from "Refund Issued", "Refund Declined"
+    ui Refund Result @Customer
+  }
+  ```
+- **One event, two commands.** When two commands record the same fact, repeat the event bare
+  (`event X @Ctx`, same name and context) in the second slice: it inherits the first declaration, no
+  marker needed. Declaring different fields is `shared-event-field-mismatch`. Each recording site
+  feeds the nearest instance of the reading view at or after it: a `view X again from "E"` draws
+  arrows only from the sites of E recorded since the previous instance of X that also reads E (the
+  first instance keeps every site at or before it).
+  ```em
+  model "Ordering"
+
+  persona Customer
+
+  context Sales
+
+  slice "Place Order" {
+    ui Checkout @Customer
+    command Place Order
+    event Order Placed @Sales { orderId: UUID }
+  }
+
+  slice "Order Status" {
+    view Order Status from "Order Placed"
+    ui Track Order @Customer
+  }
+
+  slice "Reorder" {
+    ui Reorder Button @Customer
+    command Reorder
+    event Order Placed @Sales
+  }
+
+  slice "Order Status after Reorder" {
+    view Order Status again from "Order Placed"
+    ui Track Order @Customer
+  }
+  ```
+  Combined with alternatives: when one alternative is a shared repeat, use `oneof` and write that
+  alternative bare so it inherits its fields (an inline line's fields would be copied onto every
+  alternative and mismatch):
+  ```em
+  model "Payments"
+
+  persona Customer
+
+  context Payment
+
+  slice "Settle Payment" {
+    ui Pay Screen @Customer
+    command Settle Payment
+    oneof {
+      event Payment Issued @Payment { paymentId: UUID }
+      event Payment Failed @Payment { paymentId: UUID, reason: String }
+    }
+  }
+
+  slice "Payment Status" {
+    view Payment Status from "Payment Issued", "Payment Failed"
+    ui Payment Result @Customer
+  }
+
+  slice "Retry Payment" {
+    ui Retry Screen @Customer
+    command Retry Payment
+    oneof {
+      event Payment Issued @Payment
+      event Payment Retry Declined @Payment { paymentId: UUID }
+    }
+  }
+
+  slice "Payment Status after Retry" {
+    view Payment Status again from "Payment Issued", "Payment Retry Declined"
+    ui Payment Result @Customer
+  }
+  ```
+- **Reference-only PRD groups sit outside storylines.** A group that only carries reference material
+  (#327) is not a journey; leave it out of every `storyline` block.
+- **Business terms in the events.** "If your Event Model doesn't reflect terms used by business experts —
+  especially in the recorded Events — that's a red flag." (Dilger, *Seven insights*.)
+
+### Reshaping an existing model
+
+The upgrade path for a CRUD-shaped model. After each step run `em validate`.
+
+`em storyline suggest <model>.em` proposes the `storyline` blocks as a diff (advisory, never
+writes); `em upgrade` offers `collapse-alternative-events` and the opt-in `fold-continuations`.
+
+1. Name the processes (list each spec's walkthroughs or journeys, not endpoints): the main storyline and each secondary one.
+2. Reorder the slices into those stories and wrap each in a `storyline` block (`after "…"` where one
+   follows another); a slice that fits no story is a deletion candidate.
+3. Intent test per command: rename to the business intent; split any command with "if X is set" rules.
+4. Apply the information-need test to each read model and fold children into parents: merge views
+   answering the same question; add one only for an unanswered one.
+5. Move child-entity events onto the parent's context when the child's invariants check the parent.
+6. Repeat each view (`again`, span-1) after every command that changes it; drop the lone trailing view.
+7. Fold success/failure slice pairs into one slice with alternative events.
+8. Tooling, last: `em validate` (and `em validate --shape`, the 1.18.0 design exit gate), `em slice sync
+   --check` then `em slice sync`, `em slice index`, and regenerate TypeSpec/contracts last.
+
+---
+
+## The 7 steps
+
+Run them in order. The skill groups them into phases: **discover = 1–4**, **model = 5–7**,
+and a dedicated **slice** phase deepens step 6 to implementation-ready specs.
+
+### Step 1 — Brainstorm Events  *(discover)*
+List the domain **events** as past-tense facts, unordered at first. Go wide; capture every
+state change anyone can think of. No commands, no UI yet — just facts.
+- Prompts: *"What are all the things that happen in this process? Say each as something that
+  already occurred. What changed when that happened?"*
+- **Is it an event?** Events here are *business* facts, not technical ones. Test: if this fact
+  failed to occur, would it wake the CEO at 3am? Yes → event. No → not an event.
+  - **Yes:** Order Created, Item Added to Order, Order Shipped, Order Delivered, Order
+    Cancelled, User Registered, Item Provisioned.
+  - **No — derived values** (a read model computes these from other events; they aren't
+    independent facts): Order Total Calculated, Order Tax Calculated, Discount Applied.
+  - **No — activity, not business state** (telemetry, not something the domain decides on):
+    User Clicked Button, User Viewed Page, User Logged In.
+- Model the process the business **needs**, not how the current system happens to work. Existing
+  system behavior is a common source of fake events — screens and tables leaking in as facts.
+  (**Extract mode inverts this**: in the `event-modeling-discover` skill's `extract` phase the
+  existing system *is* the subject and this caution is deliberately suspended — see the
+  "Extract" section below and `event-modeling-discover`'s own `reference/extract.md`. The
+  derived-value and telemetry filters still apply there.)
+- Output: a flat list of candidate `event` names.
+
+### Step 2 — The Plot / Storyboard  *(discover)*
+Put the events in **timeline order** to form the narrative. Identify the **personas** (actors)
+and sketch the **UI** screens that move the story forward. This is the storyboard.
+- Prompts: *"In what order do these happen? Who is on screen at each step? What screen are they
+  looking at? What's the happy-path story start to finish?"*
+- Output: ordered events + `persona` list + `ui` screens per step.
+
+### Step 3 — Inputs (Commands)  *(discover)*
+For each event, identify the **command** that causes it (State Change pattern). Name the intent,
+not the outcome ("Place Order", not "Order Placed").
+- Prompts: *"What action produces this event? Who or what issues it? Could it be refused?"*
+- Output: `command → event` pairs.
+
+### Step 4 — Outputs (Read Models)  *(discover)*
+Identify the **read models / views** each UI and automation needs (State View pattern). Wire
+each view to the events that feed it.
+- Prompts: *"What information does this screen show? Which past events supply it? Does any
+  automation need a work list derived from events?"*
+- Output: `view` elements with their `from "Event"` sources.
+
+### Step 5 — Swimlanes & Apply the Patterns  *(model)*
+Organize elements into swimlanes: one **persona** row per actor, one **context** (bounded
+context / aggregate) row per event family. Classify every slice as one of the **4 patterns** and
+wire them correctly — especially **share the slice between every automation or translation and the
+command it triggers** (the read model it watches, if any, stays in the slice before). A translation
+or automation never records an event directly; it triggers a command.
+- Prompts: *"Which events belong together as one consistency boundary (aggregate)? Who owns this
+  data? Is this slice a state change, a view, an automation, or a translation?"*
+- Output: a structurally complete model with swimlanes and pattern-correct slices.
+
+### Step 6 — Elaborate Scenarios  *(model first pass, slice deep pass)*
+For each slice, write **Given / When / Then** scenarios and surface **invariants**, **critical
+fields**, and **alternate / error flows**. In the `model` phase do a light first pass; the
+dedicated `slice` phase writes the full rich spec (see `../templates/slice.md`).
+- Prompts: *"Given what starting state, when this command/trigger fires, then what event(s)
+  result? What must always be true? What are the failure paths? Which fields are essential and
+  what are their rules?"*
+- **Failure, retry, timeout surface here?** Add the outcome events and the scenarios to the
+  SAME slice, never a new slice per branch (Dymitruk: "a few of these stories to show how a
+  command can and cannot succeed" — Given/When/Then scenarios first).
+- **Existing codebase:** before finalizing field names/types, check adjacent real sources
+  (OpenAPI specs, DB migrations, existing DTOs/event classes in sibling contexts) rather than
+  guessing — mirrors `extract.md`'s whole-system grounding, applied per-slice.
+- Output: rich slice docs linked into the `.em` via `note "slices/<name>.md"`.
+
+### Step 7 — Evaluate Completeness  *(model)*
+Walk the whole model with stakeholders and check for loose ends:
+- Every **command** has something that **triggers** it — a `ui` in its slice, or the reaction that
+  triggers it, also in its slice. A command nothing points at is a write nobody can start.
+  `em validate` warns.
+- Every **command** produces at least one **event**.
+- Every **view** has at least one source event, **and a consumer** — a `ui` (headless: the `ui`
+  tagged to the API-caller persona), or a reaction watching it. Every *instance* of a repeated
+  view, not just the last one.
+  A read model nothing displays is information projected out and then dropped. `em validate` warns.
+- Every **event** is **read by a read model** — a `view` naming it in `from` (any `again` instance
+  counts), or a `view` with no `from` sitting in its slice. A reaction consuming it does **not**
+  count: reactions read views, not events. An event nothing projects is a write nobody can see, so
+  there was no point recording it. `em validate` warns on each one.
+- Every **UI** is reachable and leads somewhere.
+- Every connection is one of the six legal pairs (`ui → command`, `command → event`,
+  `event → read model`, `read model → ui`, `read model → reaction`, `reaction → command`). No
+  arrow between two instances of one read model.
+- Automations **and** translations are wired correctly (reaction → command → event, all in one
+  slice — never a reaction wired straight to an event, and never a reaction with no command at
+  all); translations cover every external input.
+- Run `em validate` and resolve all errors and warnings. It catches illegal `arrow` kind pairs
+  (error), unread events (warning), and a reaction with no command in its slice (warning) — a
+  reaction wired straight to an event with no command anywhere is exactly what that last check
+  catches, so a clean `em validate` run does cover this case.
+- Prompts: *"Is there any event nobody reads — and if the business genuinely never looks at it, why
+  are we recording it? Any command that just happens, with nobody and nothing asking for it? Any
+  screen with no way in or out? Any command that records nothing? Any
+  external system we haven't translated? Any translation or automation that records an event instead
+  of triggering a command?"*
+
+---
+
+## Extract: current-state models of existing systems
+
+The `extract` phase derives a model from an **existing** system instead of a greenfield
+conversation. It is discover's as-is sibling: its confirm-and-clarify rounds converge the same
+step 1–4 outputs (events, timeline, commands, read models) — *derived from the system*, then
+confirmed with the user — after which the model enters `model` (steps 5–7) as usual.
+
+The stance inversion, stated authoritatively: **extraction captures how the system behaves
+today — faithfully, warts included — and never invents future or desired state.** Step 1's
+anti-current-system caution is suspended for the duration; the "is it an event?" filter is
+not — derived values and telemetry are still rejected even when the current system emits them.
+Unknown or ambiguous current behavior is parked, never guessed — mirrored in the state file's
+Open Questions, and on the element itself with `issue "text"` when it should also show up on the
+rendered diagram (preferred over a bare `# TBD` comment, which is invisible once rendered).
+Desired-state improvements belong to the `model` and `slice` phases, after the as-is picture is
+agreed.
+
+Procedure, source modes (event-driven vs. procedural synthesis), and the round-by-round loop:
+the `event-modeling-discover` skill's own `reference/extract.md`.
+
+---
+
+## Socratic stance (applies throughout)
+
+- Ask **one focused question at a time**; never assume a domain fact — extract it.
+- Prefer "why", "what if", "who", "what must always be true", "how do you know" over yes/no.
+- Mirror the model back after each increment and **re-render** so the team sees it evolve.
+- Park unresolved questions in the state file instead of guessing.
+- Name things crisply: events past-tense, commands imperative, views as the thing-shown.
+- **Live workshop, one chat interface:** route through a single human proxy who relays questions
+  to the room and reports answers back; attribute every answer/decision in the Decisions log to
+  the named participant who gave it (see the state file's Participants section).

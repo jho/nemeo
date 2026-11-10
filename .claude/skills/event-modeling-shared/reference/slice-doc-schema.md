@@ -1,0 +1,735 @@
+<!-- GENERATED FILE — do not hand-edit. Synced from docs/slice-doc-schema.md by
+     scripts/generate-skill-docs.ts (`npm run docs:generate`); `npm run docs:check` fails
+     on drift. A few links below are rewritten for this vendored location (see that
+     script's buildVendoredSliceDocSchema for exactly what changes and why) — everything
+     else is identical to the source doc. -->
+
+# Slice-doc frontmatter schema
+
+This documents the machine-read YAML frontmatter dialect `src/catalog/sliceDoc.ts` parses out
+of `slices/<slice-key>.md` — the contract `em export`'s slice-frontmatter join reads. It covers
+the **frontmatter block only**. Body/prose authoring conventions (Intent, Scenarios, Open
+Questions, …) live in the event-modeling skill's
+[`templates/slice.md`](../templates/slice.md), not here — with two
+exceptions:
+
+- The `## Open Questions` section's GFM checkboxes (`- [ ]` / `- [x]`) *are* now machine-parsed
+  by `sliceDoc.ts` too (`openQuestionsTotal`/`openQuestionsUnchecked`, MIL-87), feeding
+  `em validate --slice-ready <key>` (see [validation.md#slice-readiness](https://github.com/milehimikey/em/blob/main/docs/validation.md#slice-readiness)).
+  The section's cross-version lifecycle (MIL-156) is documented here too, alongside `## Delta`'s
+  — see [Open Questions section: lifecycle](#open-questions-section-lifecycle) below. Everything
+  else about the section's authoring — what a good open question looks like, when to resolve one
+  — stays owned by the skill template; this doc only covers the counting mechanics and lifecycle.
+- The `## Delta` section's grammar and lifecycle (MIL-88) is documented here, in full, alongside
+  the lineage keys it complements — a 2026-08-14 ruling deliberately kept the slice-doc contract
+  as one document rather than splitting a structurally-related convention across two files, even
+  though (unlike Open Questions) `## Delta` is currently display-only prose that no `em` command
+  parses yet. See [Delta section: grammar and lifecycle](#delta-section-grammar-and-lifecycle)
+  below; authoring voice/tone for the section still lives in the skill template, same as every
+  other body section.
+
+## How the parser reads frontmatter
+
+A leading `---` / `---` fence, at the literal start of the file (like Jekyll/Hugo — a guidance
+comment above the fence means the frontmatter doesn't count yet). Inside the fence: top-level
+scalar `key: value` lines only — **no lists, no nesting, no real YAML**. Quoted values have
+their outer quotes stripped; a value that's empty after trimming is dropped. Keys are matched
+case-sensitively as `[A-Za-z][\w-]*` but folded to lowercase for lookup. Any line that doesn't
+match that shape — including `#`-prefixed comment lines, blank lines, and YAML list
+continuation lines (`  - item`) — is silently skipped. An unterminated fence (no closing `---`)
+means "no frontmatter at all": the whole file is treated as body.
+
+No `yaml` dependency, by design — a real YAML parser was added and reverted (commit `6de0a05`,
+"keep the Two Laws of the Timeline"). This is a deliberately shallow line-scan, and stays that
+way: real YAML would also start accepting nesting/lists that this schema explicitly doesn't
+define a meaning for.
+
+`SliceDoc` (`src/catalog/sliceDoc.ts`) also exposes `frontmatterPresent` (was a well-formed
+fence found and closed at all) and `missingRequiredFields` (which of the required-at-every-
+status keys, above, were absent) — the mechanical basis `em export`'s doc join (MIL-91) uses
+to decide `frontmatter-invalid` without re-deriving frontmatter-shape rules of its own.
+
+## Canonical keys
+
+| Key | Type | Grammar / enum | Read by |
+|---|---|---|---|
+| `schemaVersion` | integer | `1` (current dialect version) | its *value* is not read back by any `em` command today (reserved) — but its *presence* is required by `hasUsableFrontmatter()`: a doc omitting it is `frontmatter-invalid` (see below) |
+| `pattern` | string | `state-change` \| `state-view` \| `automation` \| `translation` | authored/informational only — `em catalog` and `em export` both derive pattern from the `.em` AST instead (`em export`'s `slice.pattern`, schema `1.4`) |
+| `swimlane` | string | free text, `<Persona> → <Context>` | display-only |
+| `status` | string, case-insensitive | `draft` \| `reviewed` \| `ready-to-implement` \| `implemented` | written by `em slice review` (→ `reviewed`, MIL-201), `em slice ratify`/`em slice reratify` (→ `ready-to-implement`) and `em slice mark-implemented` (→ `implemented`); read by `em catalog`, `em render`/`em watch` header coloring; joined into `em export`'s `slice.doc.status` (schema `1.4`); paired with `implementedIn` to compute `slice.doc.driftSignal` (schema `1.5`, MIL-85) and `em validate`'s frontmatter-coherence check (MIL-85 — see [validation.md#frontmatter-coherence](https://github.com/milehimikey/em/blob/main/docs/validation.md#frontmatter-coherence)); any other value is read as written but `em validate` warns `frontmatter-status-unrecognized` (GH #411) |
+| `version` | integer | positive integer, starts at `1` | joined into `em export`'s `slice.doc.version` (schema `1.4`, MIL-91) |
+| `implementedIn` | string | free text (PR/commit link) | joined into `em export`'s `slice.doc.implementedIn` (schema `1.4`, MIL-91); paired with `status` to compute `slice.doc.driftSignal` (schema `1.5`, MIL-85) and `em validate`'s frontmatter-coherence check (MIL-85 — see [validation.md#frontmatter-coherence](https://github.com/milehimikey/em/blob/main/docs/validation.md#frontmatter-coherence)) |
+| `split-from` | single ref | `<slice-key>@v<N>` | joined into `em export`'s `slice.doc.splitFrom` (schema `1.4`, MIL-91) and `em diff`'s `slice-added` entries (schema `1.6`, MIL-84); current-tree referential checks by `em validate` (MIL-84 — see [validation.md#lineage](https://github.com/milehimikey/em/blob/main/docs/validation.md#lineage)) |
+| `merged-from` | list of refs | comma-separated `<slice-key>@v<N>, ...` | joined into `em export`'s `slice.doc.mergedFrom` (schema `1.4`, MIL-91) and `em diff`'s `slice-added` entries (schema `1.6`, MIL-84); current-tree referential checks by `em validate` (MIL-84 — see [validation.md#lineage](https://github.com/milehimikey/em/blob/main/docs/validation.md#lineage)) |
+| `superseded-by` | list of refs | comma-separated `<slice-key>@v<N>, ...` | joined into `em export`'s `slice.doc.supersededBy` (schema `1.4`, MIL-91) and `em diff`'s `slice-removed` entries (schema `1.6`, MIL-84); current-tree referential checks by `em validate` (MIL-84 — see [validation.md#lineage](https://github.com/milehimikey/em/blob/main/docs/validation.md#lineage)) |
+| `covers` | list of slice keys | comma-separated `<slice-key>, ...` (plain keys — **not** the `<slice-key>@v<N>` ref grammar above) | ratifies a cross-slice binding (MIL-121 — see [Cross-slice coverage](#cross-slice-coverage-covers) below): read by `em export`'s doc join, `em validate --slice-ready`, and (best-effort) `em render`/`em watch`'s Slice Status legend |
+| `reviewedBy` | string | free text (typically the facilitator's or reviewer's name) | written only by `em slice review` (MIL-201 — see [cli.md](https://github.com/milehimikey/em/blob/main/docs/cli.md#em-slice-review-file-slice-key---by-name)); joined into `em export`'s `slice.doc.reviewedBy` (schema `1.11`) and `em slice index`'s Reviewed by column |
+| `reviewedOn` | string | `YYYY-MM-DD` | written only by `em slice review` (MIL-201); joined into `em export`'s `slice.doc.reviewedOn` (schema `1.11`) |
+| `ratifiedBy` | string | free text (typically a person's name) | written only by `em slice ratify` (MIL-165 — see [cli.md](https://github.com/milehimikey/em/blob/main/docs/cli.md#em-slice-ratify-file-slice-key---by-name)); joined into `em export`'s `slice.doc.ratifiedBy` (schema `1.8`) and `em slice index`'s Ratified by column |
+| `ratifiedOn` | string | `YYYY-MM-DD` | written only by `em slice ratify` (MIL-165); joined into `em export`'s `slice.doc.ratifiedOn` (schema `1.8`) |
+| `ratifiedRef` | string | full commit sha | written only by `em slice ratify` (MIL-284 — see [cli.md](https://github.com/milehimikey/em/blob/main/docs/cli.md#em-slice-ratify-file-slice-key---by-name)) when the model directory is inside a git repository: `HEAD` at ratification, the commit whose tree holds the body that was signed (ratify refuses a doc with uncommitted changes so this holds). Absent when ratified before 1.15, outside git, or with `em slice ratify --no-ref` (GH #255 — for a repo whose squash/rebase merges would leave the commit unreachable from the target branch; `--no-ref` also removes a line already present). **An address, not the identity:** valid only while the commit stays reachable; `ratifiedHash` is what identifies the signed content. Cleared by `em slice revise`. Joined into `em export`'s `slice.doc.ratifiedRef` (schema `1.16`). Not a target-repo revision: `em slice conform --at` still names that itself |
+| `ratifiedHash` | string | `sha256:<64 hex>` | written only by `em slice ratify` (MIL-284): `sha256` over the **authored text** of the doc body (everything after the frontmatter fence, EOLs normalised). Since 1.19.0 (GH #347) the text strictly between each [generated region](#generated-regions-and-authored-sections)'s two marker lines is left out (the marker lines themselves stay in), so `em slice sync` can refresh a ratified or shipped doc's regions without moving the hash — the regions restate the model, whose contract changes surface through model validation and its pin (`model-versions/v<N>.json`); a doc whose markers don't balance has nothing left out. Since 1.17.0 (GH #253) the doc also leaves out **what describes a later version**: inside `## Open Questions` the heading line, blank lines and every `deferred to v<n>` item, then trailing whitespace is trimmed — so `em slice defer` can record a question on a ratified or shipped doc without moving the hash. Answered `- [x]` history, any `- [ ]`, the region marker lines and every other section stay signed. The signed content's identity without git. A hash in an older scope whose body is intact is still read as intact — recorded by 1.17.0–1.18.x (generated regions inside) or before 1.17.0 (whole body); `em upgrade`'s `ratified-hash-scope` step re-stamps it, and so do `em slice sync` and `em slice defer` when they first write to the doc. Cleared by `em slice revise`. Read by `em validate --slice-ready` (`slice-ready-body-changed-since-ratification`) and by `ratify`'s same-sign-off re-run; joined into `em export`'s `slice.doc.ratifiedHash` (schema `1.16`) |
+| `shippedVersion` | integer | positive integer | written only by `em slice mark-implemented` (MIL-284): the doc's `version:` when the merge was recorded. With `shippedRef`/`shippedOn`/`implementedIn`, joined into `em export`'s `slice.doc.shipped` (schema `1.16`). Additive in 1.15 — `status`/`implementedIn` still carry the lifecycle for every reader |
+| `shippedRef` | string | full commit sha | written only by `em slice mark-implemented` (MIL-284): the doc's `ratifiedRef` at merge time, i.e. the ref the shipped version was signed at; absent when the doc had none (ratified before 1.15, outside git, or with `--no-ref`, GH #255) — a `shippedRef:` line left by the previous version's ship is removed on the flip (GH #392). Same caveat as `ratifiedRef`: an address, valid while reachable — `ratifiedHash` identifies the content |
+| `shippedOn` | string | `YYYY-MM-DD` | written only by `em slice mark-implemented` (MIL-284): the local date of the merge record, or `--on <date>` |
+| `meaningConfirmed` | boolean | `true` | written only by `em slice ratify --meaning-unchanged` (MIL-238 — see [cli.md](https://github.com/milehimikey/em/blob/main/docs/cli.md#em-slice-ratify-file-slice-key---by-name)): the API-first sign-off on a public-touching slice — this version does not change what the public contract means. Joined into `em export`'s `slice.doc.meaningConfirmed` (schema `1.15`; `false` when absent) |
+| `contractChange` | string | quoted free text (`contractChange: "<why>"`) | written only by `em slice ratify --contract-change "<why>"` (MIL-238): the API-first sign-off on a public-touching slice — why a consumer must read this change differently. Joined into `em export`'s `slice.doc.contractChange` (schema `1.15`, quotes stripped; `null` when absent) |
+| `reviewSkipped` | string | a `status` value (`draft`, …) | written only by `em slice ratify --skip-review` (GH #260 — see [cli.md](https://github.com/milehimikey/em/blob/main/docs/cli.md#em-slice-ratify-file-slice-key---by-name)), and only when the bypass is what let the ratification through: the status the doc was ratified from. A ratification that passed the review gate writes nothing. Cleared by `em slice revise` with the rest of the sign-off. Joined into `em export`'s `slice.doc.reviewSkipped` (schema `1.18`, `null` when absent) and `em validate --slice-ready --json`'s top-level `reviewSkipped` (schema `1.3`) |
+| `owner` | string | free text (typically a person or team name) | hand-filled — no `em` command writes it; joined into `em export`'s `slice.doc.owner` (schema `1.9`, MIL-171), `em slice index`'s Owner column, and `em status`'s per-slice `owners[]` |
+| `tracking` | string | free text (typically an external ticket/issue URL) | hand-filled — no `em` command writes it; joined into `em export`'s `slice.doc.tracking` (schema `1.9`, MIL-171) and `em slice index`'s Tracking column. This is the exact field `em-tracker-bridge` reads to find the ticket mirroring this slice — `em` only stores and displays it, it never talks to a tracker itself |
+| `conformedVersion` | integer | positive integer | written only by `em slice conform` (MIL-214 — see [cli.md](https://github.com/milehimikey/em/blob/main/docs/cli.md#em-slice-conform-file-slice-key---at-rev)): this slice's `version:` at the time a conform sweep last certified it. Joined into `em export`'s `slice.doc.conformedVersion` (schema `1.13`); paired with `version` to compute `slice.doc.driftSignal`'s `"uncertified"` case |
+| `conformedAt` | string | a target-repo revision, or `<kind>:<id>` (NOT a `<slice-key>@v<N>` lineage ref) | written only by `em slice conform` (MIL-214): the revision that certification sweep diffed against — or, since 1.17.0 (GH #261), an opaque identifier with an explicit kind (`build:1234`, `deploy:eu-1-2026-10-15`) for what was exercised when that is not a commit that stays reachable (a PR-branch HEAD under squash/rebase merges). A bare value is git (`parseConformedAt()`); reachability checks skip a kinded value. Joined into `em export`'s `slice.doc.conformedAt` (schema `1.13`) and `em slice index`'s Conformed column |
+| `conformedOn` | string | `YYYY-MM-DD` | written only by `em slice conform` (MIL-214). Joined into `em export`'s `slice.doc.conformedOn` (schema `1.13`) |
+
+Five keys — `schemaVersion`/`pattern`/`swimlane`/`status`/`version` — are what
+`hasUsableFrontmatter()` requires: a doc omitting any of them is `frontmatter-invalid` to
+`em export`'s doc join and to `em validate --slice-ready` (the parser itself never *throws*
+over an omission — it reports). `implementedIn` and the lineage keys are the genuinely
+optional ones; `implementedIn`'s required-once-implemented rule in the table below is
+convention, not parser-enforced.
+
+## Who may ratify
+
+The schema records *who* signed (`reviewedBy`, `ratifiedBy`) but, by default, accepts any
+non-empty name: who is allowed to sign is the host repo's decision. A host that wants em to
+enforce it supplies an optional **roster**, `ratifiers.yaml`, beside the model. See
+[examples/order-fulfillment/ratifiers.yaml](https://github.com/milehimikey/em/blob/main/examples/order-fulfillment/ratifiers.yaml).
+
+```yaml
+rosterSchemaVersion: "1.0"
+ratifiers:
+  - name: Aaron McKay
+    contexts: [Product, Attribute]   # omit = the whole model
+  - name: Mike Key
+  - name: Dana Lee
+    models: [pim]                    # omit = every model the roster governs
+reviewers:                           # optional; same shape, checked by `em slice review --by`
+  - name: Mike Key
+```
+
+- **Schema.** `rosterSchemaVersion` is required (`"1.0"`); at least one of `ratifiers:` /
+  `reviewers:` is required; each is a non-empty list of `{ name, contexts?, models? }`. Unknown
+  keys are errors (`roster-invalid`). A missing `ratifiers:` / `reviewers:` key leaves that role
+  unrestricted.
+- **Placement.** The nearest `ratifiers.yaml` walking up from the model's directory, stopping at
+  the nearest directory holding `.git` (or the filesystem root). If no `.git` exists anywhere
+  above the model, only the model's own directory is searched. `--roster <path>` on `ratify`,
+  `review`, `validate --slice-ready`, `roster check` overrides discovery; a path that does not
+  exist is an error, never "no roster".
+- **A slice's contexts** are the contexts of its **events** plus the contexts of the events its
+  **views read** - each view instance's **own** `from`, never a union across the read model's
+  instances (adding a later `again` instance never changes an earlier slice's contexts). A
+  continuation slice also takes its originating instance's own `from`. A slice with neither has no
+  context and is permitted only by entries without `contexts`.
+  A continuation fed from a different context than its originating view (e.g. `tool-shows-on-loan` =
+  Loan + Tool) therefore needs a ratifier permitted for every one of those contexts, so a team with
+  one lead per context needs a joint or whole-model roster entry for such slices.
+- **An entry permits a slice** when it applies to the model and either has no `contexts` or lists
+  **every** context of the slice: a cross-context slice needs a ratifier who may sign for all of
+  them (a leading `@` is tolerated in `contexts`).
+- **Per-model scoping.** `models: [<modelKey>]` (the key `em export` reports as `model.key`) limits
+  an entry to those models; an entry without it applies to every model the roster governs. Context
+  names are matched **per model** against that model's declared contexts, so a shared root roster
+  needs `models:` whenever the models' ratifiers differ. A `models:` key the enclosing
+  `system.yaml` does not list is `roster-invalid`.
+- **Validation against the model.** A `contexts:` entry the model does not declare (case-sensitive)
+  is `roster-invalid`, naming the context; only entries that apply to the model are checked.
+- **File absent: today's behaviour**, no warning. **File present but invalid: fail closed** -
+  `ratify` and `review` refuse, `--slice-ready` and `roster check` report `roster-invalid`.
+- **`grandfathered (unsigned before em 1.14)`** is em's own migration marker (`em upgrade`'s
+  `ratified-signoff`), not a signer: exempt from the `--slice-ready` check and from `roster check`
+  (which counts it) until the slice is re-ratified - but only the **exact** string, and only on a
+  doc with no `ratifiedHash` (the state `em upgrade` leaves). `grandfathered by X`, or the marker on
+  a doc that carries a hash, is a signer and is checked.
+- **Where it is enforced.** At write time by `em slice ratify` / `em slice review` (the refusal
+  lists the permitted names); at check time by `em validate --slice-ready <key>`
+  (`ratified-by-not-in-roster`, error - one `ready-to-implement` slice, ratifier only) and by
+  `em roster check <model>` (every doc, `ratifiedBy` on `ready-to-implement` and `implemented`,
+  `reviewedBy` on any), the command `em ci init` wires into CI when a roster exists - see
+  [ci.md](ci.md#ratifier-roster-gate). `em status` reports `roster: present|absent|invalid`.
+- `em roster init <model>` seeds the file from the names already in the docs
+  ([cli.md](https://github.com/milehimikey/em/blob/main/docs/cli.md#em-roster-init-file)).
+
+## Required vs optional, by `status`
+
+| Key | draft | reviewed | ready-to-implement | implemented |
+|---|---|---|---|---|
+| `schemaVersion`, `pattern`, `swimlane`, `status` | required | required | required | required |
+| `version` | required (starts at `1`) | required | required | required |
+| `implementedIn` | optional | optional | optional | required once the slice has *ever* reached `implemented` — may still name a **prior** version's PR during re-ratification, see below |
+| `split-from`, `merged-from`, `superseded-by` | optional in every state — present only on docs created by a split/merge, or on a doc that has been retired |
+| `covers` | optional in every state — present only on a doc that deliberately also serves another slice (MIL-121, see below); most docs never carry it |
+| `reviewedBy`, `reviewedOn` | optional in every state — present once `em slice review` (MIL-201) has run at least once; a doc that never went through the review gate, or was hand-flipped to `reviewed`, simply omits both. `em slice ratify` never clears them; `em slice reratify` does (they describe the version that shipped) |
+| `ratifiedBy`, `ratifiedOn` | optional in every state, but `ready-to-implement` needs `ratifiedBy` to pass `em validate --slice-ready` (`slice-ready-not-ratified`, MIL-259) — present once `em slice ratify` (MIL-165) has run; `em slice reratify` clears both. `em upgrade` (`ratified-signoff`, 1.14) grandfathers a `version: 1` `ready-to-implement` doc that never had one by writing `ratifiedBy: "grandfathered (unsigned before em 1.14)"` and `ratifiedOn:` the upgrade date |
+| `reviewSkipped` | optional in every state — present only when `em slice ratify --skip-review` is what let the ratification through (GH #260); the value is the status it skipped from. Written right after `ratifiedOn:`; cleared by `em slice revise` with the rest of the sign-off. Absent on every ratification that passed the review gate, and on docs ratified with `--skip-review` before 1.17.0 |
+| `meaningConfirmed`, `contractChange` | optional in every state, at most one present — written right after `ratifiedOn:` by `em slice ratify` and right after `version:` by `em slice reratify` (MIL-238). On a **public-touching** slice (one owning a `public` command, event or view) both commands refuse without `--meaning-unchanged` or `--contract-change "<why>"`, so a doc ratified on 1.14+ carries one; elsewhere either is optional. `em slice reratify` clears both before writing its own (they describe the prior version, same as `reviewedBy`/`ratifiedBy`). `em status` counts public-touching `ready-to-implement`/`implemented` docs with neither (`publicSlicesUnconfirmed`) |
+| `owner`, `tracking` | optional in every state — hand-filled whenever a team wants a who-holds-this / external-tracker link; most docs never carry either (MIL-171) |
+| `conformedVersion`, `conformedAt`, `conformedOn` | optional in every state — present once `em slice conform` (MIL-214) has run at least once for the CURRENT version; a doc that's never been through a conform sweep, or whose `version` has since bumped past what was certified, simply has none of the three (or a stale triple — see `driftSignal`'s `uncertified` case below) |
+
+`em export`'s slice-doc join (MIL-91) is the first `em` command to mechanically check the
+required row above: a bound doc missing any of `schemaVersion`/`pattern`/`swimlane`/`status`/
+`version` (or missing a frontmatter block entirely) reports `slice.doc.reason:
+"frontmatter-invalid"` plus a warning diagnostic — report, never fail, same as every other
+export finding. `implementedIn`'s conditional requirement (once a slice has *ever* reached
+`implemented`) is **not** checked — that needs git history no doc-only parse has access to.
+No `em` command fails a build over this table. `em validate`'s frontmatter-coherence check
+(MIL-85 — see [validation.md#frontmatter-coherence](https://github.com/milehimikey/em/blob/main/docs/validation.md#frontmatter-coherence)) warns
+(never fails) on the one combination checkable without git history: `status: implemented` with
+no `implementedIn` link at all.
+
+## Stub docs
+
+`em slice new --stub` and `em slice stub-all` (MIL-184, ruled 2026-09-08 on GH #128 — see that
+issue for the fuller design rationale) write a **stub**: the exact same 5 required-at-`status:
+draft` frontmatter keys above, but a one-line placeholder body (`_Stub — deepen with the slice
+phase (see slice-doc-schema.md)._`) instead of the diagram-image stub and every judgment section
+(Intent, Command, Scenarios, Open Questions, …) a full slice doc eventually carries.
+
+A stub is not a lesser doc, frontmatter-wise — it's a real doc with a real `status`, parsed and
+joined by `em export`/`em catalog`/`em status`/`em slice index` exactly like a fully-written one,
+because it's the same frontmatter dialect. The doc stays the single source of truth for
+`status`; a stub is just the cheapest possible way to give a slice one before anyone's ready to
+write the real spec.
+
+**A stub CAN pass `em validate --slice-ready`.** That gate checks six things (`computeSliceReadyGates`,
+[validation.md#slice-readiness](https://github.com/milehimikey/em/blob/main/docs/validation.md#slice-readiness)): a doc is bound, its frontmatter
+is usable, `status` is `ready-to-implement`, it carries a `ratifiedBy` (MIL-259), its Open Questions count has none unchecked, and — for a slice owning a `public` element — the model's contract is current (MIL-238; nothing in the doc). A
+stub with no `## Open Questions` section at all has `openQuestionsTotal: 0` (see
+[Open Questions section: lifecycle](#open-questions-section-lifecycle) below) — zero unchecked is
+vacuously true — so a stub escalated to `ready-to-implement` (`em slice stub-all --status
+ready-to-implement --by <name>`, which records the ratifier) passes cleanly. The readiness gate is frontmatter-plus-checkbox-
+count only; it has no opinion about whether Intent/Command/Scenarios/Invariants were ever
+written. Demanding that content is the `slice` phase's (and, for a live walkthrough, the review
+skill's) job, not a machine gate's — see `../.claude/skills/event-modeling-design/SKILL.md` and
+`../.claude/skills/event-modeling-review/SKILL.md`.
+
+## Lineage: grammar and cardinality
+
+Grammar: `<slice-key>@v<N>` — `<slice-key>` is the referenced slice's kebab-case filename stem
+(matches `kebabSlug()`, `src/util/slug.ts`); `<N>` is a positive integer, the referenced
+slice's `version` at the point of reference.
+
+| Key | Cardinality | Why |
+|---|---|---|
+| `split-from` | **single** ref | A slice splits *from* exactly one parent, even though a split can produce multiple successors. |
+| `merged-from` | **list**, comma-separated | A merge combines two or more source slices into one surviving doc. |
+| `superseded-by` | **list**, comma-separated | The retired side of a split names potentially multiple successors; the retired side of a merge or a simple rename usually names exactly one, but the grammar stays list-shaped either way. |
+
+**Worked example** (a split): `checkout` v4 splits into `checkout` v5 plus a new
+`apply-discount` v1. The retired parent doc, `checkout.md`, gets:
+
+```yaml
+version: 4
+status: implemented
+superseded-by: checkout@v5, apply-discount@v1
+```
+
+Both surviving docs carry the back-link — `checkout.md` (now at v5) and `apply-discount.md`
+each get:
+
+```yaml
+split-from: checkout@v4
+```
+
+**Scope note:** the parser (`sliceDoc.ts`) itself still never checks that a referenced
+slice/version actually *exists* — that stays deliberately out of scope here, by design (fs-free,
+pure). A malformed or dangling ref still parses (its `raw` text is preserved, `sliceKey`/
+`version` come back `null` for a malformed value); referential checking is a separate, fs-aware
+layer.
+
+`em validate` (`src/catalog/lineageValidate.ts`, MIL-84) is that layer. It checks what the
+*current tree* can prove wrong and stays silent about what it can't — see
+[validation.md#lineage](https://github.com/milehimikey/em/blob/main/docs/validation.md#lineage) for exactly what's checked (grammar,
+self-reference/cycles, dangling `superseded-by`, impossible version arithmetic) versus what's
+deliberately never flagged (a `split-from`/`merged-from` naming a key legitimately absent from
+the current tree — the normal state after a real split/merge). Deep historical verification —
+did `slice@vN` really, once, exist? — stays out of core validate; the reason that's sufficient
+is a same-commit authoring convention, not new plumbing (`em ledger`, below, is the opt-in,
+two-revision command for the related-but-different version/content invariant):
+
+> Lineage refs (`split-from:`/`merged-from:`/`superseded-by:`) are written in the same
+> ratification commit that performs the operation they record, so the PR diff contains both
+> sides of the claim (the predecessor at its final version, and the ref naming it). The review
+> airlock is the history check.
+
+## Cross-slice coverage: `covers`
+
+Since `em` 1.7.1 (MIL-120), the canonical Automation/Translation shape is two raw slices: a
+bare `view` slice, and the reaction+command+event slice that reads it. Each slice can still bind
+its own `slices/<key>.md` doc the ordinary way, but a team documenting the whole design unit as
+**one** doc needs a way to make the view-only slice count as doc-bound too, without splitting
+the write-up back into two files. `covers` (MIL-121) is that escape hatch — a deliberately
+two-ended handshake, not a one-sided claim:
+
+1. In the `.em`, an element in the *covered* slice (the one with no doc of its own) carries
+   `note "slices/<other-key>.md"` — a path in the ordinary `slices/<key>.md` shape, just naming
+   a *different* slice's canonical doc instead of its own.
+2. That other doc's own frontmatter ratifies the coverage with `covers`, naming the covered
+   slice's key back — same comma-separated, single scalar-line shape as `merged-from`/
+   `superseded-by` (this parser's frontmatter dialect has **no** real YAML list support, see
+   above):
+   ```yaml
+   covers: detect-unpaid-orders
+   ```
+   Multiple covered slices: `covers: detect-unpaid-orders, some-other-slice`.
+
+Both sides are required. A `note` naming another slice's doc with no matching `covers` entry on
+that doc — the file is missing, its frontmatter isn't usable, or `covers` doesn't list this
+slice back — leaves the noting slice exactly as unbound as if it had no note at all
+(`no-doc-bound`); em never guesses at a one-sided claim. When ratified, every consumer that
+reads a bound doc's canonical fields (`em export`'s `slice.doc`, `em validate --slice-ready`,
+`em render`/`em watch`'s Slice Status legend) reads the **covering** doc's `status`/`version`/
+`implementedIn`/lineage/Open Questions, not the covered slice's own (nonexistent) file. A doc
+covers its own canonical slice key implicitly — `covers` never needs to list it.
+
+`em catalog` (MIL-137) is one such consumer, via the same filename+frontmatter `covers:` scan
+(`src/catalog/coverage.ts`), never the `note` clause itself: a covered slice's detail page shows
+the covering doc's Status, but a "Documented as part of &lt;covering slice&gt;" banner instead
+of the covering doc's body — linking to the covering slice's own catalog page rather than
+inlining content authored under a different slice's name.
+
+`covers` is a plain list of slice keys (`<slice-key>`, e.g. `detect-unpaid-orders`), **not** the
+`<slice-key>@v<N>` ref grammar the lineage keys use above: coverage is a standing "this doc also
+serves that slice" declaration, with no version component — unlike lineage, which records a
+specific historical hop.
+
+**Out of scope for THIS join:** `resolveSliceDocJoin` itself never warns on a *mismatched*
+cross-note (a note naming a doc that doesn't ratify it back) — the slice's doc join still stays
+silently `no-doc-bound`, the same as never having written the note; the join's own job is
+resolving the *winning* binding, not auditing every note that didn't win. `em validate` does flag
+the mismatch, as its own separate rule (MIL-126) — see
+[validation.md#note-binding-mismatch](https://github.com/milehimikey/em/blob/main/docs/validation.md#note-binding-mismatch): a dangling cross-note
+(missing file), one pointing at a doc with unusable frontmatter, one pointing at a usable doc
+that just doesn't ratify (`covers` doesn't list this slice back), and an extra note doing nothing
+in a slice that's already bound elsewhere, each get their own diagnostic there.
+
+## Continuations
+
+Since `em` 1.12.0 (MIL-208): a `view X again` instance is a **continuation** of the slice
+holding `X`'s first (originating) declaration — one read model, fed by more than one event over
+the timeline — not a spec unit of its own. Unlike `covers` above, this is fully automatic and
+structural: no frontmatter, no `note`, nothing to author. A slice is a continuation iff every
+non-`ui` element it declares is a `view` with `again === true`; the doc join resolves it
+straight through to the originating slice's own doc, exactly the way a ratified `covers:`
+binding resolves a covered slice — same `doc.found`/`status`/`driftSignal`, plus a
+`continuationOf: <originating-key>` field naming why. `em export`, `em status`, `em coverage`,
+`em slice index`, `em catalog`, and the render pipeline's Slice Status legend all resolve a
+continuation slice this way; `em slice ratify`/`review`/`revise`/`mark-implemented` and
+`em slice new --wire` refuse on one outright, naming the originating slice to act on instead —
+a continuation slice has no status/ratification of its own to flip.
+
+The originating slice's own `em export` object also gains `alsoReads: [{ event, atSlice }]` —
+the union of events every later `again` instance of that view reads via `from`, in timeline
+order — so implementing the read model from one export never means walking every `again`
+slice's doc by hand to assemble the full event list.
+
+The generated `em-slice-view` region follows the same rule (GH #280, 1.18.0): its `built from
+events:` line lists the union of `from` across the originating instance and every `again`
+instance (originating first, then timeline order, deduped), and each field's `from event` note
+resolves against that union (each later event annotated `(via "<slice>")` with its instance's slice) — whichever instance's slice the doc is bound to. `em slice sync`
+rewrites existing view regions accordingly.
+
+**Synthesized continuations (GH #287).** A `view X again` line written inside a command's own slice
+is lifted into a continuation column right after it. That column is a continuation like any other
+(`continuationOf` names the view's originating slice, `alsoReads` counts its events) but exists
+only as sugar over the host slice's text: its export key is `<host-slice-key>--again` (one column per host slice, its lifted lines stacked),
+it never has a doc, and `em slice index` lists no row for it. A slice key never contains `/` (the slug generator emits single dashes only, so `--` cannot occur in a hand-written key); the `/` in an element ref `<slice-key>/<kind>.<slug>` is always the first and only one. A hand-written continuation slice
+may also hold several `again` views, and may omit its name (auto-named `"<View> View: <Event>"`).
+When one slice stacks views of different read models, `continuationOf` names the originating
+slice of the FIRST view; the others are listed in their originating slices' `alsoReads` (with this slice's key as `atSlice`).
+
+**Authoring convention:** a continuation's behavior belongs in the originating doc's own
+`## Scenarios (Given / When / Then)` section — one scenario per event a later `again` instance
+feeds — rather than in a doc of its own; no new frontmatter is needed to record it.
+
+**Legacy own doc wins.** A slice that would otherwise be a continuation but still carries its
+own doc — a `note "slices/<again-key>.md"` binding it, or a stray `slices/<again-key>.md` file
+left over from before this rule existed — keeps today's per-instance behavior unchanged: its own
+doc, its own status, its own ratification. `em validate`'s `continuation-has-own-doc` warning
+(see [validation.md](https://github.com/milehimikey/em/blob/main/docs/validation.md)) flags it either way, so an author can fold that doc's
+scenarios into `slices/<originating-key>.md` and delete it. This is the migration path — an
+existing model with per-`again`-instance docs keeps working exactly as before until each one is
+folded in.
+
+## Delta section: grammar and lifecycle
+
+`## Delta` is the body section that pairs with a re-ratification (see "`status` under
+re-ratification" below) — a structured record of what changed to produce the version currently
+in the frontmatter, in typed operation blocks (MIL-88) rather than a one-line summary. Like the
+lineage keys above, it's currently authored, not parsed — no `em` command reads *this section*
+— but it's documented here rather than left purely to the skill template because its shape is a
+structural contract other tooling may parse later, same reasoning as the lineage grammar.
+`em diff --json` now emits the same four-word vocabulary on its own structural entries (`op:
+"Added" | "Modified" | "Removed" | "Renamed"`, schema `1.7`, MIL-131 — see
+[cli.md](https://github.com/milehimikey/em/blob/main/docs/cli.md#em-diff-old-new)), so the two sides speak the same language; comparing an
+authored `## Delta` against the structural diff of the revisions it claims to describe is still
+a separate, not-yet-built decision.
+
+**The heading is always the literal string `## Delta` — never a variable heading** (e.g. never
+`## Delta: v1 → v2`). Several consumers key on exact `##` text when locating sections in a slice
+doc (the SDD-bridge's section splitter, the slice-to-spec mapping table, the redirect prompt
+preambles); a heading that changes every ratification would break exact-match lookup and move
+the anchor on every hop — the same problem a made-up per-doc key would cause anywhere else in
+this schema. Version range, ratification date, and a one-line summary go on the **first line
+inside** the section instead, as display text — not a frontmatter key, not parsed:
+
+```markdown
+## Delta
+**v1 → v2, ratified 2026-08-12** — one-line summary of the ratified change.
+
+### Added
+#### Requirement: {{title}} ({{stable ID, e.g. an INV-<MNEMONIC>-n from ## Invariants}})
+{{requirement text}}
+##### Scenario: {{name}}
+- **Given:** {{...}}
+- **When:** {{...}}
+- **Then:** {{...}}
+
+### Modified
+(same shape as Added — the ID names the requirement that changed)
+
+### Removed
+#### Requirement: {{title}} ({{stable ID}})
+{{why it was removed}}
+
+### Renamed
+- {{old title}} ({{old ID}}) → {{new title}} ({{new ID}})
+```
+
+Stable IDs follow `INV-<MNEMONIC>-<n>` — a short (2-4 uppercase letters/digits) abbreviation of
+the slice's key, unique among the model's slices, then a small integer, optionally letter-suffixed
+for a closely-related sub-invariant (`INV-CHK-3a`) — see the Invariants section guidance in
+[`templates/slice.md`](../templates/slice.md). Per-slice prefixes
+make IDs globally unique across the model, so an `em coverage` citation is exact instead of
+ambiguous across slices.
+
+**Four `###` subsections, in that fixed order, Title Case singular words** — `Added`, `Modified`,
+`Removed`, `Renamed` — not OpenSpec's shouting-case `ADDED Requirements` grouping. This is the
+one deliberate divergence from the OpenSpec grammar the convention was validated against: the
+four *operations* are retained (independent convergent design — OpenSpec arrived at the same
+vocabulary from its own change-management-first angle), but OpenSpec's flat, file-per-delta
+heading topology is not, because a slice doc's delta is a section inside a doc with its own
+parsed heading contract, not a standalone file. Omit any of the four subsections with no entries
+this hop — most re-ratifications touch one or two operations, not all four.
+
+**`Renamed` is a requirement-level operation, not a slice-level one.** It records an invariant or
+requirement *within this slice* being renamed or renumbered (e.g. `INV-CHK-3` → `INV-CHK-3a`) —
+it is not a substitute for the `split-from`/`merged-from`/`superseded-by` lineage keys above,
+which record the slice-doc-level operation of one doc splitting, merging, or being renamed into
+another. `em diff`'s own `ChangeType` deliberately treats a slice/element rename as remove+add,
+never a first-class rename (`src/model/diff.ts`: "a rename IS a model change") — `Renamed` here
+is a finer grain, inside one otherwise-unchanged slice, and doesn't revisit that decision.
+
+**Lifecycle: replace, never accumulate — the section is a window onto the latest hop, not a
+scroll of every hop.** A slice's first version (`v1`) carries no `## Delta` section at all —
+absence means no hop has happened yet, not an empty section. Ratifying `v2` writes the section
+for the first time, in the same commit that bumps `version` and flips `status`. Ratifying `v3`
+**overwrites** it with the `v2 → v3` hop; the `v1 → v2` content is not retained in the doc.
+Full history is git's job — the same-commit ratification convention above makes `git log -p
+slices/<name>.md` a precise, zero-maintenance delta archive — and a rolled-up multi-hop view, if
+ever wanted, is a *rendering* (e.g. a future `em changelog`), never hand-maintained doc content.
+An accumulating in-doc log would be a second history that diverges from git, grows unboundedly
+over a slice's life, references requirements that have since moved (a *live* doc quietly going
+stale reads as current, unlike git which is honestly historical), and forces every reader to
+work out which delta is the live one — exactly the ambiguity `driftSignal` (MIL-85, below) is
+built to avoid.
+
+## Invariants
+
+Since MIL-265 the **model is the preferred place to declare an invariant**: an `invariant
+INV-<MNEMONIC>-<n> "rule"` line after the command or event it guards (see
+[dsl.md](dsl.md#invariants)) carries the ID and the one-line rule sentence. The doc's
+`## Invariants / Business Rules` section then **cites** each model-declared ID and elaborates —
+why the rule exists, what a violation looks like, edge cases, the error returned:
+
+```markdown
+## Invariants / Business Rules
+- INV-ORD-1 — a zero-total cart is rejected before payment is attempted
+  - the check runs on the server; the UI's own check is a convenience only
+```
+
+Write the citation as a plain mention (`- INV-ORD-1 — …`), not with the declaring label
+`**INV-ORD-1:**` — restating a model-declared ID with that label is
+`invariants/declared-in-both` (a warning pointing at the migration). Ownership follows the model:
+a model-declared ID belongs to the slice of the element that declares it, for `em coverage` and
+`em query invariant`, whatever any doc says.
+
+**Doc declaration is still honoured.** A doc that declares its own invariants
+(`- **INV-CHK-1:** rule`, or a 1.13 doc's bare `- **INV-1:** rule`) keeps working exactly as
+before: for every ID the model does not declare, the doc-body reader (`## Invariants` and
+`## Delta` sections, top-level bullet/subheading lines only — MIL-149/155) is the fallback.
+A doc mentioning an `INV-…` ID that neither the model nor any doc declares gets
+`invariants/doc-cites-undeclared`. See [validation.md](https://github.com/milehimikey/em/blob/main/docs/validation.md#invariants).
+
+## Generated regions and authored sections
+
+Since MIL-266 a slice doc has two kinds of section.
+
+**Generated regions** restate the model, and `em` writes them. Each is wrapped in a pair of html
+markers; `em slice new --wire` fills them from the `.em`, and `em slice sync <model>.em` refreshes
+them in place after any model edit. Never hand-edit between the markers — change the model and
+re-run `em slice sync`.
+
+| Region | Section | Body |
+|---|---|---|
+| `em-slice-story` | right under `![Diagram](…)` | one line: `Step N of M in **<Storyline>** · after <Prev> · before <Next> · <Pattern>` (Prev and Next link to the neighbouring slices' docs; a continuation neighbour is named, not linked) — where the slice sits in its story; the one region `em slice sync` inserts when missing on an unsigned doc (see `em slice sync` in the CLI reference) |
+| `em-slice-command` | `## Command / Input` | `**Command:** \`Name\`` + `\| Field \| Type \| Required \| Rules / Validation \|` (Required is `no` for a `name?: Type` field) |
+| `em-slice-event` | `## Event(s) Emitted` | `**Event:** \`Name\` → context \`Ctx\`` + `\| Field \| Type \| Immutable Fact? \| Source / Notes \|` (Source: the same-slice command field it is copied from; failing that, the command from another slice that also records the event, written `not supplied by this command (from \`A\`, slice "Create")` (GH #344 / #362, the same union `fields-completeness/event-field-no-source` checks; worded as a statement about this slice, since the repeat's own command does not take the field); `assigned` for a system-assigned field, else `{{ }}`) |
+| `em-slice-view` | `## Read Model / View` | `- **View:** \`Name\` built from events: …` (the union across the originating and every `again` instance; each later event is annotated `(via "<slice>")` with the slice of the instance that adds it) + `\| Field \| Type \| Source / Notes \|` (Source: the source event, from that union, carrying the field, `Derived` for a `derived` field, `Collection of \`T\`, fed by …` for a `T[] derived from …` field — followed by one neutral Given/Then scenario stub per named event under the table, to copy into `## Scenarios` and complete there (the region itself stays read-only); `em slice sync` retires a stub once an authored scenario covers that field and event, by the stub's `<field> after <Event>` title or by a Given naming the event with the field named in the block (GH #368), and drops the `Scenario stubs for` line when none is left — else `{{ }}`) |
+| `em-slice-invariants` | `## Invariants / Business Rules` | one `- **INV-X** — rule` line per model-declared invariant of the slice's commands and events |
+
+A slice with several elements of one kind gets one region per element, the name suffixed with
+the element's slug (`em-slice-event-order-placed`). A kind the slice lacks keeps its one region
+with a "has no …" line, so adding the first element later is a plain `em slice sync`. The
+`**Command:**`/`**Event:**`/`- **View:**` marker lines sit inside the regions, so the
+[doc-model consistency](https://github.com/milehimikey/em/blob/main/docs/validation.md#doc-model-consistency) check reads them as before (and,
+inside a generated `em-slice-view` region, now compares the view's field table too).
+
+```markdown
+## Command / Input
+<!-- GENERATED:em-slice-command:start — generated from the model by `em slice sync`; do not hand-edit -->
+**Command:** `Submit Order`
+
+| Field | Type | Required | Rules / Validation |
+|-------|------|----------|--------------------|
+| total | decimal | yes | — |
+| note | text | no | — |
+<!-- GENERATED:em-slice-command:end -->
+```
+
+The invariants list uses `**INV-X** — rule`, not the declaring label `**INV-X:**`, so a
+generated list never trips `invariants/declared-in-both`. Elaborate each ID below the region
+(after the `<!-- elaborate below this list; IDs are declared in the model -->` comment).
+
+**Authored sections** are everything else — Intent, Trigger & Actor, Trigger, `**Read by:**`,
+`Consumed by`/freshness, the invariant elaborations, Scenarios, Alternate & Error Flows, NFRs,
+Dependencies, Open Questions. `em` never writes them; `em slice sync` leaves every byte outside
+the region markers untouched (CRLF included).
+
+**Regions and the signature (GH #347, 1.19.0).** `ratifiedHash` covers the authored sections and
+the marker lines, not what sits between the markers. So `em slice sync` runs on a ratified or
+shipped doc like any other and keeps its signature: it rewrites the regions, leaves `ratifiedHash`
+and `ratifiedRef` alone, and prints a `note:` saying so. A hash still in an older scope (1.17.0–1.18.x,
+or pre-1.17 whole-body) whose body is intact is re-stamped in the current scope in the same write —
+same authored text, not a re-signing. A doc whose authored text already fails its hash is synced
+too, with nothing re-stamped (`em validate --check-signed-bodies` still reports it). A scenario
+stub or `{{ }}` Source cell that sync writes into a signed doc's region is reported by `em validate`
+as `slice-doc/generated-region-placeholder` (warning; see
+[validation.md](https://github.com/milehimikey/em/blob/main/docs/validation.md#generated-region-placeholders)): fill the model gap and re-sync, or
+write the scenario in `## Scenarios`, which on a signed doc is the next version (`em slice revise`).
+
+**Scenario grammar (authored, constrained).** Inside `## Scenarios (Given / When / Then)`, each
+case is a block:
+
+```markdown
+### Scenario: Non-positive total is rejected (INV-CHK-1)
+- **Given:**
+  - a basket whose total is 0
+- **When:**
+  - the customer issues PlaceOrder
+- **Then:**
+  - the command is rejected with a validation error
+  - no event is recorded
+```
+
+**Scenario quality (citation convention).** A scenario is tied to exactly one command: its When
+names the slice's command (a reaction slice: the command it triggers), its Then names an event
+the slice records or a rejection/error, and it **cites the `INV-…` ids it exercises** anywhere in
+the block (the title above, or a Given/When/Then bullet). Every invariant declared for the slice
+(an `invariant` line in the model, or the doc's Invariants section) should be cited by at least one
+scenario. `em validate` advises on all three — `scenario-when-not-command`,
+`scenario-then-not-outcome`, `invariant-without-scenario` — see
+[validation.md](https://github.com/milehimikey/em/blob/main/docs/validation.md#scenario-quality). Older bullet-format scenarios are checked too; a doc with no scenarios is never
+flagged.
+
+A `### Scenario: <title>` heading, then the three column-0 bullets `- **Given:**`, `- **When:**`,
+`- **Then:**`, each with nested `  - ` items (text after the label on the same line counts as a
+first item). `em export --json` publishes the parsed blocks as `slice.doc.scenarios`
+(`{ title, given, when, then }[]`, `null` when the doc has none). A block missing any of the
+three is `slice-doc/structured-section-malformed`, as is a region whose markers don't balance or
+whose table header differs from the template's — a warning in `em validate`, and a blocker
+(`slice-ready-structured-section-malformed`) under `--slice-ready`. See
+[validation.md](https://github.com/milehimikey/em/blob/main/docs/validation.md#structured-sections).
+
+**Migration.** Nothing is required: a doc with no region markers and no `### Scenario:` heading
+(every doc written before 1.14) stays valid, is never flagged, and `em slice sync` skips it with a
+note. To adopt regions, re-create the doc with `em slice new "<name>" … --wire <model>.em --force`
+and carry the authored prose across, or paste the marker pairs in by hand and run
+`em slice sync`.
+
+## Open Questions section: lifecycle
+
+`## Open Questions` (MIL-87 for the counting mechanics; MIL-156 for this lifecycle) had no
+cross-version story until now: `countOpenQuestions()` counts every GFM task item under the
+heading, but nothing ever pruned a resolved (`- [x]`) one — left unaddressed, the section grows
+by accretion across every re-ratification of a long-lived slice, the same problem `## Delta`
+(above) solves for by replacing its content wholesale each hop.
+
+**Decision: prune resolved items on the same commit that ratifies the next version — replace,
+never accumulate, same stance as `## Delta`, applied by hand instead of by section-rewrite.**
+Concretely:
+
+- While the *current* version is still being drafted or reviewed, a checked item can stay in the
+  doc — it's a visible record of what this round already decided, not yet an accumulation
+  problem (a slice's first version, `v1`, commonly ships with every question already resolved;
+  see `examples/order-fulfillment/slices/browse-catalog.md`).
+- On the commit that bumps `version` and rewrites `## Delta` for the next hop, prune every
+  already-checked item from `## Open Questions` — keep only what's still open (`- [ ]`), plus
+  anything new that hop's change surfaced.
+- Full history isn't lost: it lives in git the same way `## Delta`'s superseded hops do —
+  `git log -p slices/<name>.md` shows exactly which questions were open, and how they were
+  answered, at each prior version.
+
+**Why not keep resolved items as a permanent audit trail instead?** Same reasoning `## Delta`'s
+lifecycle section gives: an ever-growing scroll of resolved questions is a second history that
+diverges from git, grows unboundedly over a long-lived slice's life, and forces every reader to
+work out which resolutions are still relevant to the *current* version versus leftover from a
+prior one — exactly the ambiguity a live, current-version-only section avoids.
+
+**Deferral marker (MIL-275).** A question this version will not answer is not left `- [ ]` and
+not deleted: `em slice defer` checks it and rewrites it as `- [x] <original> — v<current>:
+<decision>; deferred to v<n> (<date>[, <by>])`. The `deferred to v<n>` marker is what
+`em slice revise` (and `mark-implemented`, which opens v<n> at merge when something is deferred to it) reads: when the doc reaches v<n> it rewrites each such item back to
+`- [ ] <original>`, so the question must be resolved or re-deferred before `--slice-ready` passes
+again. The prune rule above does not apply to a deferred item before v<n> (it stays as the
+record); once reopened it is an ordinary open question. A deferred item describes v<n>, not the
+version that was signed, so it sits **outside `ratifiedHash`** (GH #253, with the section heading
+and its blank lines; see the `ratifiedHash` row above) — which is what lets `em slice defer` write
+one into a ratified or shipped doc. Every other line of the section — an answered `- [x]`, a hand-added
+`- [ ]` — is inside the hash and moves it.
+
+**Not a parsing/grammar change.** `countOpenQuestions()` (`sliceDoc.ts`) and
+`slice-ready-open-questions-unchecked` (`sliceReadyValidate.ts`,
+[validation.md#slice-readiness](https://github.com/milehimikey/em/blob/main/docs/validation.md#slice-readiness)) are unaffected: both already
+only care about the CURRENT doc's checkbox state, never about how many hops of history the
+section has accumulated. This is purely an authoring convention — same "documented, not
+mechanically enforced" status `## Delta`'s own lifecycle has (no `em` command checks that pruning
+actually happened on re-ratification).
+
+## `status` under re-ratification
+
+Since 1.15.0 (MIL-283) two separate facts live in the frontmatter, and every reader knows which
+one it is asking about:
+
+- **`status` is the working state** of the doc's current `version:` — `draft`, `reviewed`,
+  `ready-to-implement`, `implemented`.
+- **The shipped record is what is in production**: `shippedVersion:`/`shippedRef:`/`shippedOn:`
+  (written by `em slice mark-implemented`, MIL-284) together with `implementedIn:`. For a doc
+  shipped before 1.15 — no `shippedVersion:` — the read-both rule applies: `status: implemented`
+  means "shipped at the current `version:`". The one function that answers "has a version of this
+  slice shipped, and which" is `shippedRecordOf()` (`src/catalog/sliceDoc.ts`); `em export`
+  publishes its answer as `slice.doc.shipped`.
+
+**Reading a PR that shows `status: draft`.** When `mark-implemented` opened the next version
+(`status: draft`, `version: <N+1>`), the diff of that slice doc does not say "never marked": the
+`shippedVersion: <N>` / `implementedIn:` lines **are** the record that v<N> was implemented, and
+`status:` is the state of v<N+1>. The command prints a notice naming both
+([cli.md](https://github.com/milehimikey/em/blob/main/docs/cli.md#em-slice-mark-implemented-file-slice-key-pr-url)), and `em status` lists the slice
+as `implemented (v<N>) · draft v<N+1> open` rather than a bare `draft`.
+
+So a shipped slice can be a `draft` again. `em slice revise <key>`
+([cli.md](https://github.com/milehimikey/em/blob/main/docs/cli.md#em-slice-revise-file-slice-key)) opens v<N+1> as `status: draft`, bumps
+`version:`, clears the prior version's review and sign-off, and leaves `implementedIn`/`shipped*`
+alone — v<N> stays shipped. `em slice mark-implemented` does the same automatically at merge when a
+question was deferred to v<N+1> (`em slice defer`), so known work is on the list the moment the
+previous version lands. Version 2 then takes both human gates like version 1 did: `em slice review
+--by`, then `em slice ratify --by` (which records a fresh `ratifiedRef`/`ratifiedHash`).
+A ratified doc that never shipped may instead be reopened at the **same** `version:` with
+`em slice revise --withdraw --keep-version` (GH #262) — a correction before a first release, not a
+delta, so no `## Delta` is owed; the status flip and sign-off clearing are the same. Refused on a
+shipped doc: the shipped version keeps its number.
+
+The deliberate mismatch — `version: 2` open while `implementedIn`/`shippedVersion` still name v1's
+work — is not staleness, it's the **drift signal**: `em export`'s `slice.doc.driftSignal` is
+`"unpropagated-delta"` whenever `version` is past the shipped version (MIL-85/283), and the
+event-modeling skill's `conform` phase reads it as "a delta hasn't shipped yet", not a fresh finding
+against the still-live v1 code. `em validate`'s frontmatter-coherence check (MIL-85) never flags it;
+only a shipped slice with no `implementedIn` link at all is checkable incoherence
+(`implemented-without-link`); see
+[validation.md#frontmatter-coherence](https://github.com/milehimikey/em/blob/main/docs/validation.md#frontmatter-coherence).
+
+**Which readers decide on the shipped record, not `status`** (MIL-283): `em status`'s
+`byStatus.shipped` count and its conformance scope, `em coverage --strict`'s default scope, `em
+conform-scope` / `em conform-supersede`'s in-scope slices, `em slice conform` (legal when shipped;
+`conformedVersion:` is the **shipped** version), the engagement Ledger's inferred `merged` and its
+outside-upstream hold, `em upgrade`'s pre-release signal, `em slice ratify`'s upstream advisory, and
+`driftSignal`. `byStatus.implemented`, the render/legend colouring and `--slice-ready` still read the
+working `status` — that is what they are about.
+
+**A ratified version that never shipped** (`status: ready-to-implement` with `ratifiedBy:` set — a
+gap answered mid-build) is revised the same way: `draft`, `version + 1`, sign-off cleared; the
+ratification of v<N> is withdrawn and nothing shipped, so no shipped record is written. Because that
+withdraws the only implementable version, `em slice revise` **refuses it without `--withdraw`**
+(GH #236).
+
+**Questions found against a ratified or shipped version are written into the body, outside the
+hash** (GH #253, superseding GH #236's 1.16 queue). `ratifiedHash` leaves out the `## Open Questions`
+heading and its `deferred to v<n>` items, so `em slice defer` on a `ready-to-implement` +
+`ratifiedBy:` or `implemented` doc appends the already-deferred item
+`- [x] <question> — v<N>: <decision>; deferred to v<n> (<date>[, <by>])` to the doc — visible to
+every reader of the ratified doc — and `ratifiedHash`, `--slice-ready` and `ratify`'s re-run all
+stay valid. When v<n> opens as a draft — `mark-implemented` at merge, or `revise` — the item is
+reopened as `- [ ] <question>` exactly as a pre-ratification deferral is. A question `em slice
+defer` queued in `.event-modeling.md` under 1.16.x is still injected when the next draft opens, and
+`em upgrade`'s `ratified-hash-scope` step moves any leftover into its doc. `em export` reports the
+work waiting on later versions as `slice.doc.queuedForNext` (schema `1.17`). **A
+`ready-to-implement` doc with no `ratifiedBy`** is the leftover of a pre-1.15 `reratify` (which
+bumped the version and left the doc unsigned at that status); no command produces it any more and
+`em slice ratify` no longer accepts it — `em slice revise` reopens it as a `draft` at the same
+version, and the normal road follows. `draft`/`reviewed` docs are not ratified and are simply
+edited; `revise` refuses them ("the next version is already open").
+
+Pair a re-ratification with a `## Delta` section (see
+[Delta section: grammar and lifecycle](#delta-section-grammar-and-lifecycle) above) recording
+the ratified change in typed operation blocks, so it's reviewable without opening git.
+
+**Mechanically checking the invariant this section describes:** `em ledger` (MIL-89, opt-in —
+see [cli.md#em-ledger-file](https://github.com/milehimikey/em/blob/main/docs/cli.md#em-ledger-file)) checks that `version:` and a slice doc's
+content (body + lineage refs) always change together across two git revisions — a version bump
+with no real content change, or a content change with no version bump, is a ledger bug.
+It **deliberately excludes `status`/`implementedIn`** (and the `shipped*` keys) from what counts
+as "content" for exactly the reason this section explains: a lifecycle transition legitimately
+moves `status` and leaves `implementedIn`/`shippedVersion` naming prior work, with no version bump
+of its own — including those fields in the comparison would flag every ordinary lifecycle
+transition as a false positive.
+
+## Unknown keys
+
+**Captured, never read, never a warning or error.** Real docs in the wild carry extra
+non-canonical keys — `id`, `title`, `model`, `created`, `updated`, and YAML-list-valued keys
+like `upstreamEvents`. Every top-level `key: value` scalar line is captured internally
+regardless of whether it's one of the keys above; only the keys this document defines are ever
+read back out onto `SliceDoc`. A list-valued key's own line (`upstreamEvents:`, value empty) is
+captured with an empty value; its `- item` continuation lines don't match the `key: value` shape
+at all and are simply skipped. Nothing throws, nothing warns — adding a new non-canonical key to
+a doc is always safe.
+
+## `schemaVersion` vs `version` — don't conflate these
+
+| | `schemaVersion` | `version` |
+|---|---|---|
+| What it versions | The frontmatter dialect itself | This one slice's ratified definition |
+| Who bumps it | `em` maintainers, when the dialect's canonical keys change | Whoever ratifies a delta on this slice |
+| Cardinality | One value, same across every doc using this dialect | One per slice doc, incrementing per ratified delta |
+| Current value | `1` (unchanged since MIL-86) | Starts at `1` |
+| Read by `em` today | Value: no — captured, not exposed on `SliceDoc`. Presence: required for usable frontmatter | Yes — parsed onto `SliceDoc.version` |
+
+## Legacy status bullet line
+
+Docs written before the frontmatter dialect existed may use `- **Status:** ...` instead of
+frontmatter `status:` — still accepted, status only. `version` and the lineage keys have no
+legacy form; they're frontmatter-only from the day they were introduced.
+
+## See also
+
+- [cli.md](https://github.com/milehimikey/em/blob/main/docs/cli.md#em-render-file) — slice status colors
+- [cli.md](https://github.com/milehimikey/em/blob/main/docs/cli.md#em-catalog-files) — pattern / doc lookup
+- [cli.md](https://github.com/milehimikey/em/blob/main/docs/cli.md#em-slice-ratify-file-slice-key---by-name) — `em slice ratify`, the mechanized ratification act (`ratifiedBy`/`ratifiedOn`, schema `1.8`, MIL-165)
+- [cli.md](https://github.com/milehimikey/em/blob/main/docs/cli.md#em-slice-revise-file-slice-key) — `em slice revise`, which opens the next version as a draft (the successor of `reratify`)
+- [cli.md](https://github.com/milehimikey/em/blob/main/docs/cli.md#em-export-file) — the `em export` join (`slice.pattern`/`slice.doc`, schema `1.4`, MIL-91), including `owner`/`tracking` (schema `1.9`, MIL-171)
+- [cli.md](https://github.com/milehimikey/em/blob/main/docs/cli.md#em-diff-old-new) — the `em diff` lineage annotation (schema `1.6`, MIL-84)
+- [validation.md#lineage](https://github.com/milehimikey/em/blob/main/docs/validation.md#lineage) — `em validate`'s lineage-ref resolution (MIL-84)
+- [validation.md#slice-readiness](https://github.com/milehimikey/em/blob/main/docs/validation.md#slice-readiness) — `em validate --slice-ready`'s note-binding gate, including the `covers` cross-binding (MIL-121)
+- [cli.md#em-coverage-file---tests-dir](https://github.com/milehimikey/em/blob/main/docs/cli.md#em-coverage-file---tests-dir) — `em coverage`'s INV-ID extraction, scoped to the Invariants/Delta sections' structural (non-nested) bullet lines (MIL-149/MIL-155/MIL-156)
+- [validation.md#note-binding-mismatch](https://github.com/milehimikey/em/blob/main/docs/validation.md#note-binding-mismatch) — `em validate`'s check for a doc-shaped note that doesn't participate in its slice's binding (MIL-126)
+- [`templates/slice.md`](../templates/slice.md) — the authored template

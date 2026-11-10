@@ -1,0 +1,557 @@
+# Implementing a ratified slice
+
+The contract for the implementation half of the workflow: an agent (or engineer) turning **one
+ratified slice** into merged, verified code. The facilitation phases (`discover`/`extract` →
+`model` → `slice`) produce the inputs; this document governs consuming them. It applies to any
+implementing agent, whether or not the session started from `/event-modeling`.
+
+**The contract in one paragraph:** the slice doc is the spec — nothing between it and the code
+is a source of truth. Verify readiness mechanically before writing any code; implement exactly
+what the doc says; put every gap in front of a human instead of deciding it silently; never
+edit the ratified doc except the two lifecycle fields at merge; prove the work with tests
+traceable to the doc's invariants and scenarios.
+
+Why the rules are shaped this way: **agents propose, humans ratify.** Everything in the model
+and its slice docs is there because a human decided it on purpose — that is what makes the
+model authoritative. An implementing agent that silently patches a gap, or edits a ratified
+doc outside a session, converts the model into just another generated artifact and voids the
+whole methodology. (The full human/agent partition is `docs/process.md` in the
+[em repository](https://github.com/milehimikey/em/blob/main/docs/process.md) — not vendored
+with this skill.)
+
+## 1. Gate: verify readiness before starting
+
+```bash
+em validate <model>.em --slice-ready <slice-key> --json
+```
+
+`<slice-key>` is the slice's export key — the kebab-case slug of its name (`"Place Order"` →
+`place-order`). Don't guess it or hand-slug the name yourself: list every slice's key with
+`em export <model>.em | jq -r '.model.slices[].key'`. Read the JSON document's `ready` field —
+don't infer it from the exit code or any printed text. `ready: true` means: the slice has a doc
+bound via `note "slices/<key>.md"`, its frontmatter is usable, `status: ready-to-implement`,
+every `## Open Questions` checkbox is checked, and no status/version/link incoherence is flagged
+— `gates` names each of those 4 conditions individually (`docBound`/`frontmatterUsable`/
+`statusReady`/`noUncheckedOpenQuestions`) if you need to say which one is blocking.
+
+`ready` is the named gates, plus error-severity diagnostics scoped to the slice, plus these warning-severity codes:
+
+- `slice-ready-no-doc-bound`, `slice-ready-status-not-ready`, `slice-ready-open-questions-unchecked`: the gates themselves.
+- `binding-missing-file`, `frontmatter-invalid`: the `frontmatterUsable` gate.
+- `both-ends-of-a-flow/*`: a dangling slice is not a complete pattern.
+- `fields-completeness/event-field-no-source`: the `assigned` marker contract (MIL-148).
+- `invariants/public-command-without-invariants`: the API-first readiness requirement (`docs/process.md`).
+
+A warning whose code is in this list blocks; any other warning never does — `command-repeated-across-slices`, `timeline-entity-clustered`, `fields-completeness/view-field-no-source`, `open-issue`, `doc-model-*`, `note-binding-*` and the shape lints stay in `diagnostics` and are not blockers. `--strict` promotes advisory rules only.
+
+Because of that list, `ready` can be `false` with every `gates` entry `true` (a `both-ends-of-a-flow/*` warning on one of the slice's own elements, say). Don't work it out from `gates`: read **`blockedBy`** (schema `1.5`, GH #377), the codes that flipped `ready`, `[]` exactly when it is `true`, and report those codes with the `false` gates when you hand the slice back.
+
+**`ready: false` means stop** — with two named exceptions. First: a slice already `status:
+implemented` with `driftSignal: in-sync` or `uncertified` (MIL-214) also reads `ready: false`
+(its `statusReady` gate fails because nothing is newly ratified), and that specific case is
+re-implementation/repair, not a blocker — see §3's third mode before treating it as one. Second:
+under **inline ratification** (§1a) a slice doc that's only `status: reviewed` — not yet
+`ready-to-implement` — is a sanctioned starting point for drafting code on the SAME branch, with
+the explicit, non-negotiable condition that you treat nothing as actually ratified, and open
+nothing for merge, until a human has run `em slice ratify` and `--slice-ready` reads `true` for
+real; §1a names exactly which slices qualify and what that condition requires in practice. For
+every other `false`, report which `gates`
+entries are `false` and what `blockedBy` names (and any `diagnostics` entries concerning this
+slice) and hand the slice back to the humans. Never make the gate pass yourself — checking an open-question box, flipping
+`status`, or editing frontmatter are ratification decisions, made by a human in a ratification
+session, never by you running `em slice ratify` on their behalf. That session is usually a
+separate doc-only PR, merged before an implementation branch is even cut — but it doesn't have
+to be: **inline ratification** (GH #399, §1a below) lets the session be the PR review of the
+very branch you're implementing on, for internal slices. Either shape, the rule here is the
+same: you never flip the gate yourself, whatever branch you're on.
+
+### 1a. The inline variant: ratifying on the implementation branch
+
+Most of this document assumes the ordinary shape — a slice is already `ready-to-implement` when
+you start, ratified in its own prior PR, and §1's gate reads `true` before you write a line of
+code. **Inline ratification** is the documented alternative
+(`docs/process.md`'s
+["Inline ratification" section](https://github.com/milehimikey/em/blob/main/docs/process.md#inline-ratification-approval-as-the-ratification-session)):
+draft the slice doc *and* build it on the same branch, spec commits first, and let the human's
+review of that one PR be the ratification session — which means you are, deliberately and
+sanctioned, building for most of that branch's life against a doc that reads `ready: false`.
+What doesn't change: you still never flip `status` yourself, never run `em slice ratify` on the
+human's behalf, and never write a word of the ratification record — see §1's second named
+exception for the precise condition this depends on. What's different is sequencing and tiering:
+
+- **Draft the doc first, then build on the same branch.** Commit the slice doc (through the
+  normal `slice` phase), get it reviewed (`em slice review --by`, flipping it to `status:
+  reviewed` — a human has to do this part too, same as always) before any implementation code,
+  even though doc and code will both live on one branch and merge in one PR. Writing code before
+  the doc exists, or before a human has looked at it, is retrofit — the exact failure mode inline
+  mode is named after avoiding — whether or not anyone ever checks for it.
+- **You may keep building past a `reviewed`-but-not-yet-`ready-to-implement` doc, but nothing is
+  ratified until `em slice ratify` actually runs.** `--slice-ready` keeps reading `false` the
+  whole time you're building — that's expected, not a signal to stop, as long as the doc's
+  `status` is `reviewed` (not `draft`: an un-reviewed doc is never a valid base, inline or not).
+  On an inline branch the human typically runs `em slice ratify --no-ref` as part of approving
+  the PR (`--no-ref` because the branch is headed for a squash/rebase merge) — not something you
+  do for them, and not something you should expect to have happened before the PR is up for
+  review. Before you report the slice done, or treat §6's merge-time flip as legitimate,
+  re-check `--slice-ready` yourself and confirm it now reads `true` with `ratifiedBy:` set — if
+  it still doesn't, the slice isn't ratified yet and you say so instead of proceeding.
+- **A post-signature doc edit still trips the hash check.** `ratifiedHash` doesn't know or care
+  which branch it was computed on — if something changes the doc's body after the human has
+  signed it (a gap surfaces, §4), `--slice-ready` and `em slice ratify` both refuse the stale
+  signature exactly as they would across two PRs. Route it through `em slice revise --withdraw`,
+  review, re-ratify (§4) — inline doesn't shortcut that loop, it just means the re-sign happens
+  on the branch you're already on instead of a fresh one.
+- **Not every slice is a candidate.** A slice owning a `public` command, event or view
+  (`isPublicTouchingSlice`) keeps the separate doc PR — the contract is a promise to consumers
+  who never see your implementation diff, and `em slice ratify` already refuses a public-touching
+  slice without `--meaning-unchanged`/`--contract-change` regardless of which branch it runs on.
+  An engagement-dispatched slice is never inline either — engagements structurally need every
+  contract frozen before any implementer branch is cut, so the engagement skill never offers you
+  this shape (it is explicitly unchanged by GH #399 — this is a note for your own judgment
+  outside an engagement, not something to apply inside one).
+- **Pre-ship advisory conform is the loop's natural checkpoint.** Before the PR merges, a human
+  (or you, if asked) can run `em slice conform <model>.em <key> --at <rev> --preview` — the
+  pre-ship, non-certifying mode (GH #400): same doc-resolution and findings-check read as a real
+  certification, legal before the slice has shipped, never writes `conformedVersion:`/
+  `conformedAt:`/`conformedOn:`. It's advisory and ephemeral by default (nothing written unless
+  `--write-findings` is passed) — a cheap "did I just drift from the doc I signed" look before
+  asking for the PR review that will also be the ratification.
+- **The ordering advisory is informational, not yours to act on.** `em refs --check-order`
+  (GH #399) can report whether a commit on this branch touched code before the doc's
+  `ratifiedRef` — a retrofit smoke signal for the human reviewing the PR. It's advisory, never a
+  gate, and nothing in this skill asks you to run it or react to its output; if a human shows you
+  a `code-before-ratification` result, treat it the same as any other gap raised against your
+  work (§4), not as something to silence.
+
+## 2. Read the spec
+
+**First, read the project's constitution** — the house rules for *how* implementation happens
+here (stack and architectural shape, which implementation skill each slice pattern routes to,
+code style, testing norms, NFR baselines, review and merge norms). It lives in one place, found by
+one lookup (shared by `em status` and `em upgrade`):
+
+- **spec-kit project** (a `.specify/` directory exists at or above the model):
+  `.specify/memory/constitution.md` — spec-kit's own slot, which em defers to — wins whenever it
+  exists.
+- **otherwise, or while that slot is empty**: `constitution.md` beside the model, where
+  `em scaffold` writes it (a symlink to a repo-root file counts).
+
+`em status <model>.em --json` reports which one applies and whether it's there
+(`conformance[].constitution`) — existence only; nothing in `em` reads or judges its content.
+**Its rules bound every technical choice you make on this slice** (see §4). If it's missing, or
+its `ratifiedBy:` is empty (spec-kit's file: the `**Ratified**:` footer still a placeholder),
+it isn't ratified — go to §7 before writing code.
+
+Then read `slices/<slice-key>.md` end to end — every section is load-bearing:
+
+| Section | What it is to the implementer |
+|---|---|
+| frontmatter `pattern:` | Which of the four patterns' implementation shapes to build (State Change / State View / Automation / Translation) |
+| Command / Event field tables | The contracts — names, types, validation rules, immutable-fact markers |
+| `## Invariants / Business Rules` (`INV-<MNEMONIC>-n` IDs) | The non-negotiable rules; every one needs a test citing its ID |
+| `## Scenarios (Given / When / Then)` | The acceptance tests, already written — compile them, don't reinvent them |
+| `## Alternate & Error Flows` | Retries, idempotency, compensations — real requirements, not appendix |
+| `## Non-Functional Requirements` | Authz, PII, performance — implement or consciously surface, never skip |
+| `## Dependencies & Read Models Affected` | The blast radius — what else to check before and after |
+
+**Interface obligations follow from the model, not from the doc's prose.** The DSL already
+encodes what's reachable — see `em-dsl.md`'s "Headless / API systems & repeated read models"
+section — and the routing from it is mechanical, not a technical choice you make while coding:
+
+- A **command with a `ui` trigger** ships the endpoint that dispatches it as part of this slice
+  — shape, verb, status codes, and error mapping follow the constitution's interface conventions
+  (§7). Because: the model already said this command is reachable from outside; leaving it
+  reachable only through an internal gateway silently narrows what the model ratified.
+- A **view with a `ui` consumer** ships the query endpoint as part of this slice, same
+  conventions.
+- **No `ui`** on the trigger or the consumer (a command dispatched by a processor or a
+  translation, a view read only by a reaction) means internal-only: no endpoint. If one seems
+  needed anyway, that's a gap to surface (§4), not a technical choice to make mid-implementation
+  — adding a route the model doesn't show is exactly the kind of silent divergence §4 exists to
+  catch. An endpoint on a view the model shows no `ui` reading is a gap to surface the same way
+  (MIL-215) — conform will classify it as a **model gap**, never drift to delete, once you flag
+  it (`../../event-modeling-conform/reference/conform.md`, Flow step 4).
+- **`public` commands, events and views** are the model's published integration surface: their
+  shape is a contract, not an implementation detail. `em validate --list-public` lists them;
+  `em api generate` writes the model-owned contract (`<model dir>/contracts/<model key>.tsp`).
+  Changing a public element's shape is a ratified delta, never an implementation-time choice.
+
+For timeline context, read the slice's surroundings in the `.em` (what triggers it, what
+consumes its output) — the slice's own diagram (`slices/<slice-key>.svg`) shows its canonical
+pattern shape. For machine-readable facts, use `em export <model>.em --slice <slice-key>`
+rather than parsing the DSL or the doc's frontmatter yourself: it returns just this slice's
+object — `pattern`, element refs, fields, and the joined doc metadata (`slice.doc.status`,
+`version`, `driftSignal`) — without piping the whole model's export to find one `slice.doc`.
+When the view repeats later via `again` (MIL-208), that same call on the *originating* slice
+also returns `alsoReads: [{ event, atSlice }]` — the union of every event the read model
+consumes across all its later continuations, in timeline order — so implementing it never means
+walking each continuation by hand to assemble the full event list.
+
+If the project ships pattern-specific implementation skills (for example an Axon/DCB skill
+set keyed on a slice doc's `pattern:` frontmatter), route by the slice's pattern and follow
+those.
+
+## 3. Three modes: first version, ratified delta, re-implementation/repair
+
+Check the doc's `version:` and `## Delta` section (or `em export`'s `slice.doc.driftSignal`):
+
+- **First implementation** (`version: 1`, no `## Delta`, `driftSignal: never-implemented`):
+  green-field slice implementation. Build the whole pattern shape the doc specifies.
+- **Ratified delta** (`version` > 1, `## Delta` present, `status: ready-to-implement` while
+  `implementedIn` still names the prior version's PR — `driftSignal: unpropagated-delta`):
+  this is a **change to existing, owned code**. The `## Delta` section's typed operations
+  (Added/Modified/Removed/Renamed, each with scenarios) scope the work precisely — which
+  invariants, which scenarios, which tests change. Touch what the delta names; leave the rest.
+  **Never regenerate merged code wholesale from the model** — after merge, code is owned by
+  the people who've edited it (generated-then-owned); regeneration is legal only for slices
+  whose code never merged.
+- **Re-implementation / repair** (`status: implemented`, `implementedIn` set, `driftSignal:
+  in-sync` **or** `uncertified` (MIL-214 — certification status is orthogonal to whether the doc
+  changed; most shipped slices sit at `uncertified` until a conform sweep certifies them, which
+  doesn't change which mode this is) — `--slice-ready` reports `ready: false` purely because
+  `statusReady` fails, with no other gate false and no doc content changed): the doc hasn't
+  changed, but the shipped code
+  needs rebuilding or fixing — deleted code, a reverted PR, a bug in behavior the doc already
+  specifies. **The doc is still the spec.** The gate's `false` here means "nothing new is
+  ratified," not "stop" — it is not license to self-initiate: proceed only when a human has
+  asked for this specific re-work. Scope the change to what the repair needs, exactly like a
+  delta (generated-then-owned still applies — don't regenerate the whole slice wholesale just
+  because the gate reads oddly); if what you'd change is really a change in behavior rather than
+  a repair of it, that's a ratified delta (the bullet above), not this mode — when unsure which
+  one you're in, ask the human rather than guess.
+
+  No lifecycle flip is needed unless `implementedIn` changes. If it does,
+  `em slice mark-implemented <model>.em <slice-key> <new-pr-url>` will **refuse** rather than
+  overwrite: a doc already `implemented` with a different `implementedIn` URL is left untouched
+  and the command reports the conflict (`src/cli/markImplemented.ts`) instead of silently
+  replacing provenance. That refusal is correct, not a bug to route around — never hand-edit the
+  frontmatter to force it through. Surface the conflict to the human instead: they decide whether
+  the new PR supersedes the recorded one (and re-run `mark-implemented` themselves, or ask you to,
+  once they've decided) or whether the existing link should stand.
+
+## 4. Gaps: propose, never decide
+
+Mid-implementation you will hit things the doc doesn't answer — a field's edge case, an
+undocumented ordering, a contradiction with adjacent code. The discipline:
+
+- **Stop that thread and surface it.** State precisely what's unspecified, the options, and
+  your recommendation. The human resolves it — at the model, where the resolution lands as an
+  answered open question or a small ratified delta alongside your fix, so the decision is
+  recorded instead of buried in an implementation diff.
+- **A question this build will not wait on is deferred through `em slice defer`, never written
+  into the doc by hand** (GH #253). On a ratified doc the body is the signed spec, but a deferral
+  sits outside `ratifiedHash`: `em slice defer <model>.em <slice-key> "<question>" --until v<n>
+  --decision "<what this version does>"` appends the already-deferred `- [x]` item to the doc's
+  Open Questions — visible to the next reader — and `ratifiedHash` and `--slice-ready` stay
+  untouched. When the slice merges (`mark-implemented`) or is revised, the item is reopened as
+  `- [ ]` in the v<n> draft. Never add a `- [ ]` item to the ratified doc yourself: that does
+  move the hash.
+- **How a delta is ratified on a doc that never shipped** (it is `ready-to-implement` with
+  `ratifiedBy` set) when the spec itself must change: once the human has answered, the doc changes
+  by `em slice revise <model>.em <slice-key> --withdraw` (MIL-283: opens the next version as a
+  `draft` — `version:` bumped, the old sign-off cleared; the ratification of the unshipped version
+  is withdrawn, which is why GH #236 makes you pass `--withdraw` — plain `revise` refuses),
+  the answer is written into the doc and committed, the room reviews it (`em slice review
+  --by`), and the human re-signs with `em slice ratify
+  <model>.em <slice-key> --by <name>` (it records the commit it signs and refuses uncommitted
+  changes, MIL-284) — on a slice owning a `public` element that `ratify` also needs
+  `--meaning-unchanged` or `--contract-change "<why>"` (MIL-238; `revise` takes neither — the
+  confirmation belongs to the new version's sign-off). That is the human's step, not
+  yours — you never run `ratify`, and
+  the doc is not ratified again until they do; resume the build after that.
+- **Never edit the ratified doc to record your own answer**, and never quietly pick a behavior
+  a business person could have an opinion on. Silent divergence is the failure mode the whole
+  conformance loop exists to catch — don't manufacture it.
+- Purely technical choices with no behavioral surface (private naming, idiomatic structure,
+  which assertion library) are yours — **within the constitution's rules** (§2); anything
+  observable in behavior, data, or contract is not. If no constitution exists (or its
+  `ratifiedBy` is empty), surface that to the human and do not proceed on unilateral style or
+  stack decisions for a first slice: run the constitution step (§7) first.
+
+## 5. Definition of done
+
+**The unit is the slice doc: one slice doc = one PR.** A doc that `covers:` another slice (an
+automation's to-do-list view and its reaction, MIL-121) is one spec, not two — it ships in one
+PR, and `mark-implemented` runs for both keys against the same URL. A read model is one doc,
+even when a `view X again` clause repeats it across later positions on the timeline (MIL-208):
+the later instance is a **continuation** of the slice holding `X`'s first declaration, not a
+spec unit of its own — no doc, no status, no ratification, no PR of its own. Its behavior
+belongs in the originating doc's `## Scenarios` (one scenario per event the later instance
+feeds), not a doc of its own; `em export --slice <originating-key>` lists the full union of
+events the read model consumes across every position via `alsoReads` (§2). Never fold multiple
+slice docs' implementations into one PR because they touch the same read model, ship together,
+or seem small — see §10.
+
+- The PR description cites exactly one slice doc (plus its `covers:` keys, if any) and lists
+  that doc's invariants alongside the tests that cover them.
+- Every `INV-<MNEMONIC>-n` invariant has at least one test that cites its ID — checked mechanically by
+  `em coverage <model>.em --slice <slice-key> --tests <dir> --strict` (MIL-130, MIL-255); run it
+  before merge rather than eyeballing citations by hand. `--slice` is what makes this check the
+  slice under build: the default form, `em coverage <model>.em --tests <dir>`, counts only slices
+  already flipped to `implemented` (MIL-207), and your slice is still `ready-to-implement` until
+  the §6 flip — so the default form reports it `inScope: false`, checks nothing, and exits 0. It
+  is a regression check for shipped slices, not the definition-of-done check. (`--include-ready`
+  is no substitute: it counts every ratified slice, so `--strict` fails on slices nobody has
+  started.) A continuation key resolves to its originating slice's doc. If it exits 1 with "not in scope", the slice's doc is not `ready-to-implement`/`implemented` — nothing was checked, so stop and surface it rather than treating the run as a pass.
+- Every scenario in `## Scenarios (Given / When / Then)` exists as a passing test; rejection
+  scenarios assert the doc's named rejection reason.
+- Alternate/error flows (idempotency included) are covered by tests.
+- The build and full test suite are green; the model still validates (`em validate` in CI —
+  you didn't touch the `.em`, so this only fails if something else broke).
+- Nothing between the slice doc and the code was committed as a source of truth (see §9 —
+  work containers are ephemeral; generated or symlinked specs are renderings).
+- **The slice's bindings file is written or updated** (GH #450): `conformance/bindings/<slice-
+  key>.yaml`, beside the model, per [`docs/bindings.md`](https://github.com/milehimikey/em/blob/main/docs/bindings.md)'s
+  schema. You just wrote the code — you know which file and identifier anchors each element
+  this slice's doc declares (`ref: <kind>.<slug>`, bare, no `<slice-key>/` prefix) and each
+  `INV-<MNEMONIC>-n` invariant's enforcement and test sites. This is a file contract, not an
+  `em`-run write: author or hand-edit the YAML directly, the same way you'd write any other file
+  in your PR. Verify it before calling the slice done:
+  ```bash
+  em conform bindings check <model>.em --repo <path> --slice <slice-key> --exit-code
+  ```
+  Exit 0 is required — fix the file (a wrong `ref`, a stale `file`/`identifier` pair) rather than
+  shipping a binding that doesn't check out. A continuation key (§5, an `again` view instance)
+  has no bindings file of its own; its elements and invariants are bound inside the originating
+  slice's file alongside the rest of that doc's bindings.
+
+## 6. At merge: the lifecycle flip
+
+The PR being merged here is the one doc's PR (§5) — its description cites exactly this slice doc
+(plus any `covers:` keys) and nothing else, which is what makes the flip below unambiguous: one
+PR, one `implementedIn` URL, applied to every key that PR's doc covers.
+
+When the PR merges, exactly **two** frontmatter fields change on the slice doc:
+
+```yaml
+status: implemented
+implementedIn: <PR or commit URL>
+```
+
+This is supply-loop mechanics, not ratification — it's the one edit an implementing agent makes
+to a slice doc, and it's why `em ledger` deliberately excludes these two fields from what
+counts as content. **Do not bump `version:`** — versions bump only when a delta is ratified;
+a bump here is a ledger defect.
+
+`em slice mark-implemented <model>.em <slice-key> <pr-url>` does the flip for you (MIL-103) —
+resolves the doc via the same note-binding join `--slice-ready` uses, is idempotent on a re-run
+with the same URL, and refuses (never silently overwrites) if the doc is already `implemented`
+with a different URL. It also refuses a doc that isn't `ready-to-implement` (MIL-277): if it
+reports `doc is \`status: draft\``/`reviewed`, the slice was never ratified — stop and surface
+that to the human rather than editing the frontmatter by hand; the §1 gate should have caught it.
+Prefer it over hand-editing the doc's frontmatter. It also writes the **shipped record**
+(`shippedVersion:`/`shippedRef:`/`shippedOn:`, MIL-284) — what every reader decides "has this
+shipped?" on since 1.15.0 — and, when the ratified doc deferred a question to the next version,
+**opens that version as a `draft` on the same write** (MIL-283: `status: draft`, `version` bumped,
+the question back to `- [ ]`; the version you built stays shipped) — a question deferred with `em
+slice defer` while the doc was ratified (GH #253) is one of those. If it prints `opened draft
+v<N+1>`, say so in your report: the slice has known work, and a design session, not you, decides it.
+
+**What the PR will show.** In that case the slice doc in your PR reads `status: draft` with
+`version: <N+1>` — not `implemented`. That is correct, not a failed flip: `shippedVersion: <N>` and
+`implementedIn:` are the record that v<N> was implemented, and `status:` is the next version's
+state. The command prints a multi-line notice (what shipped, what opened, the reopened question
+titles; `--json` gives `nextDraft: { version, reopened[] }`) — paste it into the PR description so a
+reviewer who sees `status: draft` knows where to look. `em status` lists the slice as `implemented
+(v<N>) · draft v<N+1> open`.
+
+Then, if the project keeps a model README (from `../../event-modeling-shared/templates/model-readme.md`), run
+`em slice index <model-name>.em` so its generated Slices table reflects the new status and
+link — never hand-edit that table. The `implementedIn` link is what the `conform` phase later
+uses to anchor drift-checking — leaving it empty blinds the loop.
+
+## 7. Before the first slice: the constitution
+
+The first time this project's slices reach implementation — or any time §2 finds no constitution,
+or one whose `ratifiedBy` is still empty — **stop and run this short conversation before writing
+code.** It happens once per project, not once per slice.
+
+Start from the template the skill bundle ships,
+`../../event-modeling-shared/templates/constitution.md`. Each of its five sections opens with the
+question to ask; ask them **conversationally, one section at a time**, and write the answers into
+the document as you go — never fill a section by guessing, by reading the codebase and inferring
+"what they probably do", or by pasting the template's own examples. Unanswerable questions get
+parked in the document as open items, exactly like a slice doc's Open Questions:
+
+1. **Stack and architectural shape** — languages/runtimes, frameworks, the architectural pattern,
+   where a slice's code lives, and the routing table: which implementation skill or approach each
+   of the four slice patterns uses (for example, State Change slices → the `axon-*` skill set).
+   That table is what you obey in §2 when you read a slice's `pattern:`. This is also where the
+   **interface conventions** question gets asked — resource style, error/rejection mapping,
+   versioning, auth at the edge — so the shape of every endpoint the interface obligations
+   paragraph (§2) and the foundation step (§8) require is decided once, here, instead of
+   invented per slice.
+2. **Code style** — formatter/linter, naming, module layout, and what "idiomatic" means here.
+3. **Testing norms** — which test levels each pattern requires, where invariant and scenario
+   tests live, and the test-naming convention that lets `em coverage` trace `INV-<MNEMONIC>-n`
+   citations.
+4. **NFR baselines** — authz model, PII handling, performance defaults, observability: the
+   standing defaults every slice inherits where its own `## Non-Functional Requirements` section
+   is silent.
+5. **Review and merge norms** — who reviews, what blocks a merge, and who runs
+   `em slice mark-implemented` at merge (§6).
+
+**A human ratifies it.** The answers are the project's, not yours — you drafted the wording, they
+sign it off. In the em-native file that's the `ratifiedBy:`/`ratifiedOn:` frontmatter (a named
+person and an ISO date, hand-filled — no `em` command writes this file, and an empty `ratifiedBy:`
+means *draft*). In a spec-kit project it's that file's own `**Ratified**:` footer line — never add
+frontmatter to spec-kit's document. Until it's ratified, treat it as a proposal: you may not
+build a first slice on it.
+
+**In a spec-kit project, merge — never duplicate.** The constitution IS
+`.specify/memory/constitution.md`; em writes no second file and neither do you. Append em's five
+sections to it under their own `##` headings, **leaving every existing section byte-untouched** —
+including spec-kit's own `## Core Principles` and `## Governance`, and any principle a team
+already wrote. If a heading of the same name is already there, add to it rather than replacing it,
+and show the human the diff before writing. Two cautions: spec-kit's `/speckit.constitution`
+command rewrites that whole file from its template, so run it (if at all) **before** this
+conversation, never after — and never use it to author em's sections. If the file is still the
+blank stock template (`[PROJECT_NAME]`, `[PRINCIPLE_1_NAME]`, … placeholders), say so: filling
+spec-kit's own placeholders is the team's call, and em's sections go in alongside them either way.
+
+`em status` will then report `constitution: present` for the model. That's the whole mechanical
+check — em stores and locates this document, and never validates a word of it.
+
+## 8. Foundation: contracts first
+
+Once per project, before the first slice PR ever opens, land one **foundation PR** that turns
+the model's events — and the cross-cutting shell the constitution names — into code, and
+nothing else. Skip this and the failure is the same on every project that's skipped it: the
+first slice PR ships fine, then the second one needs an event the first slice already defined
+informally, and every PR after that either redefines it slightly differently or reaches into a
+sibling slice's package to reuse it — the boundary the constitution drew is gone within a week.
+
+1. **What it contains.** Every event `em export <model>.em` lists in `events[]`, each placed in
+   the home the constitution's "where a slice's code lives" rule assigns to its *emitting*
+   slice — not a separate shared "events" module, so nothing about where an event lives depends
+   on this PR existing rather than the constitution. Fields come verbatim from the slice docs'
+   Event tables, with types mapped per the constitution's stack conventions. Add the
+   cross-cutting shell the constitution names: shared ports, and the request/response boundary
+   and error mapping the interface obligations above (§2) plug their endpoints into. **No
+   handlers, no projections — contracts only.** Because: a handler or a projection belongs to
+   the slice that owns the behavior behind it; folding one into the foundation PR turns a shared
+   contract into a pre-empted slice.
+2. **It merges before any slice PR opens.** Every slice branch is cut *after* the foundation PR
+   has landed on `main` — never from a commit that predates it, and never alongside an open,
+   unmerged foundation PR. Every slice branch is cut from `main` and every slice PR targets
+   `main` — inside an engagement (`em engagement plan` names `main` as every slice's base) and
+   outside one alike; never from another slice's branch, never targeting another slice's PR. A
+   slice PR never carries foundation files. Because: a slice PR opened while the foundation is
+   still in review shows a diff dominated by files the slice didn't write and can't be held
+   accountable for, and its merge depends on someone else's review timeline instead of its own.
+   And because the foundation already holds every event and rule 3 keeps a slice out of its
+   siblings' code, no slice needs another slice's branch to compile or test: a PR cut from a
+   sibling's branch (a "stack") carries a dependency this contract forbids, and turns N isolated
+   slices into one landing with merge-commit and retargeting ceremony attached. `main` already
+   contains the foundation; that is all a slice needs.
+
+3. **A slice never creates, edits, or reaches into another slice's code.** It *imports* events —
+   only events — from wherever the foundation placed them; a sibling slice's handlers, storage,
+   and other internals stay off limits. Because: the boundary the constitution drew only holds if
+   every slice actually stays inside it — a slice that quietly builds on a sibling's internals has
+   erased that boundary informally, one import at a time.
+4. **A ratified delta that adds or changes an event re-runs this step for that event, first.**
+   Land the code change for the new or changed event — in its emitting slice's home, following
+   rule 1 — before the slice's delta PR opens, exactly as if it were the first pass. Because: the
+   same contract-before-consumer ordering that applies once per project applies again every time
+   the contract itself changes; an event isn't a stable shared type just because it was one
+   yesterday.
+
+### Order of work
+
+The foundation PR above answers most of "which slice next" by itself — once every event exists
+as a contract, a read slice no longer has to wait for the write slice that will eventually
+produce it. What's left is ordering the slice PRs against each other, and that ordering comes
+from the dependency graph, not from where a slice sits on the timeline:
+
+1. **Foundation first removes most ordering constraints.** With every event already landed as a
+   contract (rules 1–4 above), a slice's remaining dependency is on other *slices*, not on
+   events existing at all — that's what turns "order every slice against every other slice"
+   into the short, per-pattern list below.
+2. **Then take dependency order from the graph, not the timeline.** Before starting a slice,
+   run `em query upstream <model>.em --of <slice's command-or-view ref>` — anything it returns
+   that's still `ready-to-implement` is a candidate to build first; `em query producers
+   <model>.em --event <name>` names the slices that own a specific event's producing commands
+   when you need to check one directly. Concretely, per pattern:
+   - **State Change** with no upstream is always startable — nothing but the foundation gates it.
+   - **State View** is startable as soon as the events it reads exist as contracts (the
+     foundation alone satisfies this), but build it *after* their producing slices have merged
+     when you can — its fixture tests then exercise real commands instead of hand-rolled event
+     fixtures.
+   - **Automation** goes after both the command it triggers and the to-do-list view it reads
+     (bound via `covers:` when the two are written as one doc) — a reaction can't be tested
+     against a command handler or a to-do list that doesn't exist yet.
+   - **Translation** goes after the command it triggers, same reasoning as an Automation's
+     triggered-command dependency.
+3. **Timeline order is the ratification order, not the build order.** Ratifying slices in
+   timeline order is deliberate — it's the order stakeholders reason about the business process
+   in. Carrying that same order into implementation is the mistake this section exists to head
+   off: build order comes from the dependency graph above, and the two orders routinely
+   disagree.
+
+## 9. Spec-kit projects: the SDD adapter
+
+If the repository uses spec-kit (a `.specify/` directory exists), do not hand-author spec-kit
+artifacts — allocate through **em-sdd-bridge**, redirect mode preferred:
+
+```bash
+npx em-sdd-bridge@<pinned-version> <slice-key> --symlink
+```
+
+That allocates the feature branch and `specs/NNN-slug/` dir, runs the same readiness gates,
+and drops `spec.md` as a **symlink to the slice doc** — the slice doc itself travels through
+plan/tasks as FEATURE_SPEC. The rules that keep redirect mode safe:
+
+- **Never run `/speckit.specify`.** The ratified slice *is* the spec; an interactive specify
+  session against a defined slice creates a second, unratified source of truth.
+- **`/speckit.clarify` must never write into a slice doc.** Open questions resolve at the
+  model (that's what the readiness gate enforced); a ratified slice has nothing to clarify.
+  Projects using em-sdd-preset's overlays carry a mechanical guard for this — respect the
+  rule even where the guard isn't installed.
+- `/speckit.plan` and `/speckit.tasks` may run against the slice doc directly; the preset's
+  redirect preambles map spec-kit's section vocabulary onto the slice doc's sections.
+- **Emission fallback**: where redirect can't work (Windows checkouts without symlink
+  privileges, a toolchain that mutates its spec files), run the bridge without `--symlink` to
+  render `spec.md` from the slice doc. The generated file is a rendering — never hand-edit it;
+  regenerate it from the slice doc instead.
+- Everything under `specs/NNN-*/` is an **ephemeral work container** — one per change effort,
+  discardable; the PR is the durable record of the effort, the slice doc the durable
+  definition of the behavior.
+
+No spec-kit (or any SDD tool)? Implement straight from the slice doc — it already contains
+everything a spec holds. Don't introduce an intermediate spec document of your own.
+
+## 10. Never do
+
+| Rule | Because |
+|---|---|
+| Never implement from a slice that fails `--slice-ready` | The gate is the handoff contract; bypassing it hands you unratified decisions |
+| Never edit a ratified slice doc, except the two §6 fields at merge | Doc content is ratified; edits outside a session are unratified decisions |
+| Never edit the `.em` model | Model edits are ratified decisions — propose, don't write |
+| Never bump `version:` | Versions move only with ratified deltas; see `em ledger` |
+| Never silently decide unspecified behavior | Silent divergence is the disease the conformance loop exists to catch |
+| Never invent the house rules a first slice needs (stack, style, testing, NFR defaults) | They're the project's decision, ratified in the constitution — §7, not your judgment call |
+| Never regenerate merged code from the model | Generated-then-owned: post-merge code belongs to its owners |
+| Never commit an authored intermediate spec | The slice is the spec; anything between it and the code is a rendering |
+| Never open a slice PR before the foundation PR has merged | The foundation is what makes an event a stable shared contract — a slice built ahead of it is building on a moving target (§8) |
+| Never implement more than one slice doc in a PR | The PR is the durable record of one spec's implementation; `mark-implemented`, coverage, and conformance all key on one doc ↔ one `implementedIn` |
+| Stay on your side of the seam: never edit another model's directory, slice docs or contract file | Another model's `public` element is its owners' decision; a needed change goes to them as a seam change request, not into your PR |
+| Never hand-edit a generated contract (`contracts/*.tsp`) | It is derived from the model by `em api generate`; a hand edit is a contract change nobody ratified |
+
+**Mirror image of the design write scope (MIL-236).** The design session never writes generated
+contracts, SDD/spec artifacts (`specs/`, `.specify/`), implementation source, or a draft's
+`version:`, and never reads code as evidence for a modeling decision (see
+`../../event-modeling-shared/reference/operating-principles.md`, "Write scope and evidence").
+Implementation is the other side: implement reads them; design never writes them. You read the
+contract and the constitution as inputs, work in code and (on spec-kit projects) the `specs/`
+container per §9, and never write the model or its slice docs (except the two §6 fields at
+merge).
+
+## 11. Afterward: the loop closes
+
+Implementation isn't the end of the slice's story. On a cadence — or whenever someone asks —
+the `conform` phase checks implemented slices against the code, using the `implementedIn` link
+you recorded, and reports drift for humans to rule on (see the `event-modeling-conform` skill's
+`reference/conform.md`). Your two
+duties to that future loop are already behind you if you followed this doc: an accurate
+lifecycle flip, and zero silent decisions.

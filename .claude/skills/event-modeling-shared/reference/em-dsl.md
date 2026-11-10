@@ -1,0 +1,1055 @@
+<!-- DSL behavior change? Update BOTH docs/dsl.md and .claude/skills/event-modeling-shared/reference/em-dsl.md -->
+
+# `em` DSL Reference & Cheatsheet
+
+The `em` tool (`@milehimikey/em`) is a slice-first text DSL rendered to a strict Graphviz
+swimlane grid. Use this reference so the models you generate are **valid** and render cleanly.
+Keep `.em` files focused on **structure**; put deep design in markdown linked via `note`.
+
+---
+
+## CLI
+
+<!-- GENERATED:cli:start -- run `npm run docs:generate` to refresh, do not hand-edit -->
+```bash
+em --version                                                        # print the installed em version
+em init [file]                                                      # scaffold a starter .em model
+em init [file] -f, --force                                          # overwrite if the file exists
+em scaffold <name>                                                  # scaffold a full project: <slug>/<slug>.em, README.md, .event-modeling.md, and constitution.md (the implementation constitution — skipped, with a note, in a spec-kit project, where `.specify/memory/constitution.md` IS that document), plus the standard slices/, contracts/, model-versions/ and conformance/bindings/ directories (each seeded with a one-line README naming what lands there and which command writes it, instead of a .gitkeep) (see docs/cli.md — for just a starter .em, use `em init`; for a multi-model project, pass --under to nest it under a shared parent directory)
+em scaffold <name> -f, --force                                      # overwrite the directory's contents if it already exists
+em scaffold <name> --under <dir>                                    # parent directory to scaffold into — writes <dir>/<slug>/ instead of ./<slug>/, the supported multi-model layout (docs/cli.md, "Multi-model projects"): one directory per model, so each model's slices/ never collides with a sibling model's
+em render <file>                                                    # transpile a model and render it (or emit DOT)
+em render <file> -o, --out <path>                                   # output path (extension picks the format)
+em render <file> -T, --format <fmt>                                 # output format (svg, png, pdf, ...)
+em render <file> --slice <name>                                     # render only this slice, redrawn in its own canonical pattern shape (default out: slices/<kebab-slug>.svg)
+em render <file> --storyline <name>                                 # render only this storyline: its own slices in order, nothing from outside it (default out: storylines/<kebab-slug>.svg)
+em render <file> --map                                              # render every storyline to storylines/<kebab-slug>.svg plus a draggable canvas of them all, with the flow between storylines, at storylines/map.html (-o picks the html path)
+em render <file> --emit-dot                                         # print the generated DOT instead of rendering
+em render <file> --keep-empty-lanes                                 # keep the API lane even when empty
+em export <file>                                                    # export a versioned JSON snapshot of the normalized model
+em export <file> -o, --out <path>                                   # write to a file instead of stdout
+em export <file> --slice <key>                                      # export only this slice's object (pattern/fields/doc) instead of the whole model (export key, MIL-128) — refuses only if THIS slice has an error; an unrelated slice's breakage elsewhere in the model doesn't block it (see docs/cli.md)
+em export <file> --doc-json                                         # emit the structured slice-doc export (GH #401) instead of the model snapshot: per slice the frontmatter join plus the parsed sections as data (fields, invariants, scenarios, error flows, open questions) and a model-level invariant catalog. Own schema version; whole model only (does not combine with --slice)
+em export <file> --include-html                                     # with --doc-json, include each slice doc's rendered HTML body (excluded by default; the authored body never appears in a plain export)
+em api generate <file>                                              # write the TypeSpec contract for the model's public commands, events and views to <model dir>/contracts/<model key>.tsp
+em api generate <file> -o, --out <path>                             # write to this path instead of <model dir>/contracts/<model key>.tsp
+em api generate <file> --stdout                                     # print the contract instead of writing it
+em api check <file>                                                 # is the committed contract current? With --base, annotate each public-surface change since that revision additive or breaking (annotation only — exits 1 only when stale)
+em api check <file> --base <rev>                                    # git revision to diff the public surface against
+em api check <file> --json                                          # print a JSON document instead of the text report (see docs/cli.md)
+em api surface <file>                                               # the model's public commands, events, views and reachable declared types as a versioned JSON document for companion tools (GH #448, see docs/cli.md)
+em api surface <file> --json                                        # print a JSON document instead of the text listing (see docs/cli.md)
+em typespec <file>                                                  # DEPRECATED alias of `em api generate --stdout` (use em api generate)
+em typespec <file> -o, --out <path>                                 # write to a file instead of stdout
+em diff <old> [new]                                                 # compare two models structurally (two files, or one file across git revisions)
+em diff <old> [new] --from <rev>                                    # diff <old> against this git revision instead of a second file
+em diff <old> [new] --to <rev>                                      # diff against this git revision instead of the current file (requires --from)
+em diff <old> [new] --exit-code                                     # exit 1 if the models differ, 0 if identical (git-diff convention)
+em diff <old> [new] --json                                          # print a JSON document instead of the text report (see docs/cli.md)
+em glossary <files>                                                 # cross-model glossary of terms, with consistency checks across models (see docs/cli.md)
+em glossary <files> --json                                          # print the full glossary document instead of the text report
+em glossary <files> -o, --out <path>                                # write the JSON document to a file instead of stdout (requires --json)
+em glossary <files> --list-conflicts                                # print only the conflict lines, no summary
+em glossary <files> --fail-on-conflicts                             # exit non-zero if any cross-model term conflicts were found (opt-in — conflicts are warnings and don't block by default)
+em glossary <files> --waive-file <path>                             # a baseline file of field names whose field-type-conflict is deliberate, one per line (`#` comments allowed); waived terms are reported separately and ignored by --fail-on-conflicts; kind-conflict is never waived; missing file = no waivers
+em catalog <files>                                                  # generate a browsable static HTML catalog site over one or more .em models (see docs/cli.md)
+em catalog <files> -o, --out <dir>                                  # output directory
+em catalog <files> -T, --format <fmt>                               # diagram format embedded in the catalog (svg or png)
+em catalog <files> --title <text>                                   # catalog site title
+em catalog <files> --keep-empty-lanes                               # keep the API lane even when empty
+em slice new <name>                                                 # scaffold a fresh slices/<key>.md doc — the 5 frontmatter keys required at `status: draft`, the `# Slice:` heading and diagram-image stub, then every template section: the generated regions (command/event/view field tables, Invariants) filled from the model with --wire (template placeholders otherwise — `em slice sync` fills them), the authored sections (Intent, Scenarios, Open Questions, ...) with placeholder bullets (see .claude/skills/event-modeling-shared/reference/slice-doc-schema.md, templates/slice.md)
+em slice new <name> --pattern <pattern>                             # slice pattern: state-change | state-view | automation | translation
+em slice new <name> --swimlane <swimlane>                           # swimlane, e.g. "Persona → Context"
+em slice new <name> -f, --force                                     # overwrite the file if it already exists
+em slice new <name> --wire <model-file>                             # also insert the `note "slices/<key>.md"` line onto the slice's primary element in this .em file (matched by export key), instead of just printing it to paste by hand (MIL-161)
+em slice new <name> --stub                                          # write a near-free stub instead: same 5 frontmatter keys, but a one-line placeholder body instead of the diagram-image stub and every judgment section (MIL-184) — deepen it later by re-running without --stub and -f
+em slice sync <model-file> [key]                                    # regenerate the GENERATED regions (command/event/view field tables, the Invariants list) of existing slice docs in place from the model, authored sections untouched (MIL-266); docs without regions are skipped with a note. --check never writes and exits 1 when a doc is stale. A ratified or shipped doc is synced too and keeps its signature (GH #347): `ratifiedHash` covers the authored text only, and an intact hash still in an older scope is re-stamped in the same write; a `note:` line says so
+em slice sync <model-file> [key] --check                            # report ok / stale / no-regions per doc without writing; exit 1 when any is stale
+em slice sync <model-file> [key] --json                             # print the machine-readable report (sliceSyncSchemaVersion 1.0)
+em slice stub-all <file>                                            # scaffold + wire a near-free stub (`em slice new --stub`'s content, MIL-184) for every slice in <file> with no resolvable doc — the fast path to status coloring for an exploratory/backbone model without hand-running `slice new` per slice. Skips a continuation slice (MIL-208, it has no doc of its own), an already-documented slice, and a slice whose pattern can't be classified
+em slice stub-all <file> --status <status>                          # target status for every stub: draft | reviewed | ready-to-implement | implemented
+em slice stub-all <file> --by <name>                                # identity for reviewedBy/ratifiedBy — required unless --status draft
+em slice stub-all <file> --implemented-in <url>                     # PR/commit URL for implementedIn — required with --status implemented
+em slice stub-all <file> --dry-run                                  # list what would be stubbed/wired without writing anything
+em slice index <file>                                               # rewrite the model's sibling README.md's GENERATED Slices table from `em export`'s slice facts (key, pattern, doc status/implementedIn) — the hand-maintained table is deprecated
+em slice index <file> --check                                       # verify the table is current; exit non-zero on drift without writing (CI)
+em slice index <file> --full                                        # every lifecycle column (reviewed/ratified/owner/tracking/implemented/conformed) instead of the reader's five
+em slice mark-implemented <file> <slice-key> <pr-url>               # flip a slice doc's frontmatter to `status: implemented` / `implementedIn: <pr-url>` — the one edit an implementing agent makes to a ratified doc at merge (MIL-103, replaces the em-sdd-bridge `em-sdd-mark-implemented` script; see reference/implement.md §6). Applies only to a `ready-to-implement` doc (MIL-277: a `draft`/`reviewed` doc refuses — ratify first). Also records the shipped version beside the link (MIL-284): `shippedVersion:`, `shippedRef:` (the doc's `ratifiedRef:`, when it has one) and `shippedOn:`, and opens the next version as a `draft` when an Open Question was deferred to it (MIL-283). Idempotent on the same URL — also after that draft opened; refuses to overwrite a different one; never touches the doc body except to re-open those deferred questions
+em slice mark-implemented <file> <slice-key> <pr-url> --on <date>   # merge date recorded as `shippedOn:`, YYYY-MM-DD (default: today, local date; MIL-284)
+em slice mark-implemented <file> <slice-key> <pr-url> --json        # print a JSON document instead of text: { path, changed, implementedIn, nextDraft: { version, reopened[] } | null } (GH #285)
+em slice review <file> <slice-key>                                  # flip a slice doc's frontmatter to `status: reviewed` and record `reviewedBy:`/`reviewedOn:` — the FIRST of the two human gates (MIL-201, docs/process.md#the-slice-lifecycle-gates): the room walked this slice and every open question it raised is resolved. Ratification is a separate, later gate (`em slice ratify`). Legal from `status: draft`; idempotent on the same --by/--on pair; refuses to overwrite a different one already recorded (--again re-records it); refuses a doc with an unchecked `## Open Questions` item unless --allow-open (GH #333); refuses a doc already `ready-to-implement`/`implemented`; never touches `version:` or the doc body
+em slice review <file> <slice-key> --by <name>                      # the reviewer's (or facilitator's) name
+em slice review <file> <slice-key> --on <date>                      # review date, YYYY-MM-DD (default: today, local date)
+em slice review <file> <slice-key> --roster <path>                  # ratifier roster to check --by against (GH #259; default: the nearest ratifiers.yaml above the model, none = unrestricted)
+em slice review <file> <slice-key> --again                          # re-record reviewedBy/reviewedOn on a doc already `status: reviewed` (prints old -> new); still refused on ready-to-implement/implemented
+em slice review <file> <slice-key> --allow-open                     # record the review although `## Open Questions` has unchecked items (a deliberately partial walk); prints a notice with the open count
+em slice ratify <file> <slice-key>                                  # flip a slice doc's frontmatter to `status: ready-to-implement` and record `ratifiedBy:`/`ratifiedOn:` — the handoff sign-off (MIL-165, docs/process.md#the-slice-lifecycle-gates) that makes who ratified, and when, a first-class recorded fact. The review gate is a check on the doc's current `status:`, not on whether `reviewedBy:`/`reviewedOn:` are populated: a doc at `reviewed` passes; a `ready-to-implement` doc only when the same signer is completing their own record (since 1.15.0, MIL-283 — a new sign-off is a new version: `em slice revise`); any other status — a `draft` that never went through `em slice review` — is refused unless --skip-review is passed. Idempotent on the same --by/--on pair; refuses to overwrite a different one already recorded, and (MIL-284) a same-pair re-run on a doc whose body moved after sign-off; never touches `version:` or the doc body. Inside a git work tree also records `ratifiedRef:` (HEAD, refusing a doc with uncommitted changes) and always `ratifiedHash:` (over the authored text only — generated regions and Open Questions deferrals excluded, GH #347/#253); with --no-ref (GH #255) only the hash — for a repo whose squash/rebase merges would leave the ref unreachable — and git is not consulted
+em slice ratify <file> <slice-key> --by <name>                      # the ratifier's name
+em slice ratify <file> <slice-key> --no-ref                         # record ratifiedHash: only, no ratifiedRef: (GH #255) — the signed content keeps its identity, nothing points at a commit a squash or rebase merge would orphan; the uncommitted-changes check does not apply
+em slice ratify <file> <slice-key> --on <date>                      # ratification date, YYYY-MM-DD (default: today, local date)
+em slice ratify <file> <slice-key> --roster <path>                  # ratifier roster to check --by against (GH #259; default: the nearest ratifiers.yaml above the model, none = unrestricted)
+em slice ratify <file> <slice-key> --skip-review                    # ratify without a recorded review — prints a loud notice on stderr and records `reviewSkipped: <status>` on the doc (GH #260) so the bypass is visible to later readers, `em export` and `--slice-ready --json`; cleared by `em slice revise`
+em slice ratify <file> <slice-key> --meaning-unchanged              # API-first sign-off (MIL-238): this version does not change what the public contract means — records `meaningConfirmed: true`; required (or --contract-change) on a slice touching a `public` element
+em slice ratify <file> <slice-key> --contract-change <why>          # API-first sign-off (MIL-238): a consumer must read this change differently, and why — records `contractChange: "<why>"`
+em slice revise <file> <slice-key>                                  # open the next version of a slice doc as a `draft` (MIL-283): bumps `version:`, flips `status:` to `draft`, clears the prior version's review and sign-off (`reviewedBy/On`, `ratifiedBy/On/Ref/Hash`, `meaningConfirmed`/`contractChange`) and re-opens the questions deferred to the new version. The shipped version stays shipped: `implementedIn:` and the `shipped*` keys are untouched (written first on a doc shipped before 1.15). Applies to `status: implemented` (the shipped case) and to a ratified `ready-to-implement` doc (ratification withdrawn, never shipped); a `ready-to-implement` doc with no `ratifiedBy:` reopens as draft at the same version; `draft`/`reviewed` refuse — the next version is already open. The new version then takes the normal road: `em slice review --by`, `em slice ratify --by`. A ratified, never-shipped doc REFUSES without --withdraw (revising withdraws the only implementable version; record a question with `em slice defer` instead — it sits outside the hash, GH #253). With --keep-version (GH #262) a ratified, never-shipped doc reopens as a draft at the SAME `version:` — same status flip and sign-off clearing, no bump — for a project that holds every slice at its initial version until a first release; refused on a shipped doc
+em slice revise <file> <slice-key> --withdraw                       # GH #236: required on a ratified, never-shipped doc — confirms withdrawing the ratification of the only implementable version
+em slice revise <file> <slice-key> --keep-version                   # GH #262: reopen a ratified, never-shipped doc as a draft at the same `version:` (no bump) — a correction before a first release, not a delta; refused on a shipped doc, whose version must stay distinct from the next one
+em slice reratify <file> <slice-key>                                # DEPRECATED alias of `em slice revise` (MIL-283, since 1.15.0; removed in a later minor). Until 1.14 this left the doc at an unsigned `ready-to-implement`; it now opens a `draft` of the next version like `revise`. The --meaning-unchanged/--contract-change flags are accepted and ignored with a notice — the API-first confirmation is taken by `em slice ratify` on the new version
+em slice reratify <file> <slice-key> --meaning-unchanged            # ignored since 1.15.0 (see above)
+em slice reratify <file> <slice-key> --contract-change <why>        # ignored since 1.15.0 (see above)
+em slice reratify <file> <slice-key> --withdraw                     # see `em slice revise --withdraw`
+em slice defer <file> <slice-key> [question]                        # record a question this version will not answer as deferred to a later version (MIL-275): rewrites the single unchecked `## Open Questions` item containing <question> as `- [x] <item> — v<current>: <decision>; deferred to v<n> (<date>[, <by>])` so `--slice-ready` passes without a guess, and mirrors it into `.event-modeling.md` (the parking lot and a dated Decisions-log bullet; the file must exist, it is never created). Idempotent; `em slice reratify` re-opens the item when it bumps to v<n>. With --from-issue <text> instead of <question> (MIL-281): promotes the single open `issue "..."` on the slice's own elements containing <text> into the doc's Open Questions as that same deferred item, mirrors it, and removes the `issue` clause from the .em — the one-command path for a question raised in a review session. On a RATIFIED (`ready-to-implement` + `ratifiedBy:`) or shipped (`implemented`) doc (GH #253) the already-deferred `[x]` item is APPENDED to the doc's Open Questions — `ratifiedHash` excludes the section heading and its `deferred to v<n>` items, so the signature, `--slice-ready` and ratify's re-run stay valid, and the question is visible in the ratified doc; a hash in an older scope (pre-1.17, 1.17–1.18) is re-stamped in the same edit. Refuses a doc whose body already fails its hash
+em slice defer <file> <slice-key> [question] --until <version>      # the version that must answer it, v<n> (greater than the doc's version)
+em slice defer <file> <slice-key> [question] --decision <text>      # what this version does instead
+em slice defer <file> <slice-key> [question] --from-issue <text>    # defer a captured `issue "..."` on this slice instead of a doc Open Question (case-sensitive substring of its text)
+em slice defer <file> <slice-key> [question] --by <name>            # who deferred it
+em slice defer <file> <slice-key> [question] --on <date>            # deferral date, YYYY-MM-DD (default: today, local date)
+em slice conform <file> <slice-key>                                 # record per-slice-per-version conformance certification: sets `conformedVersion:`/`conformedAt:`/`conformedOn:` on a slice doc (MIL-214) — the fact `driftSignal: in-sync` now depends on. Legal only for a shipped slice (`status: implemented`, or any status with a `shippedVersion:` — MIL-283) with an `implementedIn:` link; `conformedVersion:` is the shipped version. Idempotent on the same (version, --at) pair; a different --at simply overwrites (a later re-certification is normal — there's no way for em to tell 'later' from 'earlier' for an arbitrary revision string, so there's no --force to reach for). Refuses when the conformance/<date>[-<name>]-findings.json file matching --at still has an unruled finding in scope for this slice; --skip-findings-check overrides with a loud notice. GH #400: --preview runs the same doc-resolution and findings-check read for a slice that hasn't shipped yet — the shipped/implementedIn gates are waived and NOTHING is ever written to the doc; output is ephemeral (text or --json) unless --write-findings opts into persisting a normal findings file.
+em slice conform <file> <slice-key> --at <rev>                      # the target-repo revision this certification sweep diffed against — or, when what was exercised is not a commit that stays reachable (a per-PR environment under squash/rebase merges, a build or image), an opaque `<kind>:<id>` such as build:1234 or deploy:eu-1-2026-10-15 (GH #261); recorded verbatim, skipped by git-reachability checks
+em slice conform <file> <slice-key> --on <date>                     # certification date, YYYY-MM-DD (default: today, local date)
+em slice conform <file> <slice-key> --skip-findings-check           # certify even with unruled findings in scope — prints a loud notice on stderr
+em slice conform <file> <slice-key> --preview                       # GH #400: pre-ship advisory mode — waives the shipped-status/`implementedIn:` gates, writes NOTHING to the doc (no conformedVersion/conformedAt/conformedOn, ever); ephemeral by default, --write-findings opts into persisting a normal findings file. --skip-findings-check has no effect in this mode (preview never refuses on findings)
+em slice conform <file> <slice-key> --write-findings                # with --preview: persist the preview's own unruled findings as conformance/<on>-<slice-key>-preview-findings.json
+em slice conform <file> <slice-key> --json                          # with --preview: print a JSON document instead of the text report
+em changelog <file>                                                 # render a model's git history as a business-readable ledger (see docs/cli.md)
+em changelog <file> --from <rev>                                    # start the walk at this revision (inclusive)
+em changelog <file> --to <rev>                                      # end the walk at this revision (inclusive; default HEAD)
+em changelog <file> -o, --out <path>                                # write to a file instead of stdout
+em state read [dir]                                                 # print the state file's mechanical fields as JSON
+em state set-phase <phase> [dir]                                    # rewrite Current phase: (and Last updated:); --step also rewrites Current step:
+em state set-phase <phase> [dir] --step <n>                         # also set Current step: to this value
+em state set-conformance <revision> [dir]                           # rewrite Last conformance: (and Last updated:) in the exact format reference/conform.md parses. Refuses (MIL-214) while any `implemented` slice has an unruled conformance finding in the findings JSON beside --report, or, when that is absent, in every findings file at the report's own revision (a `slice: null` finding blocks every slice); --partial records the marker with a ` (partial)` suffix instead, with a loud notice. Without a findings JSON beside --report and none at the report's revision: warns once and records the marker as given (migration path for a report predating `em conform-findings`)
+em state set-conformance <revision> [dir] --report <path>           # path to the conformance report just written
+em state set-conformance <revision> [dir] --partial                 # record the marker as PARTIAL even though some in-scope findings are still unruled
+em state set-review <date> [dir]                                    # rewrite Last stakeholder review: (and Last updated:)
+em state log-usage <file>                                           # append one Usage log line — phase(s) touched + em validate's diagnostic categories hit, deduped and canonically formatted (MIL-161, docs/usage-data.md) — the mechanical half of 'save state at the end of every session' that used to be run-validate-then-hand-format; state file resolved next to <file>, same convention as em conform-scope
+em state log-usage <file> --phases <list>                           # comma-separated phase(s) touched this session: discover, extract, model, slice, implement, conform, review, validate, watch, engagement
+em model version bump <file>                                        # bump the model's design version: write model-versions/v<N+1>.json (sibling of slices/, conformance/) and rewrite the state file's `Model version:` bullet (MIL-218). Refuses when the state file is missing (run `em scaffold` first), when --by is empty, and when nothing has changed since the current version (same model content hash AND same slice-version vector) unless --force — a no-op bump is the one case --force is right for.
+em model version bump <file> --by <name>                            # the bumper's name
+em model version bump <file> --on <date>                            # bump date, YYYY-MM-DD (default: today, local date)
+em model version bump <file> --force                                # bump even though nothing has changed since the current version
+em model version show <file>                                        # print the model's current design version and the most recently certified version, if any (model-versions/*.json — MIL-218)
+em model version show <file> --json                                 # print a JSON document instead of text
+em usage-report [root]                                              # aggregate every .event-modeling.md's Usage log under [root] into phase/diagnostic-category tallies (MIL-161) — replaces docs/usage-data.md's hand-rolled grep/awk/sort pipeline; a logged line that doesn't match the canonical em state log-usage format is reported under unparseableLines rather than silently mistallied or dropped
+em usage-report [root] --json                                       # print a JSON document instead of the text report
+em conform-scope <file>                                             # mechanize conform phase step 1 (reference/conform.md): map the target repo's changed paths since Last conformance: to slices via each slice doc's implementedIn, JSON to stdout — --seed-asis also seeds the <model>-asis.em scratch model (see docs/cli.md)
+em conform-scope <file> --repo <path>                               # path to (or inside) the target codebase's git repository
+em conform-scope <file> --full                                      # ignore Last conformance:/changed paths; scope every implemented slice
+em conform-scope <file> --seed-asis                                 # write <model>-asis.em as a byte copy of the canonical model and ensure it's gitignored
+em conform-supersede <file> <report-path>                           # stamp a conformance report with a "superseded as of <rev>" banner once its findings have been ruled on (MIL-164, docs/process.md#what-ratified-means) — the companion step to run at ratification time so a reader following the report's file:line citations knows they describe an ancestor of the current model. Additive-only splice, never a rewrite of the report; idempotent on the same --as-of/--findings/--on stamp; refuses if the report doesn't exist. --locus/--by (MIL-214, both required together) additionally record the ruling itself — locus/resolvedBy/resolvedOn — on the findings named by --findings in the sibling conformance/<date>-findings.json, when one exists (refuses, naming them, when only other findings files exist at the report's revision; warns once and stamps the banner only when it doesn't — the migration path for a report predating em conform-findings)
+em conform-supersede <file> <report-path> --as-of <rev>             # the revision this ruling was made against — same value passed to `em state set-conformance`
+em conform-supersede <file> <report-path> --findings <spec>         # which finding number(s) this stamps as ruled, e.g. "1-3" or "1,2,4"
+em conform-supersede <file> <report-path> --on <date>               # ruling date, YYYY-MM-DD (default: today, local date)
+em conform-supersede <file> <report-path> --locus <locus>           # who/what the named finding(s) say is wrong: model | doc | code | none (requires --by)
+em conform-supersede <file> <report-path> --by <name>               # who ruled on the named finding(s) (requires --locus)
+em conform-findings check <path>                                    # shape-validate a conformance/<date>-findings.json file (findingsSchemaVersion, required fields, enum values, ids sorted+unique, a ruled finding carries resolvedBy+resolvedOn) — exit 1 on shape errors. The conform skill writes this file directly alongside its report; this is how a headless run verifies what it just wrote.
+em conform-findings check <path> --json                             # print a JSON document instead of the text report
+em conform bindings check <file>                                    # verify every per-slice bindings manifest (conformance/bindings/<slice-key>.yaml, see docs/bindings.md): each bound element's `ref` resolves against the compiled model, and each bound `file` exists under --repo and contains its `identifier` as a plain substring (grep-level only, never code-parsed — language-agnostic). Distinct failure kinds: an unknown `--slice` key, a missing bindings file, malformed YAML, an unknown slice named inside a file, and an unknown element ref. Advisory only — exit code stays 0 unless --exit-code is given and a binding failed (the opt-in CI gate, same posture as `em refs --reachable-from`).
+em conform bindings check <file> --repo <path>                      # path to the target codebase (bound `file`s resolve relative to it; never required to be a git repository)
+em conform bindings check <file> --slice <key>                      # check only this slice's bindings file (default: every conformance/bindings/*.yaml)
+em conform bindings check <file> --json                             # print a JSON document instead of the text report
+em conform bindings check <file> --exit-code                        # exit 1 if any binding failed (git-diff convention) — the opt-in CI gate
+em discover triage-check <file>                                     # validate a discovery/prd-triage.json (prdTriageSchemaVersion 1.0): shape, the shipped rubric version, every statement/storyline quote appearing verbatim in the input document, and every statement carrying a category, an outcome and (modeled/rewritten) a group + storyline — exit 1 on errors. The discover skill writes this file directly; this is how a headless run verifies it.
+em discover triage-check <file> --source <path>                     # the input PRD/spec to check quotes against (default: the file's own `source`, relative to it)
+em discover triage-check <file> --markdown                          # after a passing check, print the Markdown view of the record instead of the summary
+em discover triage-check <file> --json                              # print a JSON document instead of the text report
+em watch <file>                                                     # re-render on every save
+em watch <file> -o, --out <path>                                    # output path (extension picks the format)
+em watch <file> -T, --format <fmt>                                  # output format (svg, png, pdf, ...)
+em watch <file> --keep-empty-lanes                                  # keep the API lane even when empty
+em watch <file> --serve                                             # serve a live viewer with instant push-reload (no polling)
+em watch <file> --port <n>                                          # port for --serve (default 5173)
+em watch <file> --storyline <name>                                  # GH #309 (deferred from #277): filter the live view to one storyline's subset — the same subset `em render --storyline` draws (its own slices in order, plus dimmed stub columns for what they read from outside it and the `after` end state). Whenever the model declares any storylines the viewer also offers a picker to switch to the full model or another declared storyline, live, without restarting. An unknown name errors, listing the declared storylines; requires --serve
+em validate <file>                                                  # check a model against event-modeling rules
+em validate <file> --list-issues                                    # print only open `issue` diagnostics (slice, element, line, text)
+em validate <file> --list-divergences                               # print only accepted-divergence annotations (slice, element, line, text) — never fails the build
+em validate <file> --list-public                                    # print only commands, events and views marked `public` (slice, kind, name, line) — an integration-surface audit, never fails the build
+em validate <file> --fail-on-issues                                 # exit non-zero if the model has any open `issue`s (opt-in — issues are warnings and don't block by default)
+em validate <file> --slice-ready <key>                              # readiness gate for one slice (export key): status ready-to-implement, doc resolvable via note binding, zero unchecked Open Questions, a recorded ratifiedBy, and — for a slice touching a `public` element — a current contracts/<model key>.tsp; exits non-zero if not ready (MIL-87, MIL-259, MIL-238)
+em validate <file> --require-ratified-hash                          # with --slice-ready (GH #256): strict mode — a ready-to-implement doc with no `ratifiedHash:` is NOT ready (`slice-ready-missing-ratified-hash`, error; `ready: false` in --json). Off by default so docs ratified before em 1.15 keep passing; turn it on once legacy docs are re-ratified
+em validate <file> --strict                                         # promote advisory lints (GH #293: scenario-quality warnings) to errors: they fail the run and, with --slice-ready, block readiness
+em validate <file> --roster <path>                                  # with --slice-ready (GH #259): the ratifier roster to check `ratifiedBy` against (default: the nearest ratifiers.yaml above the model; none = unrestricted). A name the roster does not permit for the slice's context is `ratified-by-not-in-roster` (error)
+em validate <file> --check-signed-bodies                            # opt-in (GH #257): compare every slice doc that records a `ratifiedHash:` — ready, implemented, any status — to its body; a mismatch is `slice-body-changed-since-ratification` (error). A hash in an older scope (pre-1.17 whole-body, 1.17–1.18) with an intact body passes; a deferral written by `em slice defer` is outside the hash. The one check that still watches a shipped doc's signed content
+em validate <file> --shape                                          # GH #282: run only the advisory shape-family lints (storyline shape) and print rule / count / first ref / docs anchor; exit 0 always. With --json: `shapeSchemaVersion` 1.0 with per-rule finding arrays
+em validate <file> --waive-file <path>                              # with --shape: a baseline file (`<rule-code> <slice-key>` per line, or a bare slice key for every shape rule; `#` comments) whose shape findings are listed as waived and not counted; missing file = no waivers
+em validate <file> --json                                           # print a JSON document instead of text — works on a model WITH errors, unlike `em export` (MIL-128, see docs/cli.md); exit codes are unchanged
+em migrate <file>                                                   # rewrite the old two-slice Automation/Translation shape into the merged single-slice shape MIL-120 made canonical (see docs/cli.md)
+em migrate <file> --write                                           # apply the rewrite to the file (default: dry run — report only, write nothing)
+em refs <file>                                                      # check that every commit a slice doc records — `ratifiedRef:`, `shippedRef:`, a bare `conformedAt:` — still resolves and is reachable from a branch (GH #258): per doc, per field, `ancestor` / `not-ancestor` / `unresolved` / `undecidable` (a shallow clone never passes). Squash and rebase merges orphan the PR-branch HEAD ratify recorded; nothing else in em resolves a ref. Opt-in CI check, like `em ledger` — never part of `em validate`. Local object store only, no network. Kinded `conformedAt` values (build:…) are skipped; docs with no ref fields are not reported
+em refs <file> --reachable-from <rev>                               # the branch or commit every ref must be an ancestor of (e.g. origin/main)
+em refs <file> --waive <slice-key>                                  # excuse this slice's non-ancestor/unresolved/undecidable results from the exit code (repeatable); still reported
+em refs <file> --waive-file <path>                                  # a baseline file of slice keys to waive, one per line (`#` comments allowed); missing file = no waivers
+em refs <file> --check-order                                        # advisory-only (GH #399): for every slice doc with a ratifiedRef, report whether a commit between the branch's fork point and ratifiedRef already touched code other than the doc itself — a retrofit signal for inline ratification (spec written to describe code that already exists). History is rewritable, so this NEVER affects the exit code or `ok`, and is never a validate gate — see docs/process.md's inline-ratification section
+em refs <file> --json                                               # print a JSON document instead of the text report (see docs/cli.md)
+em ledger <file>                                                    # check slice docs' version: field agrees with their content across two git revisions (opt-in CI check, MIL-89 — never part of `em validate`, see docs/ci.md)
+em ledger <file> --from <rev>                                       # baseline revision
+em ledger <file> --to <rev>                                         # compare revision (default: current working tree)
+em ledger <file> --waive <slice-key>                                # excuse a doc-content-without-version-bump finding for this slice key (repeatable; MIL-185, see docs/cli.md) — never waives a version regression or bump-without-content-change
+em ledger <file> --json                                             # print a JSON document instead of the text report (see docs/cli.md)
+em coverage <file>                                                  # check that every INV-* invariant ID cited in an implemented slice doc is cited by a test under --tests <dir> (MIL-130/MIL-207) — mechanizes reference/implement.md's definition-of-done citation check; advisory by default, --strict for CI; --include-ready also counts ready-to-implement docs (forward-looking report); a continuation slice (an `again` view instance with no doc of its own, MIL-208) is excluded from the report — its invariants, if any, live in the originating slice's own doc; --slice <key> scopes the report to one slice whatever its status (MIL-255), the pre-merge definition-of-done check
+em coverage <file> --tests <dir>                                    # directory to scan recursively for test files citing invariant IDs
+em coverage <file> --slice <key>                                    # only this slice (export key), whether ready-to-implement or implemented — no --include-ready needed; --strict then fails on this slice's uncited invariants, or if the slice is not in scope (draft/reviewed/unbound: nothing checked) (MIL-255)
+em coverage <file> --strict                                         # exit non-zero if any invariant ID has zero citations (CI)
+em coverage <file> --include-ready                                  # also count ready-to-implement docs, not just implemented (MIL-207)
+em coverage <file> --json                                           # print a JSON document instead of the text report (see docs/cli.md)
+em status <files>                                                   # deterministic state-of-the-system rollup over one or more .em models: slices by lifecycle status, driftSignal breakdown, invariant coverage totals (with --tests), open issue markers + unchecked Open Questions, and last-conformance commits-behind-HEAD (MIL-163, see docs/cli.md)
+em status <files> --tests <dir>                                     # directory to scan for INV-* test citations — enables invariant coverage totals
+em status <files> --repo <path>                                     # git repo to compute commits-behind-HEAD in (default: each model's own directory)
+em status <files> --json                                            # print a JSON document instead of the text report (see docs/cli.md)
+em status <files> --md                                              # print a markdown block suited for README embedding
+em status <files> --badge                                           # print a generated SVG badge
+em status <files> -o, --out <path>                                  # write output to a file instead of stdout
+em freshness <file>                                                 # standalone freshness signal for one model's conformance record (MIL-164): "last conformed <rev> — N commits and M slice-PRs behind HEAD", computed from the same conform-scope machinery `em status`'s conformance clause uses — for when you want just this fact, no full state-of-the-system rollup (see docs/cli.md)
+em freshness <file> --repo <path>                                   # git repo to compute behind-HEAD in (default: the model's own directory)
+em freshness <file> --json                                          # print a JSON document instead of the text line
+em metrics <file>                                                   # the pilot metrics named in advance by the register, computed from git history alone (MIL-170): ratification turnaround (reviewed -> ratified -> implemented), conform-cycle cadence + finding counts, and status-vs-reality disagreement over time — plus a fourth, reported as not computable from history (see docs/usage-data.md). `<file>` is an anchor .em file, used only to locate slices/, conformance/, and .event-modeling.md relative to it — same convention as em ledger; never parsed or compiled
+em metrics <file> --from <rev>                                      # baseline revision
+em metrics <file> --to <rev>                                        # compare revision (default: HEAD)
+em metrics <file> --json                                            # print a JSON document instead of the text report (see docs/cli.md)
+em query consumers <files>                                          # views/reactions consuming an event, plus their slices
+em query consumers <files> --event <ref-or-name>                    # the event's export ref or display name
+em query consumers <files> --json                                   # print a JSON document instead of the text report
+em query producers <files>                                          # commands producing an event, plus their slices and ui triggers
+em query producers <files> --event <ref-or-name>                    # the event's export ref or display name
+em query producers <files> --json                                   # print a JSON document instead of the text report
+em query downstream <files>                                         # transitive closure along legal edges from an element — impact analysis
+em query downstream <files> --of <ref-or-name>                      # the starting element's export ref or display name
+em query downstream <files> --depth <n>                             # limit traversal to n hops (default: unlimited)
+em query downstream <files> --json                                  # print a JSON document instead of the text report
+em query upstream <files>                                           # transitive closure against legal-edge direction from an element
+em query upstream <files> --of <ref-or-name>                        # the starting element's export ref or display name
+em query upstream <files> --depth <n>                               # limit traversal to n hops (default: unlimited)
+em query upstream <files> --json                                    # print a JSON document instead of the text report
+em query slices <files>                                             # filtered slice list — pattern/status/context/persona/tag filters AND-combine
+em query slices <files> --pattern <p>                               # state-change | state-view | automation | translation | unclassified
+em query slices <files> --status <s>                                # the slice's joined doc status (draft, reviewed, ready-to-implement, implemented, ...)
+em query slices <files> --context <c>                               # match a slice with an event in this @Context
+em query slices <files> --persona <p>                               # match a slice with a ui in this @Persona
+em query slices <files> --tag <t>                                   # match a slice with an event carrying this tag key
+em query slices <files> --storyline <name>                          # match a slice declared in this `storyline` block
+em query slices <files> --json                                      # print a JSON document instead of the text report
+em query invariant <files>                                          # declaring slice + doc facts for one INV-* id, and (with --tests) its test citations
+em query invariant <files> --id <inv-id>                            # the INV-* id to look up
+em query invariant <files> --tests <dir>                            # directory to scan for test files citing this id
+em query invariant <files> --json                                   # print a JSON document instead of the text report
+em query field <files>                                              # one field's facts on an element — type, tag/assigned markers, renamed-from chain
+em query field <files> --of <element-ref>                           # the element's export ref or display name
+em query field <files> --name <field>                               # the field's name
+em query field <files> --json                                       # print a JSON document instead of the text report
+em query path <files>                                               # shortest path between two elements through the six legal connection types
+em query path <files> --from <ref-or-name>                          # the starting element's export ref or display name
+em query path <files> --to <ref-or-name>                            # the ending element's export ref or display name
+em query path <files> --json                                        # print a JSON document instead of the text report
+em engagement new <file> <slug>                                     # write <model dir>/engagements/<slug>.md — frontmatter (slices, parallel ceiling) plus the generated Ledger table; selection by --slices, --context, --storyline, or --downstream-of (exactly one)
+em engagement new <file> <slug> --slices <keys>                     # comma-separated slice export keys
+em engagement new <file> <slug> --context <name>                    # every slice with an event in this context
+em engagement new <file> <slug> --storyline <name>                  # every slice declared in this storyline block (resolved from the model)
+em engagement new <file> <slug> --downstream-of <ref>               # a slice key, element ref, or display name: it and everything downstream of it (loops-to excluded)
+em engagement new <file> <slug> --parallel <n>                      # how many slices of one level may be in flight at once
+em engagement new <file> <slug> --by <name>                         # who created the engagement (createdBy)
+em engagement new <file> <slug> --tracking <key>                    # an issue-tracker key or URL the slice PRs cite (a slice doc's own tracking: wins)
+em engagement new <file> <slug> --pr-title <template>               # PR title template for the slice PRs; {key} = tracking key, {slice} = slice name, {sliceKey} = slice key (default "{key}: {slice}", or "{slice}" without a key)
+em engagement new <file> <slug> --context-doc <path>                # repo-relative path to a document implementers need beyond the slice doc — the constitution, an NFR doc, an ADR (repeatable; GH #455)
+em engagement new <file> <slug> --force                             # overwrite an existing engagement file with this slug
+em engagement plan <file> <slug>                                    # the engagement's build plan: dependency levels over model.edges (loops-to excluded), and per slice its readiness, branch impl/<key>, base (always main — MIL-280), and any hold
+em engagement plan <file> <slug> --json                             # print a JSON document instead of text (same document as the MCP engagement_plan tool)
+em engagement foundation <file> <slug>                              # GH #240: is the foundation PR (implement.md §8) actually in the code for the events this engagement's slices emit and consume? A text scan of --code: an event is present when a file carries an identifier derived from its name (OrderPlaced / order_placed / ORDER_PLACED / order-placed), its model fields and tag fields are then looked for in those files. Per event: present | incomplete (missing-field / missing-tag, named) | missing-event — so "foundation absent" and "foundation incomplete" are different reports. Exits 1 unless every event is present. Proves the contract was written down, not that it type-checks
+em engagement foundation <file> <slug> --code <dir>                 # the target repository (or the directory the constitution's "where a slice's code lives" rule points at)
+em engagement foundation <file> <slug> --json                       # print a JSON document instead of text (same document as the MCP engagement_foundation tool)
+em engagement brief <file> <slug>                                   # GH #454: a deterministic, self-contained per-slice work brief for implementers em does not control (a ticket-driven cloud agent) — the bound slice doc verbatim (or the model's own elements when there is none), model context from the edge list, the public-contract surface, a definition-of-done (bindings manifest skeleton + conform check + isolation + PR title), and the engagement's context: documents. One brief per engagement slice unless --slice narrows it
+em engagement brief <file> <slug> --slice <key>                     # only this slice's brief (export key, display name, or unique prefix)
+em engagement brief <file> <slug> --inline-context                  # embed each context document's full text instead of just its path
+em engagement brief <file> <slug> --json                            # print a JSON document instead of text (same document as the MCP engagement_brief tool)
+em engagement set <file> <slug> [key]                               # the only write path to the Ledger: set one slice's state (and optionally branch/base/pr); idempotent; merged is terminal; --state held records a human hold. Or, on its own (no slice key), --context-doc replaces the engagement-level context: list (GH #455)
+em engagement set <file> <slug> [key] --state <state>               # one of: planned | building | validating | review | awaiting-merge | merged | held | gap
+em engagement set <file> <slug> [key] --branch <name>               # the slice's branch
+em engagement set <file> <slug> [key] --base <name>                 # the branch the slice's PR targets
+em engagement set <file> <slug> [key] --pr <url>                    # the slice's PR URL
+em engagement set <file> <slug> [key] --context-doc <path>          # repo-relative path to a document implementers need beyond the slice doc (repeatable; replaces the whole engagement-level context: list; GH #455)
+em engagement status <file> <slug>                                  # the Ledger joined with each slice doc's current status, plus whether the engagement is closable
+em engagement status <file> <slug> --json                           # print a JSON document instead of text (same document as the MCP engagement_status tool)
+em engagement close <file> <slug>                                   # set status: closed — refuses unless every slice is merged (recorded or inferred) or gap
+em roster init <file>                                               # write ratifiers.yaml beside the model, seeded from the names already recorded in the slice docs' `ratifiedBy:`/`reviewedBy:` (whole-model entries; narrow them with `contexts:` by hand). Refuses to overwrite an existing file unless --force; `em upgrade`'s grandfathered placeholder is not a name
+em roster init <file> --roster <path>                               # write the roster here instead of <model dir>/ratifiers.yaml
+em roster init <file> --force                                       # overwrite an existing roster file
+em roster check <file>                                              # check EVERY slice doc's recorded signers against the ratifier roster (GH #259) - `ratifiedBy` on ready-to-implement and implemented docs, `reviewedBy` on any doc - the whole-model CI gate that `--slice-ready <key>` (one ready slice) is not. Exit 1 on any violation or an invalid roster; no roster file = nothing to check, exit 0. The `grandfathered ...` placeholder is exempt (counted)
+em roster check <file> --roster <path>                              # roster to check against (default: the nearest ratifiers.yaml above the model)
+em roster check <file> --json                                       # print a JSON document (per-doc results, diagnostics with refs); exit codes unchanged
+em system [target]                                                  # verify a system — every model's `consumes` refs resolved against the other models' `public` events/views, the cross-model half of "both ends of a flow" (MIL-194/MIL-235, see docs/cli.md). Reads system.yaml when given (or found in the directory), else discovers every *.em in the repo
+em system [target] --json                                           # print a JSON document instead of the text report (see docs/cli.md)
+em system codeowners [target]                                       # generate (or --check) the managed CODEOWNERS block that routes review: each model's team on its design directory, and every team that `consumes` a model's public surface on that model's contract file (MIL-234, see docs/ci.md and docs/cli.md)
+em system codeowners [target] -o, --output <path>                   # the CODEOWNERS file to splice into (default: the first of CODEOWNERS, .github/CODEOWNERS, docs/CODEOWNERS that exists, else CODEOWNERS at the repo root)
+em system codeowners [target] --check                               # verify the committed file already carries the generated block; never writes, exit 1 on drift (CI)
+em system codeowners [target] --json                                # print a JSON document instead of the text report (see docs/cli.md)
+em system scope [target]                                            # check a change set against the seams (MIL-240): fail only when it alters a producer's public surface (or contract file) AND a consuming model's design dir together (`seam-crossing`); warn on other multi-model change sets. Files changed only by `Em-Upgrade:` commits are exempt. There is no override - review on the contract file is the gate (see docs/cli.md, docs/ci.md)
+em system scope [target] --base <rev>                               # the change set committed since <rev> (merge-base form, <rev>...HEAD); CI passes the PR base
+em system scope [target] --staged                                   # also (or only) check what is staged right now; never exempted
+em system scope [target] --json                                     # print a JSON document instead of the text report (see docs/cli.md)
+em contract                                                         # print the packaged implementation contract (reference/implement.md) to stdout — the agent-neutral discovery path for any agent that can run a shell, not just Claude Code (MIL-129); see docs/cli.md
+em mcp                                                              # start an MCP (Model Context Protocol) server over stdio (MIL-21) — a structured, agent-facing alternative to shelling out to `em`; every tool mirrors a CLI `--json` surface byte-for-byte. docs/mcp.md isn't vendored into the skill bundle — for the handshake and the full, current tool table (the list changes as commands gain MCP parity, so it's not repeated here — MIL-187) see https://github.com/milehimikey/em/blob/main/docs/mcp.md. Equivalent to running the `em-mcp` bin directly
+em skill install                                                    # copy the event-modeling skill bundle into .claude/skills/ (event-modeling, event-modeling-discover/-design/-implement/-conform/-review, event-modeling-shared); across a structural bundle change (e.g. the MIL-157 split of the old single event-modeling/ directory into this six-directory bundle), `em skill sync` is the migration path — --force now performs the same reconcile (MIL-180)
+em skill install -f, --force                                        # overwrite an existing installation, reconciling added/updated/removed files within the bundle's own managed directories the same way `em skill sync` does — never touching an unrelated sibling skill (MIL-180)
+em skill install --no-agents-md                                     # skip writing/updating the AGENTS.md agent-contract section (on by default, MIL-129)
+em skill install --skills-dir <dir>                                 # where the vendored skill bundle lives, relative to the repo root (default .claude/skills; .agents/skills when that exists and .claude/skills does not — GH #412)
+em skill install --agents-dir <dir>                                 # where the four em sub-agent definitions live, relative to the repo root (default .claude/agents, or .agents/agents beside an .agents/skills bundle — GH #412)
+em skill sync [path]                                                # update the vendored .claude/skills/ event-modeling skill bundle in [path] to match the installed em package (overwrites unconditionally; local edits are never merged, MIL-93)
+em skill sync [path] --no-agents-md                                 # skip writing/updating the AGENTS.md agent-contract section (on by default, MIL-129)
+em skill sync [path] --skills-dir <dir>                             # where the vendored skill bundle lives, relative to the repo root (default .claude/skills; .agents/skills when that exists and .claude/skills does not — GH #412)
+em skill sync [path] --agents-dir <dir>                             # where the four em sub-agent definitions live, relative to the repo root (default .claude/agents, or .agents/agents beside an .agents/skills bundle — GH #412)
+em skill check [path]                                               # check [path]'s em skills for drift against the installed em package: the em Claude Code plugin's pin (settings + this machine's marketplace registry) when the repo declares it, and the vendored .claude/skills/ bundle when present; exits non-zero on any mismatch (CI-ready, MIL-93, MIL-231)
+em skill check [path] --json                                        # print a JSON document instead of the text report (see docs/cli.md)
+em skill check [path] --ci                                          # also fail (exit 1) when the declared plugin is not registered on this machine (implied by CI=true in the environment); without it that finding prints the install commands on stderr and exits 0
+em skill check [path] --skills-dir <dir>                            # where the vendored skill bundle lives, relative to the repo root (default .claude/skills; .agents/skills when that exists and .claude/skills does not — GH #412)
+em skill check [path] --agents-dir <dir>                            # where the four em sub-agent definitions live, relative to the repo root (default .claude/agents, or .agents/agents beside an .agents/skills bundle — GH #412)
+em ci init <model>                                                  # install .github/workflows/em-ci.yml (PR gates: em validate, em slice index --check, em coverage --strict, em ledger, em skill check, em glossary --fail-on-conflicts, plus a push-triggered status-badge rebuild) and em-conform.yml (scheduled, advisory-only conformance cadence) — same install discipline as `em skill install`: marker-delimited, idempotent, --check for CI self-verification (MIL-166, see docs/ci.md). Give it a system.yaml (or its directory) instead of a model to cover every model in the system: one workflow, per-model jobs, a conform matrix (MIL-233)
+em ci init <model> --tests <dir>                                    # test directory the coverage/status steps scan for INV-* citations
+em ci init <model> -f, --force                                      # replace an existing workflow file that has no GENERATED markers, or a managed block generated for a different set of models
+em ci init <model> --check                                          # verify both files match the current preset; exit non-zero on drift without writing (CI)
+em storyline split <file>                                           # move each inline `storyline "X" { … }` block into its own storyline model file <slug>/<slug>.em (a `storyline "X" [source]` header, then the block's slices) and leave the one-line declaration `storyline "X" [after "Y"]` in the root (GH #421). Slice docs stay under the root's slices/. A storyline declared in several blocks is left alone (merge them first)
+em storyline split <file> --storyline <name>                        # split only this storyline
+em storyline split <file> --dry-run                                 # print what would be written without touching anything
+em storyline split <file> -f, --force                               # overwrite a storyline model file that already exists
+em storyline suggest <file>                                         # advisory (GH #290): propose `storyline` blocks for a model that has none — one per distinct slice `source "url"`, the remaining slices grouped by the view-instance chains (`again`) they feed — printed as a unified diff on stdout (apply with `patch -p1` or `git apply`); never writes the model
+em upgrade <file>                                                   # bring a model repo authored under an older em (1.6 forward) up to the installed version: an ordered list of mechanical steps (skill bundle, reaction shape, state-file bullets, generated CI blocks, constitution scaffold) plus a human list of things no command can safely decide by itself (MIL-219, see docs/upgrading.md). Dry-run by default; --apply makes one git commit per applicable step, refusing on a dirty working tree
+em upgrade <file> --apply                                           # apply every applicable mechanical step, one git commit each, then a final `Em version:` commit
+em upgrade <file> --check                                           # exit non-zero only on a hard incompatibility (an existing but unparseable state file, an un-migratable .em shape) — writes nothing; what CI runs; the final line says why
+em upgrade <file> --json                                            # print a JSON document instead of text (dry-run/--check only, never with --apply)
+em upgrade <file> --fold-continuations                              # also run the opt-in fold-continuations step (stack consecutive continuations of one view into the first; continuationOf, doc join and index rows unchanged)
+em upgrade <file> --to-sugar                                        # (implies --fold-continuations; without --apply it is a dry run listing exactly what would fold): fold continuations into their host command slice as `view X again … shown on` lines — CHANGES continuationOf and the doc join to `<host>--again` and removes the folded slices' index rows
+```
+<!-- GENERATED:cli:end -->
+
+Install if missing: `npm i -g @milehimikey/em`. SVG, PNG, and PDF all work with no system
+deps; only rarer formats (ps, eps, ...) need `rsvg-convert`.
+
+---
+
+## Grammar
+
+```
+model "Name" [owner "Team"]      # diagram title; optional owning team(s), quoted free text
+
+persona Name                     # a UI swimlane row (actor)
+context Name                     # an event swimlane row (bounded context / aggregate)
+
+storyline "Name" [source "url"] [after "Other"] {   # optional chapter grouping slices (see Storylines)
+  slice "Name" { ... }
+}
+storyline "Name" [after "Other"] [in "path.em"]      # a storyline MODEL: its slices live in <slug>/<slug>.em (see Storylines)
+
+slice "Name" [source "url"] {    # one vertical time step (a column); source is optional
+  ui   Free Text @Persona        # screen; @Persona picks its row (defaults to first/"User")
+  command Free Text              # state-changing request (API band)
+  invariant INV-ORD-1 "Rule"     # rule guarding the command/event just above (see Clauses)
+  view Free Text from "Event A", "Event B"   # read model fed by event(s)
+  view Free Text from "Event A" updates from "Event B", "Event C"   # B, C keep rows current: read, never drawn (see Clauses)
+  view Free Text again from "Event C"        # later instance of an evolving read model (see Clauses)
+  event Free Text @Context       # recorded fact; @Context picks its row (defaults to "Domain")
+  processor Free Text from "View"   # automation; aliases: automation | saga | translation
+  translation Free Text consumes other-model:event.slug   # binds another model's public event/view
+}
+
+arrow From Element -> To Element    # explicit cross-slice edge (overrides inferred flow)
+
+type Name { field: Type, ... }      # named structured type, reusable from any field (see Named types)
+```
+
+### Element kinds (8 keywords, nothing else)
+| Keyword | Band | Meaning | Tag | Extra clauses |
+|---|---|---|---|---|
+| `ui` | persona | screen / interface | `@Persona` | `note`, `issue`, `divergence`, `{ fields }` |
+| `command` | API | state-changing request | — | `note`, `issue`, `divergence`, `renamed from`, `{ fields }`, standalone `invariant` line |
+| `view` | API | read model / projection | — | `from "Event"…`, `note`, `issue`, `divergence`, `public`, `{ fields }` |
+| `event` | context | recorded fact (past tense); `event A \| B @Context` = alternative outcomes of ONE command, one slice, one shared cell | `@Context` | `note`, `issue`, `divergence`, `public`, `tag`, `renamed from`, `loops-to`, field-level `assigned`, `{ fields }`, standalone `invariant` line |
+| `processor` / `automation` / `saga` / `translation` | automation | system reaction / adapter | — | `from "…"`, `note`, `issue`, `divergence`, `{ fields }`; `translation` only: `consumes` |
+
+### Clauses
+- **Tags:** `@Persona` only on `ui`; `@Context` only on `event`. Undeclared tags auto-create a
+  row. Multi-word tags need no quoting — the tag captures everything after `@` to end of line
+  (`ui Ticket Queue @Customer Service` matches `persona Customer Service`).
+- **`from "X"`** on views/automations declares the source(s); names are quoted, comma-separated.
+  Matching is case-insensitive and whitespace-normalized. A `from` may never point at an event or
+  view that first appears in a LATER slice (forward-only timeline — validation error).
+  Kinds never cross: a view's `from` resolves ONLY to events; a reaction's `from` resolves ONLY
+  to read models — naming an event on a reaction is a validation error even though the event
+  exists. Feed an event to a reaction by projecting it into a view first (the automation's
+  "to-do list") and pointing the reaction at that view. Name that view after the pending work
+  (`Payments To Process`), never after the triggering event — a view reusing the event's name
+  collides in the shared namespace and draws a duplicate-name warning.
+- **One event recorded by several commands** (two intents, one fact — `Create Product` and
+  `Create Product Variant` both ending in `Product Created`): repeat the event BARE in the later
+  slice with the same name and context. A bare repeat of an event with the same name and context is
+  ONE logical event — no `duplicate-name`, no marker (`again` stays view-only). The repeat inherits
+  the first declaration's fields, element-level `tag` clauses and `public`; declaring different ones
+  is the error `shared-event-field-mismatch`. Each recording site feeds the nearest instance of the
+  reading view at or after it (a `view V again from "E"` draws arrows only from the sites since the
+  previous instance of V that also reads E), and EVERY site needs a reader at or after it (add `view V again from "E"`
+  after the last site, or `event-unread` warns for that site). The same name in a different context
+  is still a `duplicate-name` warning.
+- **`updates from "Event", …`** (views only, GH #414): the subset of a view's sources that only keep a
+  row current or remove it (a due date moved, an address changed, a loan returned). They are folded
+  into the view's `from` for every check — `derived from`, completeness, the generated built-from
+  list — but never drawn as arrows: the diagram shows the line from the event that puts work on the
+  list, and lists the rest under "Kept current by". The author chooses the triggers: `view Holds To
+  Fulfill from "Hold Placed", "Tool Returned" updates from "Hold Collected", "Hold Cancelled"`.
+  Valid on an `again` instance too. A to-do view with more than one or two inbound arrows is missing
+  this split.
+- **`again`** (views only): `view <Name> again [from "Event", …]` declares a later instance of an
+  already-declared read model — the forward-only device for a view that evolves as later events
+  land. Instances are ONE logical view: the first declaration owns the `note` binding; each
+  instance's `from` lists only the NEW events landing at that point (not cumulative); a reaction
+  (`from "View"`) reads the nearest instance at-or-before its own slice. Instances are NEVER
+  connected to one another — continuity is implied by the shared name, and the events reaching each
+  instance are what show the view changing. `again` with no earlier declaration is a validation error.
+  Use `again` (not a plain repeated `view` name) whenever the view is referenced by a
+  `from`/`arrow` — plain repeats are only warning-free while unreferenced. A later instance is
+  also a **continuation** for the doc lifecycle (MIL-208): it stays a slice on the timeline but
+  is not a spec unit — no doc, no status, no ratification, no PR of its own; the originating
+  slice's doc carries its behavior and `em export`'s `alsoReads` carries the union of events it
+  reads. See `slice-doc-schema.md`'s "Continuations" section for the full contract.
+- **`loops-to "View"`** (events only): marks an event as re-feeding an earlier read model — a
+  poll/retry loop where a later fact must re-trigger an automation that already ran (a lapsed
+  reservation re-notifying the next person waiting in line, and similar re-triggers). Written
+  after the event's name/`@Context`, either on the header line or trailing an
+  inline `{ fields }` block; repeatable (`loops-to "A" loops-to "B"`, or comma-joined). The
+  target must resolve to a `view` instance STRICTLY EARLIER on the timeline — the opposite of
+  `from`'s "nearest at-or-before" rule; pointing at the same slice or later is a validation
+  error naming `from` on a later `view … again` instance as the forward-flowing alternative,
+  and naming a view that doesn't exist is a separate unresolved-target error. A resolved
+  `loops-to` counts as the event being read for both-ends-of-a-flow completeness. **No arrow is
+  ever drawn** for it — drawing one backward would violate the timeline laws — instead the
+  event gets an indigo ↩ corner marker (bottom-left) and the legend gains a "Loops" section:
+  `↩ 1  <Event> re-feeds "<View>"` (the number identifies the event, not the target). `em
+  export` carries it as `loopsTo: { name, ref }[] | null` (`from`'s shape); `model.edges` gains
+  `{ from: <event ref>, to: <view ref>, source: "loops-to" }`; `em query`'s adjacency labels the
+  connection `"loops-to"` too, so `downstream`/`upstream` follow it (cycle-safely).
+- **`note "path.md"`** on ANY element links a markdown doc. Relative to the `.em` file. Renders as
+  a clickable marker in SVG and a legend entry in PNG/PDF. **This is how slice docs attach.**
+- **`issue "text"`** on ANY element flags an open question inline — the diagram-visible red
+  sticky note. Renders as a red corner marker (opposite corner from `note`, so both can coexist
+  on one element) plus a legend entry; `em validate` warns on every open issue. **Prefer this
+  over a `# TBD` comment for anything that should show up on the rendered diagram** — `# TBD` is
+  invisible once rendered, `issue` isn't.
+- **`divergence "text"`** on ANY element records a reasoned, ratified deviation between this
+  element and its implementation — the *resolved* sibling of `issue` (lint-suppression-with-
+  rationale for the `conform` phase). Renders as a teal corner marker (bottom-right — distinct
+  from `note`'s top-right and `issue`'s top-left, so all three can coexist) plus a legend entry.
+  Raises **no** `em validate` warning by design; use `--list-divergences` to audit. `em diff
+  --json` carries it forward as `acceptedDivergence` on the affected change/removal entry, so
+  `conform` can cite an already-ratified deviation instead of re-flagging it as drift every run.
+- **`public`** (events and views): marks the element as part of the published integration
+  surface — a published event contract (e.g. AsyncAPI), or a view whose read API/response
+  shape external consumers depend on — as opposed to an internal-only fact or projection.
+  Plain structural flag, no free text and no diagram marker (same posture as `again`). Write
+  it as the last token on the line; on an event, optionally right before a trailing
+  `@Context` — `event X @Context public` or `event X public @Context` both work. A `public`
+  element is exempt from the unread-event / unconsumed-view warnings (its consumer is outside
+  this model). `em export` carries it as `public: true`/`false`; `em diff` reports a flip as
+  `event marked public`/`event unmarked public` (the entry cites the element's kind, so a
+  view flip reads `view "X"`); `em validate --list-public` audits the whole public surface.
+  **Exposure of a read model (MIL-215) is three cases, no dedicated keyword:** a person/client
+  reads it → draw the `ui` that reads it (ships the endpoint); another model/system reads it →
+  `public` (a cross-model contract its consumer binds with `consumes`, verified by `em system`, not `em validate`); only
+  an automation reads it → nothing — internal by design, the read a reaction is required to
+  make, not an endpoint. `em validate --list-public` flags a `public` view with no `ui`/reaction
+  reading it anywhere in this model as an audit note ("no in-model reader"), not a warning — a
+  cross-model `public` view's reader legitimately lives outside this file (see "`em validate`
+  rules" below).
+- **`consumes`** (translation only, MIL-235): `translation X consumes <modelKey>:<kind>.<slug>[, …]`
+  binds this boundary-crossing reaction to another model's `public` event or view. The binding is
+  declared on the consumer and has no version. `kind` is `event` or `view` (never `command`).
+  `modelKey` is the kebab-slug of the producer's `model "Name"`, and `slug` is the kebab-slug of
+  the element's name. There is no slice segment, so the producer can move the element between
+  slices without breaking consumers. Refs are unquoted and comma-separated. Write the clause before
+  or after `from "…"`, before or after a `{ … }` block, never inside the braces. On any other kind
+  it is a parse error: ``line N: `consumes` is only valid on translation — only a boundary-crossing
+  reaction binds to another model's public surface``. `em validate` checks the grammar only.
+  `em system` resolves the ref (`consumes-unknown-model` / `consumes-unknown-element`) and
+  derives `dangling-public-event` / `unbound-translation` from it. Two `public` elements of one
+  kind sharing a slug are a `public-name-not-unique` error, because a ref couldn't tell them
+  apart. Exported as `consumes: string[] | null`.
+- **`owner`** (model header, MIL-235): `model "Checkout" owner "Storefront team"[, "…"]`. Quoted
+  free text, kept as written, exported as `model.owner: string[]`. It replaces a 1.0
+  `system.yaml`'s per-model `owner:`.
+- **`tag`** (events only): declares a DCB (Dynamic Consistency Boundary) tag key. Three forms:
+  a trailing `tag` on a field line inside the event's `{ … }` block (`priceId: UUID tag`, or
+  typeless `priceId tag`) — an identity tag, key defaults to the field's own name; a bare field
+  whose ENTIRE text is just `tag` is a field named `tag`, not a clause. `tag <key> from a, b`
+  (composite, ≥2 bare/unquoted field names — unlike a view's quoted `from`). `tag <key>
+  external "text"` (external — the string is documentation only, never parsed). Composite/
+  external clauses are element-level: write them as a trailing clause on the event (same
+  family as `note`/`issue`), or as one or more standalone `tag ...` lines immediately following
+  the event inside the slice body (attaches to the most recently declared element, which must
+  be an event); multiple accumulate. `tag` anywhere on a command/view/`ui`/`type` field, or an
+  element-level `tag` clause on a non-event, is a parse error. `em export` carries every tag
+  key under the event's `tags` array (`{ key, kind, fields, description }`); `em validate`
+  flags a composite tag naming an unknown field and a duplicate tag key on one event.
+- **`renamed from "Old1", "Old2"`** (events and commands only): records the prior name(s) an
+  element, or one of its fields, was known as — codegen metadata for converting
+  already-stored payloads instead of an upcaster chain. Element-level trails the element's own
+  name (same trailing-clause family as `@Context`/`public`); field-level trails a field's type,
+  or the bare name of a typeless field, inside the `{ … }` block — event/command fields only, a
+  parse error on a view/`ui`/automation-kind field or a `type` field. The list is quoted,
+  comma-separated, most-recent-old-name first. Inside one inline `{ … }` block, a bare quoted
+  field name immediately after a renamed field is read as a CONTINUATION of that list, not a
+  new field — give the quoted-name field a type, or write fields one per line, to avoid the
+  ambiguity. `em export` carries it as `renamedFrom: string[] | null` on both the element and
+  each field. **`em diff` does not read this clause** — a rename still reports as remove+add.
+- **`assigned`** (event fields only): marks a field as system-assigned — set by the server/
+  handler, never supplied by the triggering command (a minted ID, a decision-time timestamp).
+  Trails a field's type, or the bare name of a typeless field (`orderId assigned`,
+  `placedAt: Instant assigned`) — same trailing-clause family as `tag`/`renamed from`, composes
+  with either in any order. A field whose ENTIRE text is just `assigned` is a field named
+  `assigned`, not a clause. `assigned` on a command/view/`ui`/`type` field is a parse error.
+  Excludes the field from `em validate`'s event ← command fields-completeness check (and thus
+  from `--slice-ready`, since the diagnostic never fires) without narrowing view ← event
+  tracing. `em export` carries it as `assigned: boolean` on the field, always present, same
+  `=== true` convention as `tag`. **Reach for this before echoing a server-set field onto the
+  command just to silence a fields-completeness warning** — that misrepresents what the client
+  actually sends.
+- **`derived`** (view fields, and `type` fields used as collection elements — MIL-200, GH #382):
+  marks a field as computed from which events have
+  landed, rather than copied from a single source event's payload (a status stepping through
+  states as events arrive, a computed ordinal, an availability flag two events can flip).
+  Trails a field's type, or the bare name of a typeless field — bare `derived` (no traced
+  source) or traced `derived from "Event A", "Event B"` (the two-word form parsed before the
+  bare check, same discipline as `renamed from` vs. plain `from`). A field whose ENTIRE text is
+  just `derived` is a field named `derived`, not a clause. `derived`/`derived from` on a
+  command/event/`ui` field is a parse error; on a `type` field it is accepted for the
+  collection-element case below (GH #382). Excludes the field from
+  `fields-completeness/view-field-no-source` entirely (and thus from `--slice-ready`). The
+  traced form still checks something: every named event must resolve among the view's ACTUAL
+  sources (the union of `from` across the view's originating and every `again` instance, or the same-slice events for a `from`-less view) — an
+  unresolved name is a validation error, `derived-from-unresolved`. `em export` carries it as
+  `derived: boolean` on the field (always present, same `=== true` convention as `tag`/
+  `assigned`) and `derivedFrom: string[] | null` (the traced event name(s), `null` on a bare
+  `derived` field). **Reach for this instead of dropping a computed field out of the `.em` and
+  into doc-only prose** — the marker keeps `em export`/the model aware the field exists (the
+  `doc-model-field-mismatch` doc↔model check does not compare view field tables at all today —
+  see the slice template's field-table guidance — so this is an export-side win specifically,
+  not yet a doc-drift check). **Collection fields (GH #288):** a view field typed `T[]` for a
+  declared `type T`, with `derived from "Child Created", "Child Deleted"`, embeds a child entity:
+  each field of `T` must trace to a named event (`fields-completeness/view-field-no-source`
+  otherwise); a field also traces one level through the declared element type of an array field
+  on the event (`optionValues: VariantOptionValue[]`), no deeper by same name. When the event
+  renamed or flattened the field, declare the element field's source by **path** into the named
+  event, as the unquoted form of the same clause (GH #383): `attributeValueIds: string[] derived
+  from values[].attributeValueId` — a `.`-joined chain of identifiers, each `[]`-suffixed exactly
+  when it steps through an array field (the marker is enforced against the event field's actual
+  arrayness). The path must resolve on a named event — every named event is tried; non-leaf
+  segments must be `type`-valued fields — and the leaf field's type must match the element
+  field's (array markers stripped); an unresolved path or leaf-type mismatch is
+  `fields-completeness/view-field-no-source` (implicit same-name nested tracing matches names
+  only; the explicit path form earns the stronger leaf-type check). The quoted event-list form
+  and the unquoted path form are mutually exclusive on one field — both at once is a parse error.
+  A plain (non-collection) view field may carry the same path form, checked the same way against
+  the view's source events — never silently exempt like a bare `derived` field. An
+  element field the projection computes rather than copies (an audit stamp from event metadata,
+  say) is marked `derived` on the `type` field itself — bare or `derived from "<events>"`, same
+  syntax as a view field (GH #382): it is then skipped by `view-field-no-source`, and a traced
+  form's names must still be among the view's sources (`derived-from-unresolved`). The marker only
+  takes effect when the type is a collection element of a view field; elsewhere it parses and
+  exports (`derived`/`derivedFrom` on the type's field) but changes nothing. No add/remove/key clauses — `em slice sync` writes a `Collection of` note plus
+  one Given/Then scenario stub per named event in the view region (copy into `## Scenarios`), and `em export` sets `collection: true`.
+- **Fields:** `command Place Order { orderId: UUID, items: LineItem[], customerId }` — inline or
+  one-per-line. Types are free text (no semantic checking) UNLESS the type string names a
+  declared `type` (see Named types below), in which case it resolves to a structured
+  reference. Keep these light; full field specs with rules live in the slice doc.
+- **`invariant`** (command/event only, MIL-265): a standalone line directly after the element,
+  `invariant INV-ORD-1 "Order total must be positive"` — ID, then an optional quoted rule
+  sentence (always write one). Several lines accumulate in order. Parse error after a
+  view/`ui`/reaction, before any element, or inside a `{ … }` block. The ID must match
+  `INV-<MNEMONIC>-<n>` (2-4 uppercase letters/digits, a number) — `invariants/malformed-id` and
+  `invariants/duplicate-id` are errors. **The model declares the ID and the rule; the slice doc's
+  Invariants section cites the ID and elaborates** (`- INV-ORD-1 — why, edge cases`), never
+  restating it as a `**INV-ORD-1:**` rule (`invariants/declared-in-both`). A model-declared ID
+  belongs to its element's slice for `em coverage`/`em query invariant`; doc-declared IDs (the
+  1.13 style) still work as the fallback. `em export` carries `invariants: [{ id, rule }] | null`
+  per element.
+- **Comments:** `# ...` anywhere outside quotes (full-line or trailing).
+- **Quoted strings:** everything between a `"` and its matching `"` is literal — `{`, `}`, `#`
+  included, never re-interpreted as a field block or comment — so REST path-template
+  placeholders are safe as-is: `issue "PUT v3/widgets/{widgetId}/suspend"`. Escape a literal
+  `"` or `\` inside a string with `\"`/`\\`; no other backslash sequence is special. An
+  unterminated string (missing closing `"`) is a parse error naming the clause it broke in.
+- **`source "url"` on a slice header** (the only slice-level clause — everything above is
+  per-element) links the slice back to the ticket/conversation it traces to, e.g.
+  `slice "Checkout" source "https://linear.app/team/issue/MIL-60" { ... }`. Exports as
+  `model.slices[].source` via `em export`, so an intake loop stays machine-traversable instead
+  of relying on prose. Purely metadata — no visual marker, not validated. Don't confuse it with
+  an element's `note "path.md"` (a markdown file link, not a URL).
+
+- **`storyline "Name" [source "url"] [after "Other"] { slice … }`** (GH #277) groups slices into a
+  named chapter — the main journey, and secondary stories (retire a product, extend an attribute).
+  Slices keep their file-order timeline position; a slice outside any storyline is allowed;
+  storylines don't nest and a repeated name continues that storyline (its slices join it; a continuation may not add or change
+  `source`/`after` — parse error). The full render draws a
+  labelled band above the slice headers; `em render --storyline "Name"` draws one story alone — its own
+  slices only, nothing from outside it — and `em render <root>.em --map` puts every story's real
+  diagram on one draggable canvas with the flow between stories (`after` thick, reads dashed and
+  labelled). **Storyline models (GH #421):** `storyline "Name" [after "Other"] [in "path.em"]` with no
+  body declares a storyline whose slices live in `<slug>/<slug>.em` — a file that starts with
+  `storyline "Name" [source "url"]` and holds slice blocks only — with its docs in `<slug>/slices/`;
+  the root is the compile unit (always give em the root), and `em storyline split <root>.em` turns
+  inline blocks into files, moving each story's docs. A storyline that reads another declares `after`
+  it (`storyline-reads-without-after`). `em export` carries `slice.storyline` and
+  `model.storylines[]`; `em query slices --storyline`; `em slice index` adds a Storyline column. Once
+  any storyline exists a slice outside every one is the advisory warning `slice-outside-storyline`.
+  `after "<other>"` reads the storyline as if its slices followed the referenced storyline's last
+  slice: `from`/`again`/reaction `from` resolve against the composed timeline (referenced → this), the
+  forward-only checks use it, a backward feed into the referenced storyline, an `after` cycle
+  (`storyline-after-cycle`), an unknown target (`storyline-after-unknown`) or a storyline declared above
+  the one it comes after when a flow would draw right-to-left (`storyline-after-out-of-order`) is an
+  error. Without `after`, file order is the only timeline.
+
+### Named types
+
+`type Name { field: Type, ... }` declares a reusable structured shape at the top level (any
+order relative to `persona`/`context`/`slice`, no clauses). Reference it from any field
+anywhere — bare (`winner: QuoteAcceptedLine`) for a nested object, `Name[]` for an array
+(`lines: QuoteAcceptedLine[]`). Resolution is opportunistic: a type string only becomes a
+structured reference when it names a declared type (case/whitespace-insensitive match); every
+other type string stays free text exactly as before, so declaring no `type` blocks changes
+nothing. Recursion between declared types is allowed as a DAG (e.g. a diamond shape like
+`Order` referencing `Address` twice) — a bare/singular self- or mutual-cycle
+(`type Node { child: Node }`) is a validation error, but the same shape through an array
+(`type Node { children: Node[] }`) is legal since the array can terminate at runtime; this is
+how tree/recursive data (categories, org charts, comment threads, BOMs) gets expressed.
+`em export` lists every declared type under `model.types[]` (stable `ref`, e.g.
+`types/quote-accepted-line`) and adds an additive `typeRef` key to every field (declared-type
+fields and ordinary element fields alike) — `{ name, ref, array }` when resolved, `null`
+otherwise. `em diff` tracks types added/removed and field changes on surviving types.
+
+### Swimlane band order (top → bottom)
+Header row → **Automation** (only if used) → **persona** rows (in declared order) → **API**
+(commands + views share this lane) → **context** rows (in declared order).
+
+### Colors (for orientation)
+UI = white, command = blue, event = amber/orange, view = green, automation = gray.
+
+---
+
+## Pattern → DSL mapping
+
+```em
+# 1. State Change: UI -> Command -> Event
+slice "Place Order" {
+  ui Checkout @Customer
+  command Place Order
+  event Order Placed @Order
+}
+
+# 2. State View: Event(s) -> Read Model -> UI
+slice "Open Orders" {
+  view Open Orders from "Order Placed"
+  ui Order List @Customer
+}
+
+# 3. Automation: read model in the slice before, reaction + command + event together
+slice "Orders To Fulfill" {
+  view Orders To Fulfill from "Order Placed"
+}
+slice "Ship Order" {            # reaction, command, and event all share this one slice
+  processor Fulfillment Service from "Orders To Fulfill"
+  command Ship Order
+  event Order Shipped @Shipping
+}
+slice "Open Orders — shipped" {
+  view Open Orders again from "Order Shipped"   # every event needs a reader
+  ui Order List @Customer                       # ...and every read model needs a consumer
+}
+
+# 4a. Translation (external trigger, no durable artifact): external call -> translation -> command -> event
+slice "Confirm Delivery" {
+  translation Carrier Adapter         # inbound from outside the model; no internal `from`
+  command Confirm Delivery
+  event Delivery Confirmed @Shipping
+}
+slice "Open Orders — delivered" {
+  view Open Orders again from "Delivery Confirmed"
+  ui Order List @Customer
+}
+
+# 4b. Translation (external trigger, durable artifact): persisted inbound queue -> translation -> command -> event
+slice "Receive Carrier Event" {           # ingest: persist the raw webhook before reacting to it
+  ui Webhook Endpoint @Carrier
+  command Receive Carrier Event
+  event Carrier Event Received @Shipping  # scoped to @Shipping's fact, not the @Carrier caller
+}
+slice "Inbound Carrier Events" {
+  view Inbound Carrier Events from "Carrier Event Received"   # the persisted inbound queue
+}
+slice "Acknowledge Carrier Event" {
+  translation Carrier Queue Adapter from "Inbound Carrier Events"   # different producer than 4a's Carrier Adapter, so a distinct name
+  command Acknowledge Carrier Event
+  event Carrier Event Acknowledged @Shipping
+}
+slice "Inbound Carrier Events — processed" {
+  view Inbound Carrier Events again from "Carrier Event Acknowledged"
+  ui Delivery Board @Ops
+}
+
+# 4c. Translation (internal trigger, durable artifact): read model -> translation -> command -> event
+slice "Accept Quote" {
+  ui Quote Screen @Customer     # every command needs a trigger: a ui, or a reaction, in this slice
+  command Accept Quote
+  event Quote Accepted @Quote
+}
+slice "Quotes To Sync" {
+  view Accepted Quotes from "Quote Accepted"
+}
+slice "Record Sync" {
+  translation CRM Sync from "Accepted Quotes"   # reacts to our own state via the read model
+  command Record Crm Sync
+  event Quote Synced @Quote
+}
+slice "Accepted Quotes — synced" {
+  view Accepted Quotes again from "Quote Synced"
+  ui Sync Status @Customer
+}
+```
+
+Trigger source (external/internal) and durable artifact (`view`-backed or not) are independent
+axes — 4a and 4b are both "externally triggered" but only 4b has a queue, and a `view`-backed
+translation reacts the same whether the view was filled by an outside system (4b) or the model's
+own event (4c). An inbound message earns `event` status the same way any event does: scope it to
+the context/lane whose fact it represents (e.g. `Carrier Event Received @Shipping` or its own
+`Carrier` context), not by who committed it — that keeps it a legitimate boundary fact (à la an
+Anti-Corruption-Layer event in DDD) instead of a technical artifact leaking foreign vocabulary
+into the model.
+
+A `translation` (like a `processor`) is a **reaction**: it triggers a command in the same slice —
+same shape as the Automation pattern above, and the same shape `ui` already uses in State Change.
+The reaction never records the event directly (there's no `reaction -> event` edge); the command
+it triggers is what records it, and that event happens to live in the reaction's own slice now
+because the command does.
+
+Note the read slice closing each pattern: **every event must be read by some read model**
+(warning 4 below). A command slice is not finished until the slice that projects its event
+exists. Reactions don't count — they read *views*, not events.
+
+### Headless / API systems & repeated read models
+
+A headless system (no screens — clients call an API) still uses `ui`/`persona`: a slice **is**
+trigger → command → event, read vertically, so the trigger belongs *in* the slice, never split into
+one of its own. Declare a persona per external caller/role and treat its `ui` boxes as API calls
+instead of shipped screens — same two patterns (State Change, State View) as any other slice, no new
+shape:
+
+```em
+persona IntegratorAPI   # API-flagged lane: its `ui` boxes are API calls, not shipped screens
+
+slice "Create Quote" {
+  ui Create Quote @IntegratorAPI
+  command Create Quote
+  event QuoteCreated @Quote
+}
+
+slice "Read Quote — created" {
+  view Quote from "QuoteCreated"
+  ui Read Quote @IntegratorAPI
+}
+```
+
+- **`translation` stays reserved for genuine reactions and real external-system boundaries** — an
+  internal automation, or a webhook/adapter crossing into another system (see the Automation and
+  4a/4b/4c Translation examples above, unchanged). It is **not** how you model a synchronous
+  request/response API call — that's Pattern 1 (State Change) with an API persona, exactly like the
+  `Create Quote` slice above.
+- **Internal-only commands and views (no public route) carry no `ui` at all.** They follow the
+  ordinary Automation pattern already documented: the reaction shares the command's slice, and an
+  internal-only read model is consumed by that reaction (from the slice before), not by a screen
+  or an API query.
+- **Repeat the read model** in every slice where it's read so the timeline flows left-to-right, and
+  **prefer `view X again`** for every instance after the first (see Clauses) — **each instance
+  carries its own consumer** (the `ui` that reads it, or a reaction), not just the last one. `again`
+  instances are exempt from the duplicate-name warning even when referenced, and each reference
+  resolves to the right instance — a plain repeat of a view only stays warning-free while nothing references it by name, and
+  resolves to the *first* declaration when something does (the exception is a same-context event
+  repeat, which is one logical event — see above). **Wire each event to a read model exactly
+  once:** a repeated instance's `from` lists only the **new** events since the previous instance
+  (not cumulative), or the event draws a duplicate arrow to the same read model at every repeat. (An
+  event may still feed several *different* read models, once each.)
+- **Instances are never joined to one another.** No arrow between two instances of one read model,
+  ever — an explicit one is a validation error. The repeat is a timeline device: continuity is
+  implied by the shared name, and the events arriving at each instance are what show it changing.
+- **Keep arrows span-1: put each repeat right after its feeding event.** Place a read-model instance
+  immediately after the event that updates it, sourcing only that single adjacent event. The
+  renderer routes a long arrow *around* intervening boxes rather than through them, so it no longer
+  reads as a forbidden read→read link — but distance is still a real problem: the arrowhead lands
+  columns away from the event that produced it, so **the write slice reads as dangling**, as if
+  nothing consumed its event. You have to trace a line across the diagram to see the connection.
+  Keep the read model adjacent to its event, and keep a sub-flow that detours into another context
+  together rather than parking it at the end of the model.
+
+What this means for whoever builds a slice, not just whoever draws it: a `ui` trigger or
+consumer is an obligation to ship an endpoint, no `ui` means internal-only, and `public` marks
+the published integration surface — see `reference/implement.md`'s "Interface obligations"
+paragraph in the `event-modeling-implement` skill (§2).
+
+- **Continuations without ceremony (GH #287).** Several `view X again` lines may share one
+  continuation slice (they stack in the `api` cell); `view X again from "E"` written inside a
+  command's own slice is sugar for a synthesized continuation column right after it (one column per host slice, lines stacked; key
+  `<slice-key>--again`, no doc, not in `em slice index`; consumer = the slice's first `ui`,
+  or `shown on "Screen"` — required in a reaction slice with no `ui`); and a continuation slice may omit its name — it is auto-named
+  `"<View> View: <Event>"`. Instances still never connect.
+
+### Reaction wiring — no positional gotcha
+
+A reaction's command is inferred from **same-slice presence**, exactly like `ui -> command`: put
+`processor`/`translation` in the same slice as the command it triggers, in either order, and `em`
+wires it correctly regardless of what any other slice contains or where it sits in the file. There's
+no adjacency to get right and no reordering hazard — the read model it watches (if any) is named
+explicitly via `from "View"`, resolved by name to the nearest instance at or before its own slice,
+not by position either.
+
+The one thing that still doesn't wire on its own: a `ui` never triggers a reaction — no pattern has
+a `ui` wired to `processor`/`automation`/`saga`/`translation`, only to `command`. A `ui` left in a
+reaction's slice renders with no outgoing edge, disconnected, and `em validate` warns on it — move
+it to the slice that displays the read model, or drop it.
+
+---
+
+## `em validate` rules (design to satisfy these)
+
+**Errors (must fix):**
+1. **Band collision** — two elements of the same band in one slice (e.g. two `command`s, or two
+   `ui`s in the *same* persona row). Split them into separate slices/personas. Two events on one
+   context that are alternative outcomes of one command are NOT a split: write
+   `event A | B @Context` (identical payloads) or `oneof { event A @Context { … }  event B @Context { … } }`
+   (own fields/clauses per alternative) — one slice, one shared cell, one command, one shared context; each
+   alternative is a full event, and a standalone `invariant` after them binds to all.
+   Alternatives with no command in the slice are an error (`alternative-events-no-command`), and the same
+   command repeated across slices warns (`command-repeated-across-slices`).
+2. **Unknown event source** — `view X from "Event"` where the event doesn't exist anywhere.
+3. **Unknown read-model source** — `processor X from "View"` where the view doesn't exist.
+4. **Arrow endpoint mismatch** — `arrow A -> B` where A or B matches no element name.
+5. **Backward timeline** ("time flows left to right") — an event feeding a view instance in an
+   EARLIER slice (fix: add a `view X again` instance where the event lands and move the source
+   there), a reaction reading a view before any instance of it exists, or an explicit backward
+   `arrow`.
+6. **`again` without an earlier declaration** — declare the view plainly the first time it appears.
+7. **Illegal connection** — an `arrow` joining kinds the patterns don't connect. Only
+   `ui -> command`, `command -> event`, `event -> view`, `view -> ui`, `view -> reaction`, and
+   `reaction -> command` are allowed. A command straight to a view is the CQRS violation (an event
+   has to sit between them); a view straight to a command needs a reaction between them; and two
+   instances of one view are never connected at all. Inferred edges are always legal, so this only
+   ever fires on a hand-written `arrow`.
+8. **Cyclic type reference** — a declared `type` nesting itself with no array to terminate it
+   (`type Node { child: Node }`, or the same shape across several types). Break the cycle, or
+   route the self/mutual reference through an array (`children: Node[]`) if the data is
+   genuinely tree-shaped.
+9. **Lineage-ref errors** (slice-doc frontmatter, fs-aware) — a
+   `split-from`/`merged-from`/`superseded-by` ref with malformed `<slice-key>@v<N>` grammar, a
+   self-reference or cycle, a `superseded-by` naming a slice absent from the current model, or
+   a ref naming a version higher than the target's own `version:`. A `split-from`/`merged-from`
+   naming a key absent from the tree is deliberately silent — that's the normal state after a
+   real split/merge (see the four `lineage-*` codes in the table below).
+10. **`loops-to` not earlier, or unresolved** — an event's `loops-to "View"` naming a view at the
+    same slice or later (`loops-to-forward`; that's what `from` on a later `view … again`
+    instance is for), or naming a view that doesn't exist at all, or a name that resolves to a
+    non-view (`loops-to-unresolved`).
+11. **`derived from` names an unresolved event** — a view field's traced `derived from "Event
+    A", "Event B"` clause naming an event that isn't among the view's actual sources (its own
+    `from` list, or the same-slice events for a `from`-less view) — `derived-from-unresolved`.
+    Name one of the view's real sources, or drop the traced event.
+
+**Warnings (should fix):**
+1. **Reaction with no command** — a `processor`/`automation`/`saga`/`translation` that triggers
+   nothing. It never records an event itself; add the command it issues in this same slice, or an
+   explicit `arrow` to one elsewhere.
+2. **`ui` shares slice with a reaction** — a `ui` only ever wires to a `command` a person issues; no
+   pattern has a `ui` triggering an automation/processor/saga/translation. Left in the reaction's
+   own slice it renders disconnected, with no edge, whether or not that slice also has the
+   reaction's own command. Move it to the slice that displays the read model, or drop it.
+3. **Command with no trigger** — nothing issues it. A command needs a `ui` in its slice, or the
+   reaction (automation/processor/saga/translation) that triggers it, *also* in this slice. The
+   input-side mirror of (5): a command nothing points at is a write nobody can start.
+4. **Command without event** — every command should record at least one event.
+5. **Event nobody reads** — the mirror of (4): recording an event no read model projects is a
+   write with no reader. Follow every write slice with the read slice that consumes its event.
+   Counts as read when a `view` names it in `from` (any `again` instance will do), when a view
+   with no `from` of its own sits in its slice, via an explicit `event -> view` arrow, or via a
+   resolved `loops-to "View"` clause (a loop-back is a real consumer too — an UNRESOLVED or
+   forward `loops-to` does not count, so the event still warns as unread alongside its own
+   `loops-to-forward`/`loops-to-unresolved` error). (Events marked `public` are exempt — their
+   reader is outside the model; same for a `public` view and the no-consumer warning.)
+6. **Read model without source** — add `from "Event"` or place the view in a slice with an event.
+7. **Duplicate name** — the same name defined N times; references resolve to the first. Rename.
+   (A duplicate `type` name always warns, unlike a duplicate element name — there's no
+   legitimate unreferenced-duplicate case for a named type.)
+8. **Open issue** — an element carries `issue "text"`; resolve the question, then remove the
+   clause. `em validate --list-issues` prints just these; `--fail-on-issues` (opt-in) makes CI
+   fail while any remain open.
+9. **View field with no source** — a `view` field whose name matches no field on any instance
+   of its source events. Only checked once BOTH the view and at least one source event declare
+   `{ fields }` — unless the field is marked `derived` (optionally `derived from "Event A",
+   "Event B"`, whose names must be among the view's sources), which exempts it entirely.
+10. **Event field not from a command** — an `event` field whose name matches no field on any
+    command in the same slice. Only checked once BOTH the event and at least one same-slice
+    command declare `{ fields }`. This is the payoff of the fields feature for slicing rigor:
+    once fields are written down, `em validate` checks that data flows forward consistently.
+11. **Event with no producing command** — a fact with no traceable cause; add the command that
+    records it (either order within the slice), or an explicit `arrow` from one.
+12. **Two same-named `translation`s reading different producers** — rename one; fires
+    unconditionally (unlike the duplicate-name warning), since the confusion is in reading
+    the model, not resolving a reference.
+13. **Frontmatter coherence** (slice docs, fs-aware) — `status: implemented` with no
+    `implementedIn` link at all. The re-ratification mismatch (status flipped back while
+    `implementedIn` names the prior PR) is deliberately never flagged — it's the drift
+    signal, not incoherence.
+14. **Doc-join problems** (`em export`/`--slice-ready`) — `binding-missing-file` (a
+    `note "slices/<key>.md"` binding pointing at a file that doesn't exist) and
+    `frontmatter-invalid` (the doc exists but lacks a frontmatter block or a required key).
+
+`divergence "text"` is deliberately NOT in this list — it raises no warning at all, since it
+records a deviation already reasoned through and accepted, not something to fix. Use
+`em validate --list-divergences` to audit them on demand.
+
+### Full rule code reference
+
+Every rule above (and every fs-aware check `em validate` layers on top — lineage, frontmatter
+coherence) has a stable `code`, generated below from the same registry `em` itself validates
+against (`src/model/rules.ts`) — a new rule shows up here the moment it's registered, whether or
+not the prose above has caught up yet. `--slice-ready <key>`-only codes are excluded; see
+`docs/cli.md#em-validate-file` in the
+[em repository](https://github.com/milehimikey/em/blob/main/docs/cli.md#em-validate-file).
+
+<!-- GENERATED:validate-rules:start -- run `npm run docs:generate` to refresh, do not hand-edit -->
+| Code | Severity | Title | Fix |
+|---|---|---|---|
+| `again-restates-sources` | warning | Continuation restates sources an earlier instance already read | Name only the events that changed the view since the previous instance on the `again` line; the view's field sources are the union across instances, so nothing is lost (docs/dsl.md#view--again). |
+| `alternative-events-no-command` | error | Alternative events without a command | Add the command whose decision records one of the alternatives, in the same slice. |
+| `arrow-backward` | error | Backward arrow | Restructure so the target comes later. |
+| `arrow-unresolved-source` | error | Arrow source unresolved | Fix the arrow's source name. |
+| `arrow-unresolved-target` | error | Arrow target unresolved | Fix the arrow's target name. |
+| `automation-split-by-outcome` | warning | Reaction split into one slice per outcome | Model one Automation slice recording the outcomes as alternative events — `event A | B @Context` (docs/patterns.md#automation). |
+| `binding-missing-file` | warning | Doc binding points at a missing file | Create the slice doc, or fix the `note` path. |
+| `both-ends-of-a-flow/command-no-event` | warning | Command without event | Add the event this command records. |
+| `both-ends-of-a-flow/command-untriggered` | warning | Command with no trigger | Add a `ui` or the reaction that issues it, both in this slice. |
+| `both-ends-of-a-flow/event-unproduced` | warning | Event with no producing command | Add the command that records it, or an explicit arrow from one. |
+| `both-ends-of-a-flow/event-unread` | warning | Event nobody reads | Project it into a view, or reconsider recording it. |
+| `both-ends-of-a-flow/reaction-no-command` | warning | Reaction with no command | Add the command it triggers, in this slice, or an explicit arrow to one. |
+| `both-ends-of-a-flow/ui-unbacked` | warning | `ui` with no read model or command | Add a `view` it displays, or the command it triggers. |
+| `both-ends-of-a-flow/view-unconsumed` | warning | Read model with no consumer | Add a `ui` or reaction that consumes it, or drop this instance. |
+| `code-spans-seam` | warning | Code change spans a seam | Keep one code module per model and change the two sides of a seam in separate change sets. |
+| `command-repeated-across-slices` | warning | Command repeated across slices | Merge the slices: one command with several outcomes is one slice — `event A | B @Context`. |
+| `command-second-intent` | warning | Command carries a second intent | Split the conditional rule set into its own command; both commands may record the same event (a bare repeat of the event is legal). |
+| `connection-legality/illegal-pair` | error | Illegal connection | Only ui→command→event→view→ui and view→reaction→command are legal — the message names the missing step. |
+| `consumer-not-adapted` | error | Consuming translation no longer matches the producer's public element | Update the translation's field block to the producer's current fields (a renamed field names its new name in the message). Additive producer changes never raise this — consumers tolerate unknown fields. |
+| `consumes-unknown-element` | error | `consumes` names no public element of that model | Point the ref at an element the producer marks `public` (`em export` lists them), or ask the producer to publish it. |
+| `consumes-unknown-model` | error | `consumes` names a model the system does not have | Fix the model key (the kebab-slug of the producer's `model "Name"`), or add that model to the system. |
+| `continuation-has-own-doc` | warning | Continuation slice has its own doc | Fold this doc's scenarios into slices/<originating-key>.md and delete it; a later `view X again` instance is documented by the view's originating slice. |
+| `cross-model-slice-doc-collision` | warning | Colliding slice doc path across models | Give each model its own directory (see docs/cli.md, "Multi-model projects"). |
+| `dangling-public-event` | warning | Public event/view no seam consumes | Declare the seam that reads it, or drop `public` if nothing outside the model does. |
+| `derived-from-unresolved` | error | `derived from` names an unknown event | Name one of the view's actual sources, or drop the traced event from `derived from`. |
+| `doc-model-element-not-in-doc` | warning | Model element the doc doesn't mention | Add the matching marker to the doc, or remove the element from the model. |
+| `doc-model-element-not-in-model` | warning | Doc names an element the model doesn't have | Add the element to the model, or fix/remove it in the doc. |
+| `doc-model-field-mismatch` | warning | Doc/model field mismatch | Reconcile the field table with the model's fields — names and types. |
+| `doc-model-pattern-mismatch` | warning | Doc/model pattern mismatch | Fix the doc's `pattern:` frontmatter to match the model, or restructure the slice to match the doc. |
+| `doc-names-unfed-event` | warning | Doc names an event its view does not read | Add the event to the view's `from` in the model (if the edge is real), or fix the doc's Source column / scenario. |
+| `doc-omits-fed-event` | warning | Doc omits an event its view reads | Mention the event in the view's Source column (run `em slice sync`), or drop it from the view's `from`. |
+| `duplicate-element-ref` | warning | Duplicate element ref | Rename the element so its export ref is unique. |
+| `duplicate-model-key` | warning | Duplicate model key | Give each model a unique `model "Name"` so its key (and every cross-model ref) is stable. |
+| `duplicate-name` | warning | Duplicate name | Rename one of the duplicates. |
+| `duplicate-slice-name` | warning | Duplicate slice name | Rename the slice so its export key is unique. |
+| `duplicate-type-name` | warning | Duplicate type name | Rename one of the duplicate `type` declarations. |
+| `duplicate-type-ref` | warning | Duplicate type ref | Rename the type so its export ref is unique. |
+| `fields-completeness/event-field-no-source` | warning | Event field not from a command | Add the field to a command that records the event (in any slice), mark it assigned if the handler sets it, or remove it from the event. |
+| `fields-completeness/view-field-no-source` | warning | View field with no source | Add the field to a source event, or remove it from the view. |
+| `frontmatter-coherence-implemented-without-link` | warning | Implemented without a link | Add `implementedIn` once the slice ships. |
+| `frontmatter-invalid` | warning | Invalid or missing frontmatter | Add the required frontmatter keys, or add a frontmatter block. |
+| `frontmatter-status-unrecognized` | warning | Unrecognized slice status | Set `status:` to one of draft, reviewed, ready-to-implement, implemented. |
+| `grid-collision` | error | Band collision | Split the colliding elements into separate slices. |
+| `invariant-without-scenario` | warning | Invariant cited by no scenario | Cite the INV id in the Given/When/Then (or title) of the scenario that exercises it, or add one. |
+| `invariants/declared-in-both` | warning | Invariant declared in the model and in a slice doc | Keep the model's `invariant` line; in the doc, cite the ID and elaborate instead of restating it as a `**INV-…:**` rule. |
+| `invariants/doc-cites-undeclared` | warning | Slice doc cites an undeclared invariant | Declare the ID in the model (or in a slice doc's Invariants section), or fix the citation. |
+| `invariants/duplicate-id` | error | Duplicate invariant ID | Give each model-declared invariant its own ID — a rule is declared once, on the element it guards. |
+| `invariants/malformed-id` | error | Malformed invariant ID | Rename the ID to the `INV-<MNEMONIC>-<n>` shape, e.g. `INV-ORD-1` (2-4 uppercase letters/digits, then a number). |
+| `invariants/public-command-without-invariants` | warning | Public command declares no invariants | Add an `invariant INV-<MNEMONIC>-<n> "rule"` line after the command, or declare its rules in the slice doc's Invariants section. |
+| `lineage-forward-dangling` | error | Dangling forward lineage ref | Fix the key, or remove the stale successor. |
+| `lineage-ref-cycle` | error | Lineage cycle | Break the cycle — a slice can't be its own ancestor. |
+| `lineage-ref-malformed` | error | Malformed lineage ref | Fix the value to `<slice-key>@v<N>`, or remove it. |
+| `lineage-version-impossible` | error | Impossible lineage version | Fix the referenced version, or ratify the target slice first. |
+| `loops-to-forward` | error | `loops-to` target not earlier on the timeline | Point `loops-to` at an earlier view, or use `from` on a later `view … again` instance instead. |
+| `loops-to-unresolved` | error | `loops-to` target unresolved | Name a view that exists, or declare it before this event. |
+| `model-version-stale` | warning | Model version stale | Run `em model version bump` to record the current model content/slice-version vector. |
+| `multi-model-change-set` | warning | Change set touches more than one model | Prefer one model per change set. Unrelated models in one change set are fine; models joined by a seam are not, once a contract changes. |
+| `note-binding-dangling` | warning | Dangling cross-slice note | Create the doc at that path, or fix/remove the note. |
+| `note-binding-extra` | warning | Extra doc-binding note, ignored | Remove the note, or point it at the slice's actual bound doc. |
+| `note-binding-unratified` | warning | Unratified cross-slice note | Add `covers: <this-slice-key>` to that doc's frontmatter, or correct the note's path. |
+| `note-binding-unusable` | warning | Cross-slice note to a doc with unusable frontmatter | Fix that doc's frontmatter, or fix/remove the note. |
+| `open-issue` | warning | Open issue | Resolve the question, then remove the `issue` clause. |
+| `orphaned-slice-doc` | warning | Orphaned slice doc | Rename it to a current slice's key, add `covers:` (plus a `note` binding) to attach it to a live slice, or delete it. |
+| `owner-not-a-handle` | warning | Model owner is not a CODEOWNERS handle | Write the owner as a GitHub user (`@alice`), a team (`@org/team`), or an email address, so `em system codeowners` can route review to it. |
+| `public-field-type-unresolved` | error | Public field type unresolved | Give the field a type from the public type table (string, text, int, long, decimal, boolean, uuid, date, datetime, duration, bytes), `X[]` of one, or a declared `type` — or drop `public`. |
+| `public-name-not-unique` | error | Two public elements of one kind share a name | Rename one of them (or drop `public` from one): a consumer's `consumes <model>:<kind>.<slug>` must name exactly one element. |
+| `reaction-from-future-view` | error | Backward timeline (reaction reads a future view) | Declare the view in or before the reaction's slice. |
+| `reaction-from-unresolved` | error | Unknown read-model source | Project the event into a view first, or fix the `from` reference. |
+| `retry-slice-of` | warning | Slice only retries another command | Re-fire the same reaction via `view … again from` the retry-scheduled event; a different actor's override is its own slice with its own command (docs/patterns.md#automation). |
+| `scenario-then-not-outcome` | warning | Scenario's Then names no event or rejection | Make the Then bullets name the event(s) the command records, or the rejection/error it returns. |
+| `scenario-when-not-command` | warning | Scenario's When does not name the slice's command | Make the When bullet name the slice's command (for a reaction slice: the command, the reaction element, or a view of the slice) — each scenario exercises exactly one command. For a Translation, naming the translation element satisfies it. |
+| `seam-consumer-not-reaction` | error | Seam consumer is not a reaction | Point `to` at a translation/automation element (or a slice containing exactly one). |
+| `seam-crossing` | error | Change set alters a contract and its consumer together | Split the change set: land the producer's public-surface change first, then adapt the consuming model in a later change. Review on the contract file is the only override. |
+| `seam-crossing-greenfield` | warning | New public surface lands with its first consumer | Nothing to fix: a public element no consumer was bound to at the base revision is new surface, not a crossing. Later changes to it are crossings. |
+| `seam-duplicate` | warning | Duplicate seam | Remove the repeated `from`/`to` pair. |
+| `seam-endpoint-unresolved` | error | Seam endpoint does not resolve | Fix the ref to an element the named model actually exports (`em export` lists every ref), or re-declare the seam after a rename. |
+| `seam-source-not-public` | error | Seam source is not `public` | Mark the event/view `public` in its model, or point the seam at the element that is. |
+| `shared-event-field-mismatch` | error | Shared event declared with different fields, tags or public | Repeat the event bare to inherit the first declaration's fields, tags and public, or make them identical. |
+| `slice-doc/generated-region-placeholder` | warning | Unresolved placeholder in a signed doc's generated region | A `{{ }}` in a generated region is a prompt, not content: fill the model gap it marks (a field with no source) and run `em slice sync`, or write the scenario a stub describes in `## Scenarios` and run `em slice sync` — the covered stub is retired (on a signed doc the scenario is the next version: `em slice revise`). |
+| `slice-doc/scenario-title-duplicate` | warning | Two scenarios in a slice doc share a title | One scenario per title under `## Scenarios`: merge the blocks or rename one. A stub `em slice sync` wrote under a collection field is retired once `## Scenarios` covers it, so it never needs a second copy. |
+| `slice-doc/structured-section-malformed` | warning | Malformed structured section | Balance the `<!-- GENERATED:em-slice-…:start -->`/`:end -->` markers (re-create the doc with `em slice new --force` if they are lost), restore the template's table header and run `em slice sync`, and give every `### Scenario:` block a Given, When and Then bullet. |
+| `slice-outside-storyline` | warning | Slice outside every storyline | Move the slice inside one of the model's `storyline` blocks (advisory: storylines can be adopted incrementally). |
+| `storyline-after-cycle` | error | Storyline `after` cycle | Remove an `after` clause so no storyline comes after itself. |
+| `storyline-after-out-of-order` | error | Backward timeline (storyline declared above the one it comes after) | Move the storyline block below the storyline it comes `after`, or restructure the feed. |
+| `storyline-after-unknown` | error | `after` names an unknown storyline | Name a storyline declared in this model, or drop the `after` clause. |
+| `storyline-reads-without-after` | warning | Storyline reads another without declaring `after` it | Add `after "<the storyline it reads>"` to the reading storyline (or to one between them); if the two stories are parallel on purpose, accept it on the shape exit gate (docs/storyline.md). |
+| `system-manifest-invalid` | error | Seam manifest invalid | Fix the manifest: `systemSchemaVersion: "2.0"`, `models:` with a readable `source` per model, and nothing else (`seams:`/`owner:` moved into the models — run `em upgrade`). |
+| `system-manifest-outdated` | warning | Seam manifest is schema 1.0 | Run `em upgrade <model>.em --apply` once: it moves `seams:` into `consumes` clauses and `owner:` onto each model header, and rewrites the manifest to 2.0. |
+| `system-model-key-mismatch` | error | Manifest model key differs from the export's `model.key` | Rename the manifest's `models:` key to the computed key the message prints. |
+| `tag-composite-unknown-field` | error | Composite tag names an unknown field | Fix the field name, or add it to the event's fields. |
+| `tag-duplicate-key` | error | Duplicate tag key | Rename one of the tags so every key on the event is unique. |
+| `timeline-entity-clustered` | warning | Lifecycle-per-entity shape (storyline order) | If these are create/update/archive steps on one entity, order the slices by the business journey, interleaving contexts as the story does; if they are steps of one journey, show a screen (a view) after each step. See docs/storyline.md. |
+| `translation-name-collision` | warning | Translation name reused for different producers | Use a distinct name per producer to avoid confusion. |
+| `type-cycle` | error | Cyclic type reference | Break the cycle, or route the self/mutual reference through an array. |
+| `ui-shares-slice-with-automation` | warning | `ui` shares slice with a reaction | Move the `ui` to the slice that displays the read model, or drop it. |
+| `unbound-translation` | warning | Externally-fed reaction no seam feeds | Declare the seam whose `to` is this reaction, or give it an in-model `from`. |
+| `undeclared-seam-candidate` | warning | Looks connected across models, no seam declared | Declare the seam, or rename one side so the name match stops looking like a link. |
+| `view-again-without-earlier` | error | `again` without an earlier declaration | Declare the view plainly the first time it appears. |
+| `view-from-future-event` | error | Backward timeline (view reads a future event) | Move the source to a later `view X again` instance. |
+| `view-from-unresolved` | error | Unknown event source | Fix the `from` reference to name an existing event. |
+| `view-lookup-source` | warning | View reads an event only as a lookup | Carry the field on the event that creates this view's own row instead; if this is a genuine cross-context row change, accept it on the shape exit gate (docs/validation.md#the-shape-exit-gate) rather than fixing it (docs/patterns.md#state-view). |
+| `view-no-source` | warning | Read model without source | Add `from "Event"`, or place the view in a slice with an event. |
+<!-- GENERATED:validate-rules:end -->
+
+**Design rules that keep models valid:**
+- One element per band per slice (multiple personas/contexts are fine — they're different rows).
+- Every `command` slice includes its `event`. Every `view` has a `from` source.
+- **Every `command` has a trigger.** A `ui` in its slice, or the reaction that triggers it, also in
+  its slice. A command nothing points at is a write nobody can start.
+- **Every `event` has a reader.** A command slice isn't finished until the read slice that projects
+  its event exists. Reactions don't count — they read views, not events. Pair each write slice with
+  its read slice as you go rather than sweeping up dangling events at the end.
+- **Every `view` has a consumer.** A `ui` in its slice, a reaction watching it, or (headless) a read
+  translation. Every *instance* of a repeat, not just the last — a bare `view X again` slice is a
+  half-slice, not a State View.
+- **Only six connections are legal**, and only these are ever inferred:
+  `ui → command`, `command → event`, `event → view`, `view → ui`, `view → reaction`,
+  `reaction → command`. Anything else in an explicit `arrow` is an error — above all
+  `command → view` (the CQRS violation: an event has to sit between them) and `view → command`
+  (a reaction has to sit between them). If you reach for an arrow the patterns don't allow, the
+  model is missing an element, not an arrow.
+- A reaction (`processor`/`automation`/`saga`/`translation`) shares its slice with the `command` it
+  triggers and that command's `event` — the same shape `ui` already uses in State Change. If it's
+  internally triggered, the **view** (read model) it watches lives in the slice before, named via
+  `from "X"` (which must resolve to a view, never an event directly). Externally-triggered reactions
+  start from outside the model — no `from` at all, and no slice before them.
+- Name everything uniquely and consistently.
+- Events are past tense; commands are imperative; views name the thing shown.
+
+A reaction that emits an event with no command anywhere between them — `translation T` and
+`event E` in the same slice, nothing issuing it — is exactly what
+`both-ends-of-a-flow/reaction-no-command` (above) catches: any reaction with no `command` in its
+own slice, and no explicit arrow to one, warns. Still route every reaction through a real command
+by construction (`reaction → command → event`) rather than an explicit `arrow "Reaction" -> "Event"`
+— that shape is its own `connection-legality` error (a reaction never records an event itself).

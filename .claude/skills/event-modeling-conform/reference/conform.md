@@ -1,0 +1,541 @@
+# Conform Phase — Drift Detection Against the Codebase
+
+Read this **before doing any conform work**. It governs the `conform` phase: checking a
+**ratified** model (and its slice docs) against the codebase that is supposed to implement it,
+and reporting where they've drifted apart. Conform reuses `extract`'s sourcing/mode rules
+(the `event-modeling-discover` skill's `reference/extract.md`) for reading the target codebase
+rather than duplicating them — the
+difference is what you do with what you find: extract *builds* a model from the code; conform
+*compares* code evidence against a model that already exists.
+
+## Stance — advisory-only, evidence-first
+
+- **Advisory-only.** Conform never gates anything and never edits the canonical model or a
+  slice doc on its own initiative. It proposes; the user ratifies. There is no such thing as
+  an auto-applied conformance fix.
+- **Evidence-first, not model-first.** For every slice you check, gather code evidence —
+  handler/event/projection/endpoint sites, invariant-enforcement sites, scenario-test sites —
+  **before** you compare anything to the model or doc. Read the doc and model first to know
+  *what to look for*, but write down what the code actually shows before you judge whether it
+  matches. Anchoring bias is the failure mode this rule exists to block: "the model says X" is
+  never allowed to substitute for "the code shows X at `path/to/File.kt:42`".
+- **Uncertainty is never drift.** If you can't find evidence either way — the code path is
+  unclear, the test is ambiguous, you ran out of budget — that's an **uncertainty**, reported
+  in its own section, never folded into a drift or gap finding. A false positive here is worse
+  than a missed one; it's what burns the loop's credibility.
+- **Anchored, not blind.** You read the canonical model's vocabulary before walking the code,
+  and you reuse its slice/element names wherever the code genuinely matches them. This trades
+  some independence for precision: naming a scratch model's elements from scratch (blind
+  extraction) would report wholesale slice add/remove noise from naming alone the moment your
+  synonym for an existing element doesn't match the model's — the exact false-drift failure
+  mode this phase exists to avoid. The guardrail against anchoring bias is the evidence-first
+  rule above, not independence from the model's vocabulary.
+
+## Preconditions
+
+1. A canonical `.em` model with a state file (`.event-modeling.md`), reachable the same way the
+   shared preconditions locate it — see `../../event-modeling-shared/reference/operating-principles.md`.
+2. The slices you're about to check should be **implemented** — docs at `status: implemented`
+   (or the status the user says corresponds to shipped code) for whichever slices are in scope.
+   Checking a `draft` or `ready-to-implement` slice against code is a wasted walk — ratified or
+   not, nobody has built to it yet; tell the user and skip it rather than reporting "drift"
+   against it. (GH #400: the ONE exception is a deliberate pre-ship advisory run — see
+   `--preview` under step 5 below — not a reason to treat this precondition as optional for an
+   ordinary post-ship sweep.)
+3. The codebase to check: the state file's **Existing system refs** (populated during
+   `extract`, if this model came from one) or ask the user for the repo path if not set. Record
+   it if missing. In a headless/scheduled run with no user to ask, default to the repository
+   the model lives in (if it contains the implementation) and state that assumption in the
+   report's run metadata.
+4. Confirm `em --version` works (same check as every other phase) — you'll run `em diff`. The
+   phase needs `em diff --json`; if the flag errors as unknown, the installed `em` predates it
+   — say so and stop rather than falling back to eyeballing the two models.
+
+## The three conformance surfaces
+
+The model isn't just the `.em` — slice docs carry the detailed spec (field tables with rules,
+named invariants, Given/When/Then scenarios). Conform checks all three surfaces that can drift:
+
+| Surface | What drifts | Who checks | How |
+|---|---|---|---|
+| **Structural** — `.em` ↔ code | slices/elements/fields/flow | `em` (deterministic) | `em diff --json` on canonical vs. an as-is scratch model |
+| **Spec** — slice doc ↔ code | field rules not enforced, named invariants (`INV-*`) without enforcement/test sites, GWT scenarios without test sites | you (judgment) | per-slice evidence walk: each checkable claim in the doc mapped to a code/test site by name (`INV-CHK-4` → its enforcement site + its test) |
+| **Internal** — slice doc ↔ `.em` | the doc's frontmatter `pattern:` or its Command/Event/Read Model sections and field tables disagreeing with the model's own elements/fields | `em` (deterministic) | `em validate`'s `doc-model-*` diagnostics, unconditionally in the default list |
+
+The internal surface is deterministically checked by `em validate` itself (MIL-124) — four
+diagnostics, always on, no flag needed: `doc-model-pattern-mismatch` (frontmatter `pattern:` vs.
+the model's own classification), `doc-model-element-not-in-model` / `doc-model-element-not-in-doc`
+(the doc's Command/Event/Read Model markers vs. the slice's actual elements, each direction), and
+`doc-model-field-mismatch` (a matched Command/Event's field table vs. the model's `{ fields }`
+block). Run `em validate <model-name>.em --json` and read each entry's `code`/`refs`/`message`
+(`docs/validation.md#doc-model-consistency` documents exactly what each one checks and
+when it stays silent — every rule is declare-gated, so a thin/draft doc doesn't nag); consume it
+the same way step 3 below consumes `em diff --json` — parse the structured findings, don't
+re-derive them by eye. Fold any that fire for an in-scope slice into that slice's internal-surface
+findings for step 4's classification, citing the diagnostic directly as the evidence.
+
+**Internal inconsistency is its own class, not drift.** When a doc and the `.em` disagree with
+each other, neither one is "the code" — you don't know which is stale. Report it as internal
+inconsistency and let the user decide which side is right; don't guess by treating one as
+authoritative.
+
+## Flow
+
+### 1. Scope
+
+Run `em conform-scope <model-name>.em --repo <target-repo-path>` — it mechanizes everything
+about scoping that's deterministic: parsing `Last conformance:` (via the same state-file reader
+`em state read` uses), running `git diff --name-only <revision>..HEAD` in the target repo, and
+mapping each changed path to a slice via that slice doc's `implementedIn:` link (a bare/embedded
+repo-relative path that's a prefix of or equal to the changed path — a URL-only `implementedIn`,
+e.g. a PR link, deterministically matches nothing). It prints one JSON document
+(`docs/cli.md`'s conform-scope section documents the envelope):
+
+```json
+{ "lastConformance": { "date": "...", "revision": "..." } | null,
+  "changedPaths": ["..."],
+  "candidateSlices": [ { "key": "checkout", "matchedBy": "implementedIn", "paths": ["..."], "file": null } ],
+  "unmappedPaths": ["..."] }
+```
+
+Default: **diff-scoped** — `lastConformance` set, `--full` not passed — `candidateSlices` is
+your in-scope set for step 2. If `lastConformance` is `null` (first run) or you pass `--full`,
+`em conform-scope` scopes every `implemented` slice instead (`matchedBy: "full"`,
+`changedPaths`/`unmappedPaths` both empty) — the tool makes this call for you, no need to
+special-case it yourself.
+
+**Storyline models (GH #451).** A model may split its storylines into their own files — a root
+declares `storyline "Name" [after "Other"]` with no body, and the storyline's slices live in
+`<slug>/<slug>.em` (`docs/dsl.md`'s "Storyline models" section). `em conform-scope` already
+compiles the root plus every storyline file it declares as ONE model
+(the same way every other `em` command does — a storyline file never compiles on its own), so
+scoping via `implementedIn` needs no special handling. What DOES change: each `candidateSlice`'s
+`file` names the storyline file that slice's body lives in — posix, relative to the model's
+directory — or `null` for a slice in the root file. This is which physical file you anchor on in
+step 2 and which scratch file you write the as-is picture into in step 3 (`--seed-asis` seeds one
+scratch file per physical file, not just the root — see there). Don't confuse a slice's `file`
+with its doc's path: slice docs for a storyline model live under that storyline's own
+`slices/` folder, but `em` finds them by key across every folder regardless, so doc resolution
+itself needs no extra care.
+
+**`unmappedPaths` is your judgment queue, not a dead end.** A changed path the tool couldn't
+place mechanically (`implementedIn` stale, a URL-only link, code that moved) still might belong
+to an in-scope slice — a quick Grep for the path's obvious symbols against the slice docs/model
+vocabulary is exactly the judgment call this phase reserves for you (`em conform-scope` never
+guesses on purpose). Fold anything you place this way into your in-scope set alongside
+`candidateSlices`; leave genuinely unplaceable paths out of scope but note them in the report's
+run metadata rather than silently dropping them.
+
+Cost containment here is cadence, not a trigger condition — diff-scoped-by-default is what
+keeps a recurring conform run cheap; don't invent a smarter trigger.
+
+### 2. Anchored, evidence-first verification (per in-scope slice)
+
+For each slice in scope:
+
+**Check for an existing bindings file first (GH #450).** `conformance/bindings/<slice-key>.yaml`,
+beside the model, records this slice's own prior evidence — file and identifier per model
+element, and per `INV-*` invariant's enforcement/test sites (`docs/bindings.md`'s schema). Two
+cases, mutually exclusive:
+
+- **It exists:** verify it before walking anything by hand —
+  `em conform bindings check <model-name>.em --repo <target-repo-path> --slice <slice-key>`.
+  A binding that still checks out is evidence you don't need to re-derive; **scope the rest of
+  this slice's walk through it** — re-read only what the check reports failing (`file not
+  found`/`identifier not found`, an unknown `ref`) plus whatever `em conform-scope`'s
+  `changedPaths` (step 1) says moved since `implementedIn`. This is what turns a recurring
+  conform walk incremental instead of a full re-derivation every time — don't throw that away by
+  re-walking evidence the file already gives you clean.
+- **It doesn't exist:** the common shape for a slice an external or ticket-driven implementer
+  shipped without ever running `em` (`docs/bindings.md` is written so that implementer can still
+  author one by hand from its own ticket spec; this backfill is the safety net for the ones that
+  didn't, or for any slice that shipped before GH #450). Walk the slice normally (the numbered
+  steps below) and, once you've gathered that evidence, **write
+  `conformance/bindings/<slice-key>.yaml` from it** — the same file an implementer would have
+  written, now backfilled from your conform evidence instead of from the implementer's own
+  knowledge of the code. This is advisory tooling catching up a gap, not a model or doc edit: it
+  needs no ratification and doesn't change this phase's advisory-only stance (see "Stance"
+  above) — you're recording where code already lives, not deciding what it should do. From the
+  next conform run on, this slice follows the "it exists" branch above.
+
+1. Read the slice's **doc** (`slices/<slice-name>.md`) alongside its elements in the `.em`.
+   This tells you the vocabulary to anchor on and the claims to check — not the answer.
+2. Walk the code and **record evidence before comparing**:
+   - **Structural:** the handler, event class(es), projection(s), endpoint(s) that implement
+     this slice.
+   - **Spec:** for every named invariant (`INV-*`) in the doc, its enforcement site and its
+     test site (by name/path, both or neither — a half-found invariant is an uncertainty, not
+     a pass). Scenarios are budgeted: map Given/When/Then scenarios to individual test sites
+     when the in-scope slice count is small (roughly ≤5) or the user asks for that depth;
+     otherwise record slice-level scenario-test presence and say so in the report — per-scenario
+     mapping across a full model roughly doubles the walk. Where the doc doesn't name
+     invariants/scenarios individually, fall back to slice-level test presence (some vs. none)
+     rather than inventing IDs the doc never gave you.
+   - **Legitimate non-materialized views:** an automation's watched view may have no
+     materialized projection in code — a direct event handler with criteria-sourced state is
+     the same pattern expressed in the code idiom (extract.md's R5 reaction rules). That is
+     NOT structural drift; note the idiom in the evidence log instead of reporting the view
+     as missing. This is the *general*, idiom-level version of the next bullet — prefer citing
+     an actual `divergence` annotation when the element carries one; fall back to this idiom
+     note only when it doesn't.
+   - **`updates from` sources (GH #451) — housekeeping evidence, not trigger evidence.** A view
+     declared `view X from "A" updates from "B", "C"` (`docs/dsl.md`'s `updates from` section)
+     splits its sources into what put a row on the list (`from`) and what keeps an existing row
+     current or removes it (`updates from`). The two need different evidence: a `from` source is
+     what an automation/processor reacting to this view should fire on, or what a reader expects
+     to see a NEW row appear for — missing evidence there is the usual structural/spec drift. A
+     `updates from` source is expected to have an update/delete handler for the SAME row, never a
+     "new item created" or "automation triggered" site — don't report the absence of trigger-type
+     evidence for an `updates from` source as drift; that is literally what the clause says it
+     isn't. `em export`'s `from` list is the union of both (so `em diff`'s structural comparison
+     sees every source regardless of which list it's in — folding `from`/`updates from` into each
+     other is NOT itself a structural change `em diff` would catch), but the *diagram* draws no
+     arrow for an `updates from` source and the *evidence walk* above should read the same way:
+     check it as "does this row get kept current/removed", not "does this cause a new row".
+   - **Accepted divergences:** before treating any finding as drift, check whether the
+     relevant canonical element already carries a `divergence "..."` annotation (visible in
+     the `.em`, in `em export --json`'s `divergence` field, or — for a structural finding — as
+     the `acceptedDivergence` field already attached to that `em diff --json` entry, see step
+     3). If it does, this is not a fresh finding to litigate: classify it as **Accepted
+     divergence** (step 4) and cite the annotation text as the evidence. This is the specific,
+     per-element, ratified counterpart to the idiom-level bullet above.
+   - **Unpropagated deltas (MIL-85):** before treating any slice-level finding as drift, check
+     that slice's `doc.driftSignal` in `em export --json` (see `../../event-modeling-shared/reference/slice-doc-schema.md`'s
+     "`status` under re-ratification" section for the mechanics). `"unpropagated-delta"` means
+     the slice was re-ratified (a new
+     `version`, `status` flipped back off `implemented`) but `implementedIn` still names the
+     *prior* version's PR — the code you're evidence-walking is that prior version, on purpose.
+     Do not diff it against the newer doc content and do not report a mismatch as Real drift or
+     a Model gap; classify it as **Unpropagated delta** (step 4) instead and stop — the finding
+     is "this delta hasn't shipped yet," not a defect in the shipped code. `"implemented-
+     without-link"` (status: implemented, no link at all) is a genuine coherence problem, but
+     it's already surfaced by `em validate`'s `frontmatter-coherence-implemented-without-link`
+     warning — don't re-raise it here as a separate conform finding.
+3. Write what you found into the scratch model (`<model-name>-asis.em`, see below) — start it
+   with `em conform-scope <model-name>.em --repo <target-repo-path> --seed-asis`, which
+   byte-copies the canonical `.em` to `<model-name>-asis.em` and ensures `*-asis.em` is
+   gitignored (idempotent — safe to pass on every run). **Storyline models (GH #451):** when the
+   slice you're rewriting has a non-null `file` in step 1's `candidateSlices` (its body lives in
+   a storyline file, not the root), `--seed-asis` also wrote a scratch copy of THAT file — the
+   `seeded.storylineFiles` entry naming it — and the copied root's declaration already points at
+   it. Edit that storyline file's own `-asis` sibling, never `<model-name>-asis.em` (it has no
+   body for that slice to rewrite) and never the canonical storyline file (that corrupts the
+   real model, not a scratch copy). **Then replace only the in-scope slices** with the as-is
+   picture, leaving out-of-scope slices byte-identical, in whichever scratch file(s) hold them.
+   This is not an optimization:
+   `em diff` matches slices by name, so a scratch model containing *only* the in-scope slices
+   reports every other canonical slice as `slice-removed` plus one `element-removed` per
+   element — a phantom-removal flood on every diff-scoped run, which is the exact false drift
+   this phase exists to avoid. It also keeps the scratch model compilable (see step 3). Within
+   the slices you do rewrite, **reuse the canonical model's slice and element names wherever
+   the code genuinely matches them** — the canonical model is the vocabulary anchor. Give a
+   new name only to code behavior the model doesn't cover at all. When you do need a new name,
+   check `em glossary` across sibling `.em` models first (same aid the `extract` phase uses) —
+   if the term already exists elsewhere under a different kind or spelling, that's a signal to
+   reuse the established name rather than mint another synonym for the same concept. Record the
+   mapping decision for every element you name this way (e.g. `CartItemAdded` code class ↔
+   `"Cart Item Added"` model event) so it's auditable, not a silent judgment call. **Match the
+   canonical model's field granularity:** declare `{ fields }`
+   in the scratch model only where the canonical model declares them (if the canonical model
+   puts fields on commands but not events, so does the scratch model — writing code-derived
+   event fields there would flood the diff with `field-added` noise). Schema claims at finer
+   granularity than the `.em` declares — e.g. event fields documented only in a slice doc's
+   table — are checked on the **spec surface** against the doc, not smuggled into the
+   structural diff.
+4. Read the in-scope slice's `doc-model-*` findings straight off the `em validate --json` run
+   from precondition 4 (or re-run it here) — no code evidence needed, `em` already did the
+   doc-vs-`.em` comparison for frontmatter `pattern:` and the Command/Event/Read Model rosters
+   and field tables. The only judgment left on this surface is narrative sections `em validate`
+   can't parse (Intent, Open Questions, notes): count a contradiction here too when it's
+   unambiguous — a stale sentence that flatly contradicts the `.em` is an internal
+   inconsistency; a vague or interpretable one is not a finding.
+
+Do this for every in-scope slice before moving on to diffing. The evidence you record here is
+what every finding in the report will cite — file paths, not vibes.
+
+### 3. Deterministic diff
+
+First `em validate <model-name>-asis.em`. `em diff` refuses when either side has validation
+*errors* (warnings are fine), so a scratch model that doesn't compile stops the run cold. The
+usual cause is a slice that depends on one you rewrote incompletely — a `view X again` whose
+first declaration you dropped, an automation `from` a read model that no longer exists, or an
+`arrow` you wrote joining kinds the patterns don't connect. (An unread event is only a *warning*,
+so it never blocks the diff — and in an as-is scratch model it's expected.)
+Seeding from the canonical model (step 2) prevents this; if it still fails, **fix the scratch
+model and report the failure as a tooling problem in the run metadata — never as drift.** A
+model you couldn't compile is an uncertainty about your own scratch file, not a finding
+against the codebase.
+
+Then run `em diff <model-name>.em <model-name>-asis.em --json`. `em`, not you, decides what
+structurally differs — don't re-derive by eye what the tool already computed. Parse the JSON
+(`docs/cli.md`'s diff section documents the envelope: `diffSchemaVersion`, `counts`, `changes`,
+`removals`, every optional `ChangeEntry` field explicit-`null` when unused) and use it as the
+structural-surface findings directly. Check each entry's `acceptedDivergence` field first: a
+non-null value means `em` itself already found a `divergence` annotation on the canonical
+element behind this entry — that finding is Accepted divergence (step 4), not something to
+re-litigate.
+
+### 4. Classify
+
+Every finding — structural deltas from step 3, plus spec- and internal-surface findings from
+step 2 — sorts into exactly one class:
+
+- **Real drift** — code evidence contradicts the model or doc.
+- **Model gap** — code evidence shows behavior neither the model nor the doc covers.
+- **Internal inconsistency** — the doc and the `.em` disagree with each other (surface 3 only).
+- **Accepted divergence** — the relevant canonical element carries a `divergence "..."`
+  annotation (cited directly from a structural entry's `acceptedDivergence` field, or from the
+  `.em`/`em export` for a spec/internal finding). This is what the annotation is *for*: a
+  reasoned, ratified deviation stops being re-reported as drift on every run. Cite the
+  annotation text, not fresh judgment — that judgment already happened when it was written.
+- **Unpropagated delta** (MIL-85) — the slice's `doc.driftSignal` (`em export --json`) is
+  `"unpropagated-delta"`: a ratified version bump hasn't shipped yet, so `implementedIn` still
+  names prior work on purpose. Distinct from Accepted divergence — this is a structurally-
+  derived, deterministic signal (`status`/`implementedIn` coherence), not a human-authored
+  `divergence` annotation; keep the two separate so a reader can tell which mechanism produced
+  which finding. Cite `slice.doc.driftSignal` and `slice.doc.version` together as evidence.
+- **Extraction uncertainty** — no evidence either way. Never reported as drift or a gap.
+
+**Read-model exposure (MIL-215).** Two rulings apply the classes above to a `view`'s exposure —
+whether it ships a query endpoint — instead of leaving each case to fresh judgment:
+
+- An **internal view** (no `ui` reads it, and it isn't marked `public`) implemented as
+  criteria-sourced state (a reaction's own read, no materialized projection — the general idiom
+  step 2 already names) or as an unexposed projection is **Conformant, never dead code to
+  flag**. It's the read operation the model draws to say an automation or translation *must*
+  read, not an endpoint promise; don't propose deleting it.
+- An **endpoint in code on a view the model shows no `ui` reading and no `public` marking** is a
+  **Model gap** — "add the `ui` or remove the endpoint" — **never Real drift to delete**.
+  Nobody decided whether that view is exposed; deleting the code decides it for them.
+
+Every classification must cite the evidence recorded in step 2 (or the `em diff` entry, for
+structural findings) — a finding with no citation isn't ready to report.
+
+### 5. Report + findings record + proposals
+
+Write `conformance/<YYYY-MM-DD>-report.md` in the model directory, from
+`../../event-modeling-shared/templates/conformance-report.md`. For a real-drift or model-gap finding, propose a
+ready-to-apply red note — `issue "conformance: <text>"` on the right element, written out in
+the report exactly as it should be pasted into the `.em` — when a model-side marker is the
+right fix; when the fix is purely doc wording (or the finding is an internal inconsistency
+with no clear side to flag), omit the red note and say why instead. **Never propose a red note
+for a finding already classified Accepted divergence** — report it (so the annotation itself
+stays auditable) but don't ask the user to ratify what's already ratified. **You never edit the
+canonical model or a slice doc unprompted** — walk the report with the user, apply only the
+proposals they approve, then re-render and `em validate`.
+
+**Also write the findings JSON (MIL-214).** Alongside the report, write
+`conformance/<YYYY-MM-DD>-findings.json` (write the plain name; `em slice conform` also reads
+`<YYYY-MM-DD>-<name>-findings.json`) — one entry per `### n.` finding, ids matching the
+report's own numbering. Shape (`findingsSchemaVersion: "1.0"`, additive-only, 2-space indent,
+keys sorted, findings sorted by `id`, trailing newline):
+
+```json
+{
+  "findingsSchemaVersion": "1.0",
+  "model": "checkout.em",
+  "report": "conformance/YYYY-MM-DD-report.md",
+  "revision": "<target-repo revision>",
+  "findings": [
+    {
+      "id": 1,
+      "surface": "structural",
+      "class": "Real drift",
+      "slice": "checkout",
+      "evidence": "code shows X at path/to/File.kt:42",
+      "locus": null,
+      "resolvedBy": null,
+      "resolvedOn": null
+    }
+  ]
+}
+```
+
+`surface` is one of `structural` (`.em` <-> code — step 3's diff), `spec` (slice doc <-> code —
+step 2's invariant/scenario walk), `internal` (slice doc <-> `.em` — step 2's `doc-model-*`
+diagnostics), or `other`. `class` is the step-4 classification verbatim (Real drift, Model gap,
+Internal inconsistency, Accepted divergence, Unpropagated delta, Extraction uncertainty). `slice`
+is the concerned slice's export key, or `null` for a finding that isn't attributable to one
+(counts as in-scope for every slice's unruled-findings check). `locus`/`resolvedBy`/`resolvedOn`
+start `null` — a later `em conform-supersede --locus --by` call fills them in once a human rules.
+Run `em conform-findings check conformance/YYYY-MM-DD-findings.json` before ending the session —
+a headless run's mechanical proof it wrote a valid record.
+
+**Ruling on a finding (MIL-214) — once the user decides.** Run, per finding or batch of findings
+ruled the same way:
+
+```
+em conform-supersede <model-name>.em conformance/YYYY-MM-DD-report.md --as-of <target-repo revision> \
+  --findings <spec> --locus <model|doc|code|none> --by <name>
+```
+
+— this records `locus`/`resolvedBy`/`resolvedOn` on the named findings in the JSON (refusing to
+silently overwrite an already-different `locus`) AND stamps the report's "superseded as of `<rev>`"
+banner in the same call (see below). `locus: code` on an unresolved finding is the carrier for
+"the spec is right, the code is wrong" — no doc delta required for that case any more; `locus:
+model` means fix the `.em` (apply the proposed red note, or a stronger edit the user chose
+instead); `locus: doc` means the slice doc needs a delta/re-ratification; `locus: none` covers
+Accepted divergence/Unpropagated delta/Extraction uncertainty, where nothing needs to change.
+
+**Certifying a slice, once every finding touching it is ruled (MIL-214).** For each in-scope
+slice with no unruled findings left:
+
+```
+em slice conform <model-name>.em <slice-key> --at <target-repo revision>
+em slice conform <model-name>.em <slice-key> --at <kind>:<id>      # e.g. build:1234 — what the sweep exercised, when its commit will not stay reachable (GH #261)
+```
+
+If you certified from a pull-request branch and the repo squash- or rebase-merges, the branch
+HEAD will dangle once the branch is deleted. Either pass a commit the target branch will keep
+(the merge commit) or record the deployment/build you actually swept as `--at build:<id>` /
+`--at deploy:<id>` / `--at env:<id>` — and write the same string as the findings file's
+`revision`, so the findings-check gate still matches.
+
+— records `conformedVersion`/`conformedAt`/`conformedOn` on that slice's doc, so
+`driftSignal` reads `in-sync` again (it reads `uncertified` for an implemented slice that's never
+been through this) instead of just trusting `implementedIn`. Legal only for `status: implemented`
+with a link, and itself refuses if an unruled finding for that slice still exists at this
+revision — the mechanical proof this step comes only after rulings, not before.
+
+**Pre-ship advisory mode: `--preview` (GH #400).** The certify step above is legal only for a
+**shipped** slice (`status: implemented`/`shippedVersion:` + `implementedIn:`) — precondition 2
+reflects that this phase ordinarily walks shipped code. `--preview` is the deliberate exception:
+the SAME doc-resolution and findings-check read, legal for a slice that hasn't shipped yet
+(the shipped/`implementedIn:` preconditions are waived), and it **never writes anything** —
+no `conformedVersion`/`conformedAt`/`conformedOn`, ever, regardless of outcome:
+
+```
+em slice conform <model-name>.em <slice-key> --at <target-repo revision> --preview
+```
+
+Use this to run a conform sweep against your OWN implementing branch before it merges — catching
+spec/code drift while you can still fix it on the same branch, rather than after shipping. The
+walk itself (steps 1-4 above) is unchanged; only the certify step's preconditions differ. Output
+is ephemeral by default (nothing is written, not even to `conformance/`); pass
+`--write-findings` to persist the run's own unruled findings as a normal
+`conformance/<date>-<slice-key>-preview-findings.json` (this is deliberate — `docs/cli.md`'s
+`em slice conform --preview` section documents the exact shape and naming). Know before opting
+in: the written file has no sibling report (`report` is synthetic), so `em conform-supersede`
+refuses to rule on it — unruled entries in it gate certify/`set-conformance` at that revision
+until you rule them in the file by hand, delete the snapshot, or author the sibling report.
+`em state set-conformance` and the unruled-findings gates are unaffected by
+this mode either way: a default preview run writes nothing for them to read, so it can never
+block a later certify or `set-conformance` call. There is no `--slice-ready` integration for this
+mode yet.
+
+End of run: update the state file's `Last conformance:` marker with
+
+```
+em state set-conformance <target-repo revision> --report conformance/YYYY-MM-DD-report.md
+```
+
+— the revision is the one you just diffed against, so the next run's scope starts from here.
+The command writes the exact format step 1 parses back out; never hand-edit the bullet. Gates read every same-revision findings file (the report's own `-findings.json` first, else every file whose `revision` matches). The same-revision lookup uses the report's OWN revision (its `Target repo: … @ <rev>` header line; the caller's `<rev>` / `--as-of` only when the report has none).
+**Refuses (MIL-214) while any `implemented` slice still has an unruled finding** in the findings
+JSON beside the report — rule on every finding first (or certify what's already ruled via `em
+slice conform` above), or pass `--partial` to record the marker with a loud notice instead
+(`notice: conformance marker recorded as PARTIAL — N finding(s) unruled`) when the team
+deliberately wants to advance the marker without finishing every ruling this session.
+**The marker only advances with the human in the loop**: in an interactive session, run it
+after walking the report with the user; a headless/scheduled run writes the report and findings
+JSON but never the marker (nobody ratified the outcome), so the next run re-walks the same span —
+see `docs/ci.md`. If any proposals were ratified and applied, log a Decisions entry noting what
+changed and why.
+
+**Superseding the report you just walked (MIL-164).** The `--locus`/`--by` call above already
+stamps the report's banner in the same call when a ruling was recorded; if a finding's ruling
+doesn't need `--locus`/`--by` recorded (a migration-path report predating the findings JSON, or
+a ruling you're only banner-stamping after the fact), run the same command without them:
+
+```
+em conform-supersede <model-name>.em conformance/YYYY-MM-DD-report.md --as-of <target-repo revision> --findings <spec>
+```
+
+— a ruling is written to the file the report names (`<x>-report.md` <-> `<x>-findings.json`; with only per-slice files at that revision, pass the per-slice report or it refuses; `--as-of` is NOT the lookup key — the report's own `Target repo: … @ <rev>` header revision is, and `--as-of` only when the report has none) — stamping the report with a "superseded as of `<rev>`" banner so a later reader who finds it
+(a search hit, a bookmark, a link from an old PR description) sees immediately that its
+file:line citations describe an ancestor of the current model, not its current state. This is
+what keeps a superseded report an honest piece of history rather than a silently-misleading
+current view. `<spec>` names the finding number(s) this run's ruling covers (e.g. `"1-3"`); if
+only some findings were ruled on this session, run it again later with the remaining numbers —
+each call adds its own stamp rather than overwriting the last.
+
+## Conventions
+
+- **Scratch model:** `<model-name>-asis.em`, written **next to** the canonical model (same
+  directory as `.event-modeling.md`). Always seeded as a copy of the canonical model with only
+  the in-scope slices rewritten (step 2) — `em conform-scope --seed-asis` does the seeding and
+  the gitignoring (`*-asis.em`, idempotent) mechanically, never built up from nothing and never
+  hand-maintained. It's regenerated every conform run. **Storyline models (GH #451):** a split
+  model gets ONE scratch file per physical file — `<model-name>-asis.em` for the root, plus a
+  `-asis` sibling for every storyline file the root declares (`seeded.storylineFiles` names
+  them) — never just the root; the copied root's `in` clause already points at each sibling, so
+  `em diff <model-name>.em <model-name>-asis.em` reads the whole scratch set as one model, same
+  as the canonical root reads the whole canonical set.
+- **Report location:** `conformance/<YYYY-MM-DD>-report.md` in the model directory. One file
+  per run; don't overwrite a prior date's report. Its findings go in the same-stem `-findings.json`; gates read every same-revision findings file, so per-slice runs may write `<date>-<name>-findings.json`, and a ruling is written to the file the report names. The same-revision lookup uses the report's OWN revision (its `Target repo: … @ <rev>` header line; the caller's `<rev>` / `--as-of` only when the report has none).
+- **Red note wording:** `issue "conformance: <what's wrong, plainly>"` — plain enough that
+  whoever ratifies it later understands the claim without re-reading the report.
+- **Naming/matching rules:** same past-tense-event / imperative-command / thing-shown-view
+  naming discipline as the rest of the skill (`methodology.md`'s Socratic stance) — you're
+  matching code to existing names here, not inventing new ones except for genuinely uncovered
+  behavior.
+
+## Completion & handoff
+
+Conform is complete when: every in-scope slice has been walked (step 2), the scratch model has
+been diffed (step 3), every finding is classified with cited evidence (step 4), the report AND
+its findings JSON are written (step 5), the state file's `Last conformance:` marker is updated
+(or deliberately left as `--partial`), and the user has seen the report and said which proposals
+(if any) to apply and which findings resolve to which locus. Applied proposals get re-rendered
+and re-validated before you call the run done.
+
+A full (non-`--partial`) `em state set-conformance` does one more thing (MIL-218): it also
+**certifies** the model's current design version — writes `certified: { at, on, report,
+findings }` into that version's `model-versions/v<N>.json` manifest, and rewrites the state
+file's `Certified:` bullet. This is the "conform ran clean against version N" fact a
+stakeholder or a release note can point at. It only works on an already-**bumped** design
+version — `em state set-conformance` refuses (pointing at `em model version bump`) if no
+manifest exists yet, or if the model has drifted since the last bump (the certification would
+otherwise name a version that isn't what conform actually walked). If the model changed during
+this conform run (a slice's `version:` moved, or the `.em` file itself changed), bump a new
+design version (`em model version bump --by <name>`) before the final `em state
+set-conformance` call. `--partial` never certifies. See `docs/process.md#model-versions`.
+
+Conform doesn't chain to another phase automatically — it's a recurring loop, not a step in
+building the model. Suggest running it again next time the target codebase has moved, at
+whatever cadence the user wants (see `docs/ci.md` for a scheduled-run recipe).
+
+## Anti-patterns
+
+- **Blind extraction** — deriving the as-is scratch model with no sight of the canonical
+  model's vocabulary. Loses the anchor and produces naming-driven false drift.
+- **A scratch model holding only the in-scope slices** — `em diff` reads every omitted
+  canonical slice as removed, so a diff-scoped run drowns in phantom removals. Seed from the
+  canonical model and rewrite only the slices you walked.
+- **Editing a storyline file's canonical copy as if it were the scratch model (GH #451)** — for
+  a slice whose `file` isn't the root, the scratch copy is that storyline file's OWN `-asis`
+  sibling (`seeded.storylineFiles`), never `<model-name>-asis.em` (no body there to rewrite) and
+  never the canonical storyline file itself (that's the model, not a scratch copy of it).
+- **Treating an `updates from` source like a `from` source during the evidence walk** — a
+  missing "new row appears" or "automation fires" site is not drift for a source the view only
+  lists under `updates from`; check it for row-update/removal evidence instead (step 2).
+- **Reporting uncertainty as drift** — "I couldn't find the enforcement site" is an
+  uncertainty, never a finding against the model.
+- **Editing the model or a slice doc without ratification** — conform proposes; the user
+  applies. No exceptions, even for an "obviously correct" fix.
+- **Treating scenario/test absence as a build failure** — a missing test site is a spec-surface
+  finding to report and classify, not a reason to stop the run or block anything. Conform is
+  advisory; there's no gate here.
+- **Re-deriving what `em diff` already decided** — once you have the JSON, use it; don't
+  eyeball the two `.em` files yourself looking for structural differences the tool already
+  computed for you.
+- **Re-deriving evidence a verified bindings file already gives you (GH #450)** — when
+  `em conform bindings check` passes for a slice's `conformance/bindings/<key>.yaml`, walking
+  every element and invariant by hand anyway defeats the point of the file; scope through it
+  (step 2) instead.
+- **Skipping the backfill because a slice has no bindings file** — the absence is the signal to
+  write one from this walk's own evidence, not a reason to leave the gap for next time.
+- **Re-litigating an accepted divergence** — a non-null `acceptedDivergence` on a diff entry
+  (or a `divergence` annotation on the element behind a spec/internal finding) means this exact
+  question was already reasoned through and ratified. Classify it as Accepted divergence and
+  cite the annotation; don't propose a new red note or re-open the judgment call from scratch.
