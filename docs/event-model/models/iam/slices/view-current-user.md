@@ -2,12 +2,22 @@
 schemaVersion: 1
 pattern: state-view
 swimlane: User → User
-status: draft
+status: ready-to-implement
+ratifiedBy: jho
+ratifiedOn: 2026-11-09
+ratifiedHash: sha256:a1e06df29afd9aaf97b465a34f788fefacd954e274b329f726c3ebc3a1462fc0
+meaningConfirmed: true
+reviewedBy: jho
+reviewedOn: 2026-11-09
 version: 1
 ---
 # Slice: View Current User
 
 ![Diagram](./view-current-user.svg)
+
+<!-- GENERATED:em-slice-story:start — generated from the model by `em slice sync`; do not hand-edit -->
+Step 3 of 9 · after [Authenticate](./authenticate.md) · before [Create Initial Household](./create-initial-household.md) · State View
+<!-- GENERATED:em-slice-story:end -->
 
 ## Intent
 

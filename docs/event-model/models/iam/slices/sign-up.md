@@ -11,6 +11,10 @@ version: 1
 
 ![Diagram](./sign-up.svg)
 
+<!-- GENERATED:em-slice-story:start — generated from the model by `em slice sync`; do not hand-edit -->
+Step 1 of 9 · the story starts here · before [Authenticate](./authenticate.md) · Translation
+<!-- GENERATED:em-slice-story:end -->
+
 ## Intent
 
 Create a Nemeo profile for a first-time external identity without creating or managing a Nemeo

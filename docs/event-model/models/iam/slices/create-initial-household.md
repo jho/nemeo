@@ -11,6 +11,10 @@ version: 1
 
 ![Diagram](./create-initial-household.svg)
 
+<!-- GENERATED:em-slice-story:start — generated from the model by `em slice sync`; do not hand-edit -->
+Step 4 of 9 · after [View Current User](./view-current-user.md) · before [View Current Household](./view-current-household.md) · State Change
+<!-- GENERATED:em-slice-story:end -->
+
 ## Intent
 
 Create the new user’s first household with a user-provided name. The authenticated user becomes the
