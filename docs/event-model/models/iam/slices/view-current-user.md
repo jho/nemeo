@@ -9,6 +9,10 @@ version: 1
 
 ![Diagram](./view-current-user.svg)
 
+<!-- GENERATED:em-slice-story:start — generated from the model by `em slice sync`; do not hand-edit -->
+Step 3 of 9 · after [Authenticate](./authenticate.md) · before [Create Initial Household](./create-initial-household.md) · State View
+<!-- GENERATED:em-slice-story:end -->
+
 ## Intent
 
 Return the authenticated Nemeo user's profile and provider metadata needed by the application. This

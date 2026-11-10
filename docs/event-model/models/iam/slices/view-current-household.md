@@ -9,6 +9,10 @@ version: 1
 
 ![Diagram](./view-current-household.svg)
 
+<!-- GENERATED:em-slice-story:start — generated from the model by `em slice sync`; do not hand-edit -->
+Step 5 of 9 · after [Create Initial Household](./create-initial-household.md) · before [Invite Household Viewer](./invite-household-viewer.md) · State View
+<!-- GENERATED:em-slice-story:end -->
+
 ## Intent
 
 Return the authenticated user’s current household when one exists. This is the resource read used

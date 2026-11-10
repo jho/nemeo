@@ -11,6 +11,10 @@ version: 1
 
 ![Diagram](./authenticate.svg)
 
+<!-- GENERATED:em-slice-story:start — generated from the model by `em slice sync`; do not hand-edit -->
+Step 2 of 9 · after [Sign Up](./sign-up.md) · before [View Current User](./view-current-user.md) · Translation
+<!-- GENERATED:em-slice-story:end -->
+
 ## Intent
 
 Authenticate a user whose external provider subject is already linked to a Nemeo profile. Google is
