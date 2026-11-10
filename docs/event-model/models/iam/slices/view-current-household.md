@@ -2,7 +2,13 @@
 schemaVersion: 1
 pattern: state-view
 swimlane: User → Household
-status: draft
+status: ready-to-implement
+ratifiedBy: jho
+ratifiedOn: 2026-11-09
+ratifiedHash: sha256:b8b0a8daac2aed2c6bde85a8ec9b0aaa6faefe79ca31c08fec63d00addd34f33
+meaningConfirmed: true
+reviewedBy: jho
+reviewedOn: 2026-11-09
 version: 1
 ---
 # Slice: View Current Household

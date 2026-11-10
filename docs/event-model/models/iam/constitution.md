@@ -1,133 +1,63 @@
-<!--
-The implementation constitution: the house rules an implementing agent follows on EVERY slice —
-stack, code style, testing norms, NFR baselines, review norms. It answers "how do we build things
-here" once, so no slice doc has to repeat it and no agent has to invent it. Slice docs say WHAT to
-build; this says HOW it gets built here.
-
-Where this document lives:
-  - No SDD tool: `constitution.md` beside the model — `em scaffold` writes it there.
-  - spec-kit project (a `.specify/` directory exists anywhere above the model): the document IS
-    `.specify/memory/constitution.md`. em writes no second copy; the sections below merge into
-    that file under these same headings, never overwriting text already there, and ratification is
-    recorded in spec-kit's own `**Ratified**:` footer line instead of the frontmatter below.
-
-How it gets filled: not by an agent guessing. Each section opens with the question a short
-facilitated conversation asks before the first slice is implemented — the procedure is "Before the
-first slice: the constitution" in the `event-modeling-implement` skill's `reference/implement.md`
-(`em contract` prints it). Replace each `{{...}}` block with the real answers; delete the guidance
-comments and any row that doesn't apply.
-
-Ratification: `ratifiedBy:`/`ratifiedOn:` are the same identity discipline slice docs use — a
-NAMED human and an ISO date, hand-filled at sign-off (no `em` command writes this file).
-**A constitution with an empty `ratifiedBy:` is a draft**: an implementing agent treats it as
-unratified, says so, and does not proceed on unilateral style or stack decisions for a first slice.
-
-`em status` reports this document as present or absent per model — existence only. em never reads
-or validates its content, and the CLI parses nothing here. Two lines are read as plain text by
-the engagement skill and its sub-agents, so keep their exact shape: `- **Test command:**` (the
-validator) and `- **Agent models:**` (the engagement skill). In a spec-kit
-project they merge under the same headings in `.specify/memory/constitution.md`.
--->
-
 ---
 schemaVersion: 1
-ratifiedBy:
-ratifiedOn:
+ratifiedBy: jho
+ratifiedOn: 2026-11-09
 ---
-# IAM — implementation constitution
 
-The house rules for how implementation happens in this project. They bound every "purely
-technical choice" an implementing agent would otherwise make alone.
+IAM implementation constitution
+================================
 
-## Stack and architectural shape
+This model follows the repository constitution in `docs/event-model/constitution.md` and the
+architecture decisions it indexes. These rules are the implementation defaults for IAM slices.
 
-> **What do we build on, what shape does the code take, and which implementation skill or
-> approach does each slice pattern route to?**
+Stack and architecture
+----------------------
 
-- **Languages / runtimes:** {{e.g. Kotlin 2.x on JVM 21; TypeScript 5 on Node 24}}
-- **Frameworks / platform:** {{web framework, persistence, messaging, build tool}}
-- **Architectural pattern:** {{e.g. event-sourced CQRS with vertical slices; layered service over
-  a relational store; functional core / imperative shell}}
-- **Where a slice's code lives:** {{one package per slice, per context, ...}}
-- **Interface conventions:** {{resource style — REST/RPC/GraphQL, etc.; error/rejection mapping;
-  versioning; auth at the edge — the shape every `ui`-triggered command or `ui`-consumed view's
-  endpoint follows, decided once here rather than invented per slice}}
+- Use strict TypeScript on Node.js with Fastify, TypeSpec, PostgreSQL, and the repository's
+  event-storage and projection ports.
+- Implement each slice under `src/features/iam/<slice>/`. Keep HTTP registration in
+  `src/interfaces/` and replaceable adapters in `src/infrastructure/`.
+- Preserve the Event Model pattern and slice boundary in code. Do not introduce a broader context
+  hierarchy or infrastructure dependency without an accepted ADR.
+- Follow the API standards ADR for plural resource routes, UUID identifiers, explicit enums,
+  standard REST semantics, and documented command endpoints only where a resource operation cannot
+  be represented as a resource change.
+- Treat generated Event Model contracts and generated OpenAPI outputs as read-only. Change the
+  model or TypeSpec source and regenerate.
 
-Routing — which implementation skill or approach each of the four slice patterns uses:
+Slice routing
+-------------
 
-| Pattern | Skill / approach |
-|---|---|
-| State Change | {{e.g. the `axon-*` skill set — axon-entity-patterns, then axon-entity-testing}} |
-| State View | {{e.g. the `axon-*` skill set — axon-projection-patterns, then axon-projection-testing}} |
-| Automation | {{e.g. the `axon-*` skill set — axon-policy-patterns, then axon-policy-testing}} |
-| Translation | {{e.g. the `axon-*` skill set — axon-translation-patterns}} |
+| Pattern | Implementation default |
+| --- | --- |
+| State Change | Command handler, domain decision, event persistence, and projection update |
+| State View | Read handler over a projection; no domain mutation |
+| Automation | Application event or scheduler trigger dispatching a coarse-grained job |
+| Translation | External provider input translated into domain commands or events at the boundary |
 
-An agent implementing a slice reads the doc's `pattern:` frontmatter and follows that row — this
-table is the only routing rule.
+Code and testing
+----------------
 
-## Code style
+- Keep business rules in the feature; transport and provider details stay behind ports.
+- Use the repository formatter, linter, and type checks. Do not hand-edit generated artifacts.
+- Prefer integration tests for feature behavior across handlers, persistence, and projections;
+  use unit tests for focused domain rules and algorithms. Reserve end-to-end tests for critical
+  user paths.
+- Test names and comments should cite the invariant or scenario identifier from the slice doc.
+- **Test command:** `npm run test:unit && npm run test:integration`
 
-> **What does "idiomatic" mean in this codebase — formatting, naming, module layout?**
+Security and operations
+-----------------------
 
-- **Formatter / linter:** {{the tool and the command that runs it — never hand-format against it}}
-- **Naming:** {{commands, events, handlers, files, test names}}
-- **Module layout:** {{what lives in which file/package, and what may not import what}}
-- **Idiomatic here means:** {{the two or three habits a new contributor most often gets wrong}}
+- Authenticate at the interface boundary and enforce household access before executing a slice.
+- Do not log provider tokens, secrets, or unnecessary personal or financial data.
+- Use structured logs with the repository logging component convention and propagate trace context.
 
-## Testing norms
+Review and merge
+----------------
 
-> **What must be tested for each slice pattern, where do those tests live, and how are they named
-> so `em coverage` can trace invariant IDs?**
-
-- **Levels required per pattern:** {{e.g. State Change — decider unit tests plus a
-  given/when/then fixture test; State View — projection tests; Automation / Translation —
-  reaction tests, including a negative case}}
-- **Invariant tests:** {{where they live}} — every `INV-<MNEMONIC>-n` in a slice doc needs at least
-  one test **citing that exact ID** in its name or a comment, so
-  `em coverage <model>.em --tests <dir>` can trace it.
-- **Scenario tests:** {{where they live}} — one per `## Scenarios (Given / When / Then)` entry,
-  with rejection scenarios asserting the doc's named rejection reason.
-- **Test naming convention:** {{the exact pattern, e.g. `INV-ORD-3: rejects a second submit`}}
-- **What "green" means:** {{the command CI runs}}
-- **Test command:** `{{the one command that runs the tests, e.g. ./gradlew test}}`
-  What the `em-validator` sub-agent runs. Keep exactly this shape: one line, the command in
-  backticks. Absent, the validator reports "no test command in the constitution" and runs only the
-  em checks.
-
-## NFR baselines
-
-> **What standing non-functional defaults does every slice inherit — authz, PII, performance,
-> observability?**
-
-- **Authorization model:** {{who may issue which commands, how it's enforced, and where}}
-- **PII / data handling:** {{what is sensitive, what may be logged, retention}}
-- **Performance defaults:** {{latency / throughput budgets that apply unless a slice says otherwise}}
-- **Observability:** {{logging, metrics, tracing every slice is expected to emit}}
-
-A slice doc's own `## Non-Functional Requirements` section overrides these for that slice; where
-it is silent, these apply.
-
-## Review and merge norms
-
-> **Who reviews an implementation PR, what blocks a merge, and how does the slice doc's status
-> flip fit in?**
-
-- **Reviewers:** {{who — a team, a CODEOWNERS rule, the slice's ratifier}}
-- **What blocks a merge:** {{e.g. a failing suite, an uncovered invariant, a gap that belongs back
-  at the model}}
-- **Branch / commit conventions:** {{...}} — name only branch naming and commit-message style
-  here. **One slice doc = one PR is the implement contract's rule, not this document's to
-  amend** — a `covers:` doc ships as one PR for both keys; a read model is one doc, so a later
-  `again` instance is a continuation of the doc that first declared it, not a PR of its own. See
-  the agent guide's §5/§10.
-- **Merge strategy:** {{squash | merge commit | rebase — the project's own choice. Every slice PR
-  is cut from and targets `main` (implement contract §8 rule 2), so no PR ever depends on
-  another and any strategy works; em reads nothing from this line.}}
+- A slice PR implements the reviewed, ratified slice and is the lifecycle boundary for that slice.
+- Failing validation, contract drift, missing invariant coverage, or an unresolved model question
+  blocks merge.
+- At merge, record implementation with `em slice mark-implemented <model>.em <slice-key> <pr-url>`.
 - **Agent models:** implementer=sonnet, validator=sonnet, reviewer=sonnet, critic=opus
-  {{**Which model runs each em sub-agent?** Keep this exact line shape, with the defaults shown or
-  your own choices. The critic must run on a different model from the implementer; `critic=codex`
-  selects the Codex critic. Absent, the engagement skill states these defaults once and
-  proceeds.}}
-- **At merge:** run `em slice mark-implemented <model>.em <slice-key> <pr-url>` — the one edit an
-  implementing agent makes to a ratified slice doc, run by {{the PR author | CI}}. Never bump
-  `version:`; that moves only when a delta is ratified.
